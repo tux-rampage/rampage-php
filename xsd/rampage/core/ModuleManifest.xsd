@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/ModuleManifest"
+	elementFormDefault="unqualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rampage="http://www.linux-rampage.org/ModuleManifest" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+	<import schemaLocation="PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+	<element name="RampageManifest" type="rampage:RampageManifestComplexType">
+	</element>
+
+	<complexType name="ServicesType">
+		<all>
+			<element name="factory"
+				type="rampage:ServiceFactoryDefinition" maxOccurs="unbounded"
+				minOccurs="0">
+			</element>
+			<element name="share" maxOccurs="unbounded" minOccurs="0">
+			    <complexType>
+			        <simpleContent>
+			            <extension
+			                base="rampage:SimpleServiceDefinition">
+			                <attribute name="shared" type="boolean" use="optional" default="true"></attribute>
+			            </extension>
+			        </simpleContent>
+			    </complexType>
+			</element>
+			<element name="service" maxOccurs="unbounded"
+			    minOccurs="0">
+			    <complexType>
+			        <simpleContent>
+			            <extension
+			                base="rampage:SimpleServiceDefinition">
+			                <attribute name="class"
+			                    type="rampage:PHPClassName" use="required">
+			                </attribute>
+			            </extension>
+			        </simpleContent>
+			    </complexType>
+			</element>
+			<element name="alias" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <simpleContent>
+                        <extension
+                            base="rampage:SimpleServiceDefinition">
+                            <attribute name="aliasto"
+                                type="rampage:PHPClassName" use="required">
+                            </attribute>
+                        </extension>
+                    </simpleContent>
+                </complexType>
+			</element>
+			<element name="initializer"
+				maxOccurs="unbounded"
+				minOccurs="0">
+                <complexType>
+                    <attribute name="initializer"
+                        type="string" use="required">
+                    </attribute>
+                </complexType>
+			</element>
+		</all>
+	</complexType>
+
+
+	<complexType name="SimpleServiceDefinition">
+		<simpleContent>
+			<extension base="boolean">
+				<attribute name="name" use="required"
+					type="rampage:PHPClassName">
+				</attribute>
+			</extension>
+		</simpleContent>
+	</complexType>
+
+	<complexType name="ServiceFactoryDefinition">
+	    <attribute name="name" use="required"
+	        type="rampage:PHPClassName">
+	    </attribute>
+	    <attribute name="abstract" type="boolean" use="optional" form="unqualified" default="false"></attribute>
+	    <attribute name="class" type="rampage:PHPClassName" use="required"></attribute>
+	</complexType>
+
+	<simpleType name="PHPClassName">
+		<restriction base="string">
+			<minLength value="1"></minLength>
+			<pattern value="[a-zA-Z0-9_]+((\.|\\)[a-zA-Z0-9_]+)*"></pattern>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="VersionNumber">
+		<restriction base="string">
+			<pattern value="\d+\.\d+(\.\d+)*.*"></pattern>
+		</restriction>
+	</simpleType>
+
+	<complexType name="ModuleDependencies">
+		<all>
+			<element name="depends" type="rampage:DependencyOptions"
+			    maxOccurs="1" minOccurs="0">
+			</element>
+			<element name="conflicts"
+				type="rampage:DependencyOptions" maxOccurs="1"
+				minOccurs="0">
+			</element>
+
+		</all>
+
+	</complexType>
+
+	<complexType name="DependencyVersionDefinition">
+		<choice>
+			<element name="equals" type="string" maxOccurs="1"
+				minOccurs="0">
+			</element>
+			<all>
+				<element name="min" type="string" maxOccurs="unbounded"
+					minOccurs="0">
+				</element>
+				<element name="max" type="string" maxOccurs="unbounded"
+					minOccurs="0">
+				</element>
+			</all>
+		</choice>
+
+	</complexType>
+
+	<complexType name="patternType">
+	    <simpleContent>
+	        <extension base="string">
+	            <attribute name="basedir" type="string"
+	                use="optional">
+	            </attribute>
+	            <attribute name="pattern" type="string" use="required"></attribute>
+	        </extension>
+	    </simpleContent>
+	    <attribute name="type" type="string" use="optional"></attribute>
+	</complexType>
+
+	<complexType name="RouteDefinition">
+	    <all>
+	        <choice>
+	            <element name="standard" type="rampage:StandardRouterConfig" maxOccurs="1" minOccurs="1"></element>
+
+	            <element name="literal" maxOccurs="1" minOccurs="1" type="rampage:LiteralRouteConfig"></element>
+	            <element name="segment" maxOccurs="1" minOccurs="1" type="rampage:LiteralRouteConfig"></element>
+
+	            <element name="regex" maxOccurs="1" minOccurs="1">
+	                <complexType>
+	                    <complexContent>
+	                        <extension base="rampage:AbstractRouteConfig">
+	                            <attribute name="regex" type="string" use="required"></attribute>
+	                            <attribute name="spec" type="string" use="required"></attribute>
+	                        </extension>
+	                    </complexContent>
+	                </complexType>
+	            </element>
+	            <element name="layout" maxOccurs="1" minOccurs="1">
+	                <complexType>
+	                    <all>
+	                        <element name="handle" maxOccurs="unbounded" minOccurs="0">
+	                            <complexType>
+	                                <attribute name="name" type="string" use="required"></attribute>
+	                            </complexType>
+	                        </element>
+	                    </all>
+	                    <attribute name="route" type="string" use="required"></attribute>
+	                    <attribute name="layout" type="string" use="required"></attribute>
+	                </complexType>
+	            </element>
+	            <element name="custom" type="rampage:CustomRouterConfig" maxOccurs="1" minOccurs="1"></element>
+	        </choice>
+	        <element name="routes" type="rampage:RoutersConfig" maxOccurs="1" minOccurs="0"></element>
+	    </all>
+
+	    <attribute name="name" type="string" use="required"></attribute>
+	    <attribute name="type" use="required">
+	        <simpleType>
+	            <restriction base="string">
+	                <enumeration value="standard"></enumeration>
+	                <enumeration value="literal"></enumeration>
+	                <enumeration value="segment"></enumeration>
+	                <enumeration value="regex"></enumeration>
+	                <enumeration value="custom"></enumeration>
+	                <enumeration value="layout"></enumeration>
+	            </restriction>
+	        </simpleType>
+	    </attribute>
+	    <attribute name="mayterminate" type="boolean"></attribute>
+	</complexType>
+	<complexType name="RoutersConfig">
+		<all>
+			<element name="route" type="rampage:RouteDefinition"
+				maxOccurs="unbounded" minOccurs="1">
+			</element>
+		</all>
+
+	</complexType>
+
+	<complexType name="StandardRouterConfig">
+	    <complexContent>
+	        <extension base="rampage:AbstractRouteConfig">
+	            <all>
+	                <element name="parameters" maxOccurs="1" minOccurs="0">
+	                    <complexType>
+	                        <all>
+	                            <element name="allow" type="string" maxOccurs="unbounded" minOccurs="1"></element>
+	                        </all>
+	                    </complexType>
+	                </element>
+	            </all>
+	            <attribute name="frontname" type="string" use="required"></attribute>
+	            <attribute name="namespace" type="rampage:PHPClassName" use="required"></attribute>
+	        </extension>
+	    </complexContent>
+	</complexType>
+
+	<complexType name="CustomRouterConfig">
+        <all minOccurs="1">
+			<element name="options" type="phptypes:ArrayType" maxOccurs="1" minOccurs="1"></element>
+		</all>
+		<attribute name="type" type="rampage:PHPClassName" use="required"></attribute>
+	</complexType>
+
+	<complexType name="AbstractRouterConfig">
+    	<attribute name="type" type="string" use="required"></attribute>
+    </complexType>
+
+	<complexType name="AliasConfig">
+	    <all>
+	        <element name="alias" type="rampage:PackageClassAliasDefinition"
+	            maxOccurs="unbounded" minOccurs="0">
+	        </element>
+	    </all>
+	</complexType>
+
+	<complexType name="PackageClassAliasDefinition">
+        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="class" type="string" use="required"></attribute>
+	</complexType>
+
+	<complexType name="DependencyOptions">
+	    <all>
+	        <element name="module"
+	            type="rampage:NamedDependencyVersion" maxOccurs="unbounded" minOccurs="0">
+	        </element>
+	        <element name="php"
+	            type="rampage:DependencyVersionDefinition" maxOccurs="1"
+	            minOccurs="0">
+	        </element>
+	        <element name="directive" type="rampage:NamedDependencyVersion" maxOccurs="unbounded" minOccurs="0"></element>
+	    </all>
+	</complexType>
+
+	<complexType name="NamedDependencyVersion">
+	    <complexContent>
+	        <extension base="rampage:DependencyVersionDefinition">
+	            <attribute name="name" type="string" use="required"></attribute>
+	        </extension>
+	    </complexContent>
+	</complexType>
+
+	<complexType name="PackageDefinition">
+	    <simpleContent>
+	        <extension base="rampage:PHPClassName">
+	            <attribute name="directory" type="string"
+	                use="optional">
+	            </attribute>
+	            <attribute name="fqpath" type="boolean" use="optional"></attribute>
+	        </extension>
+	    </simpleContent>
+	</complexType>
+
+	<complexType name="LayoutSection">
+	    <all>
+	        <element name="config" type="rampage:LayoutConfigDefinition" maxOccurs="unbounded" minOccurs="1"></element>
+	    </all>
+	</complexType>
+
+	<complexType name="LayoutConfigDefinition">
+	    <attribute name="file" type="string" use="required"></attribute>
+        <attribute name="scope" type="string" use="optional"></attribute>
+        <attribute name="priority" type="int" use="optional"></attribute>
+	</complexType>
+
+	<complexType name="ResourcesConfig">
+	    <all>
+	        <element name="path" maxOccurs="unbounded" minOccurs="0">
+	            <complexType>
+	                <attribute name="scope" type="string" use="optional"></attribute>
+	                <attribute name="type" type="string" use="optional"></attribute>
+	            </complexType>
+	        </element>
+	        <element name="layout" type="rampage:LayoutSection" maxOccurs="1" minOccurs="0"></element>
+	    </all>
+	</complexType>
+
+	<complexType name="AbstractRouteConfig">
+	    <all>
+	        <element name="constraints" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+	        <element name="defaults" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+	    </all>
+	</complexType>
+	<complexType name="LiteralRouteConfig">
+	    <complexContent>
+	        <extension base="rampage:AbstractRouteConfig">
+	            <attribute name="route" type="string" use="required"></attribute>
+	        </extension>
+	    </complexContent>
+	</complexType>
+
+	<complexType name="RampageManifestComplexType">
+	    <all>
+	        <element minOccurs="1" maxOccurs="1" name="module">
+	            <complexType>
+	                <all>
+	                    <element name="label">
+	                        <simpleType>
+	                            <restriction base="string">
+	                                <minLength value="1"></minLength>
+	                            </restriction>
+	                        </simpleType>
+	                    </element>
+	                    <element minOccurs="0" maxOccurs="1" name="description" type="string"></element>
+	                    <element minOccurs="0" maxOccurs="1" name="dependencies" type="rampage:ModuleDependencies"></element>
+	                </all>
+	                <attribute use="required" name="name" type="string"></attribute>
+	                <attribute use="required" name="version" type="rampage:VersionNumber"></attribute>
+	            </complexType>
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="packages">
+	            <complexType>
+	                <all>
+	                    <element minOccurs="0" maxOccurs="unbounded" name="package" type="rampage:PackageDefinition"></element>
+	                    <element minOccurs="0" maxOccurs="1" name="aliases" type="rampage:AliasConfig"></element>
+	                </all>
+	            </complexType>
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="services" type="rampage:ServicesType"></element>
+	        <element minOccurs="0" maxOccurs="1" name="router" type="rampage:RoutersConfig"></element>
+	        <element minOccurs="0" maxOccurs="unbounded" name="controllers">
+	            <complexType>
+	                <all>
+	                    <element minOccurs="1" maxOccurs="unbounded" name="controller">
+	                        <complexType>
+	                            <annotation></annotation>
+	                            <simpleContent>
+	                                <extension base="rampage:PHPClassName">
+	                                    <attribute use="required" name="name" type="string">
+	                                        <annotation></annotation>
+	                                    </attribute>
+	                                </extension>
+	                            </simpleContent>
+	                        </complexType>
+	                    </element>
+	                </all>
+	                <attribute use="optional" name="namespace" type="string">
+	                    <annotation></annotation>
+	                </attribute>
+	                <attribute name="prefix" type="string">
+	                    <annotation></annotation>
+	                </attribute>
+	            </complexType>
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="locale">
+	            <complexType>
+	                <sequence>
+	                    <element minOccurs="0" maxOccurs="unbounded" name="pattern" type="rampage:patternType"></element>
+	                </sequence>
+	            </complexType>
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="resources" type="rampage:ResourcesConfig"></element>
+	    </all>
+	</complexType>
+
+	<element name="manifest" type="rampage:RampageManifestComplexType"></element>
+</schema>

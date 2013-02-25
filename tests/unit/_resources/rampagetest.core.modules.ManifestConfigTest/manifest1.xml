@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rampage:RampageManifest xmlns:phptypes="http://www.linux-rampage.org/PHPTypes" xmlns:rampage="http://www.tux-rampage.org/ModuleManifest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tux-rampage.org/ModuleManifest ../../../../../../../xsd/rampage/core/ModuleManifest.xsd ">
+    <module name="foo.bar" version="1.0.0">
+        <label>Test module</label>
+        <description>This is a test module</description>
+        <dependencies>
+            <depends>
+                <module name="bar.baz"><min>1.0.0</min></module>
+            </depends>
+        </dependencies>
+    </module>
+    
+    <controllers namespace="foo.bar">
+        <controller name="index" />
+        <controller name="list" />
+    </controllers>
+    
+    <locale>
+        <pattern basedir="res/locale" pattern="%s.dat" />
+    </locale>
+    
+    <packages>
+        <package directory="src">foo.bar</package>
+        <aliases>
+            <alias name="some.Class" class="foo.bar.MyClass" />
+        </aliases>
+    </packages>
+    
+    <services>
+        <alias name="foo.Abc" aliasto="my.custom.Abc" />
+        <factory name="foo.test" class="foo.bar.TestFactory" />
+        <factory name="abstract.foo.test" class="foo.bar.TestAbstractFactory" abstract="true" />
+        <initializer initializer="foo.bar.TestInit" />
+        <service name="foo.testservice" class="foo.bar.TestService" />
+        <share name="foo.testservice" shared="false" />
+    </services>
+    
+    <router>
+        <route name="foo.bar.default" type="standard">
+            <standard frontname="foo" namespace="foo.bar">
+                <parameters>
+                    <allow>id</allow>
+                    <allow>type</allow>
+                </parameters>
+            </standard>
+        </route>
+        
+        <route name="foo.bar.info" type="layout">
+            <layout route="/fooinfo" layout="a">
+                <handle name="b" />
+                <handle name="c" />
+            </layout>
+        </route>
+    </router>
+    
+    <resources>
+        <path>resource</path>
+        <path scope="bar.baz">baz.resources</path>
+        
+        <layout>
+            <config file="layout.xml" />
+            <config file="something.xml" />
+        </layout>
+    </resources>
+</rampage:RampageManifest>

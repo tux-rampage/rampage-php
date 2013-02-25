@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/PHPTypes"
+	elementFormDefault="unqualified" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+
+
+	<element name="string" type="string"></element>
+
+	<element name="int" type="int"></element>
+
+
+	<element name="float" type="float"></element>
+
+	<element name="bool" type="boolean"></element>
+
+	<element name="array" type="phptypes:ArrayType"></element>
+
+	<complexType name="ArrayType">
+		<all>
+			<element name="item" type="phptypes:ArrayItemType" maxOccurs="unbounded" minOccurs="0"></element>
+		</all>
+	</complexType>
+
+	<complexType name="ArrayItemType">
+		<choice>
+			<element ref="phptypes:string" maxOccurs="1"
+				minOccurs="1">
+			</element>
+			<element ref="phptypes:int" maxOccurs="1" minOccurs="1"></element>
+			<element ref="phptypes:float" maxOccurs="1" minOccurs="1"></element>
+			<element ref="phptypes:bool" maxOccurs="1" minOccurs="1"></element>
+			<element ref="phptypes:array" maxOccurs="1" minOccurs="1"></element>
+			<element ref="phptypes:instance" maxOccurs="1" minOccurs="1"></element>
+		</choice>
+		<attribute name="key" type="string"></attribute>
+		<attribute name="type">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="string"></enumeration>
+					<enumeration value="int"></enumeration>
+					<enumeration value="float"></enumeration>
+					<enumeration value="bool"></enumeration>
+					<enumeration value="array"></enumeration>
+					<enumeration value="instance"></enumeration>
+				</restriction>
+			</simpleType>
+		</attribute>
+	</complexType>
+
+	<complexType name="ClassInstanceType">
+        <all>
+			<element name="construct" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+		</all>
+		<attribute name="class" type="string"></attribute>
+	</complexType>
+
+	<element name="instance" type="phptypes:ClassInstanceType"></element>
+</schema>

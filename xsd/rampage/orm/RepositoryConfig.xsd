@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema
+    targetNamespace="http://www.linux-rampage.org/orm/RepositoryConfig"
+    elementFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:rampageorm="http://www.linux-rampage.org/orm/RepositoryConfig" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+    <import schemaLocation="../core/PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+    <annotation>
+        <documentation>
+            Schema for repository config files
+        </documentation>
+    </annotation>
+
+    <element name="config" type="rampageorm:RepositoryConfigRoot">
+        <annotation>
+            <documentation>Config root node.</documentation>
+        </annotation>
+    </element>
+
+    <complexType name="RepositoryConfigRoot">
+        <all>
+            <element name="repository" maxOccurs="unbounded"
+                minOccurs="0">
+                <annotation>
+                    <documentation>Repository config node.
+Use this to configure the repository instance</documentation>
+                </annotation>
+                <complexType>
+                    <all>
+                        <element name="adapter"
+                            type="rampageorm:AdapterConfig" maxOccurs="1" minOccurs="0">
+                            <annotation>
+                                <documentation>
+                                    Adapter configuration for this
+                                    repository. This is just a reference
+                                    to a service name.
+                                </documentation>
+                            </annotation>
+                        </element>
+                        <element name="entity"
+                            type="rampageorm:RepositoryEntityConfig"
+                            maxOccurs="unbounded" minOccurs="0">
+                            <annotation>
+                                <documentation>Entity config. Use this to configure entities.</documentation>
+                            </annotation>
+                        </element>
+                    </all>
+                    <attribute name="name" use="required">
+                        <annotation>
+                            <documentation>The repository name. This must be unique
+                            </documentation>
+                        </annotation>
+                        <simpleType>
+                            <restriction base="string">
+                                <minLength value="1"></minLength>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute name="class" type="string"
+                        use="optional">
+                        <annotation>
+                            <documentation>The repository class name. This may be omitted.
+If so, the name attribute will be used.</documentation>
+                        </annotation>
+                    </attribute>
+                </complexType>
+            </element>
+        </all>
+    </complexType>
+
+    <complexType name="AdapterConfig">
+        <attribute name="service" type="string" use="required">
+            <annotation>
+                <documentation>Service name</documentation>
+            </annotation></attribute>
+    </complexType>
+
+    <complexType name="RepositoryEntityConfig">
+        <all>
+            <element name="attribute" type="rampageorm:EntityAttributeConfig" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="index" type="rampageorm:EntityIndexConfig" maxOccurs="unbounded" minOccurs="0">
+                <annotation>
+                    <documentation>Index config for configuring indices.</documentation>
+                </annotation>
+            </element>
+            <element name="reference" type="rampageorm:EntityReferenceConfig" maxOccurs="unbounded" minOccurs="0">
+                <annotation>
+                    <documentation>
+                        References to other entities. This might be ignored by some adapters. Usually this will be reflected as
+                        foreign keys in a DBMs
+                    </documentation>
+                </annotation>
+            </element>
+        </all>
+        <attribute name="name" type="string"></attribute>
+        <attribute name="class" type="string"></attribute>
+    </complexType>
+
+    <complexType name="EntityAttributeConfig">
+        <choice>
+            <element name="int" maxOccurs="1" minOccurs="0">
+                <annotation>
+                    <documentation>
+                        Integer config. Will only be used for int types.
+                    </documentation>
+                </annotation>
+                <complexType>
+                    <attribute name="size" type="string"
+                        use="required">
+                    </attribute>
+                </complexType>
+            </element>
+            <element name="string" maxOccurs="1" minOccurs="0">
+                <annotation>
+                    <documentation>
+                        Config for string types. This will only be used
+                        when type is set to string. If this is omitted,
+                        the string will be configured with size=255
+                    </documentation>
+                </annotation>
+                <complexType>
+                    <attribute name="size" type="int" use="required">
+                    </attribute>
+                </complexType>
+            </element>
+            <element name="float" maxOccurs="1" minOccurs="0">
+                <annotation>
+                    <documentation>
+                        Config for float types. If omitted the attribute
+                        will be configured with size=11 and precision=4
+                    </documentation>
+                </annotation>
+                <complexType>
+                    <attribute name="size" type="string"
+                        use="required">
+                    </attribute>
+                    <attribute name="precision" type="string"
+                        use="required">
+                    </attribute>
+                </complexType>
+            </element>
+        </choice>
+
+
+        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="type" use="required">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="string"></enumeration>
+                    <enumeration value="float"></enumeration>
+                    <enumeration value="int"></enumeration>
+                    <enumeration value="bool"></enumeration>
+                    <enumeration value="text"></enumeration>
+                    <enumeration value="blob"></enumeration>
+                    <enumeration value="date"></enumeration>
+                    <enumeration value="datetime"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="nullable" type="boolean" use="optional"></attribute>
+        <attribute name="identity" type="boolean">
+            <annotation>
+                <documentation>
+                    This will specify if this attribute is an identity.
+                    Commonly this would create an auto increment field.
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="primary" type="boolean">
+            <annotation>
+                <documentation>This will mark the attribute as primary key (identifier)</documentation>
+            </annotation></attribute>
+    </complexType>
+
+    <complexType name="EntityIndexConfig">
+        <all>
+            <element name="attribute" maxOccurs="unbounded"
+                minOccurs="1">
+                <annotation>
+                    <documentation>Reference of an attribute to add to this index</documentation>
+                </annotation>
+                <complexType>
+                    <attribute name="name" type="string"
+                        use="required">
+                        <annotation>
+                            <documentation>
+                                Attribute name
+                            </documentation>
+                        </annotation>
+                    </attribute>
+                    <attribute name="order" use="optional">
+                        <annotation>
+                            <documentation>
+                                Attribute value sort in this index. This
+                                might be ignored by some adapters.
+                            </documentation>
+                        </annotation>
+                        <simpleType>
+                            <restriction base="string">
+                                <enumeration value="asc"></enumeration>
+                                <enumeration value="desc"></enumeration>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute name="position" type="int">
+                        <annotation>
+                            <documentation>Position of this attribut in index. Default is 0.
+If two attributes have the same position, they'll be added in the order they're defined.</documentation>
+                        </annotation></attribute>
+                </complexType>
+            </element>
+        </all>
+        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="unique" type="boolean" use="optional"></attribute>
+    </complexType>
+
+    <complexType name="EntityReferenceConfig">
+        <all>
+            <element name="attribute" maxOccurs="unbounded"
+                minOccurs="1">
+                <complexType>
+                    <attribute name="local" type="string"
+                        use="required">
+                    </attribute>
+                    <attribute name="foreign" type="string"
+                        use="required">
+                    </attribute>
+                </complexType>
+            </element>
+            <element name="constraint" maxOccurs="unbounded"
+                minOccurs="0">
+                <complexType>
+                    <attribute name="type" use="required">
+                        <simpleType>
+                            <restriction base="string">
+                                <enumeration value="update"></enumeration>
+                                <enumeration value="delete"></enumeration>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                    <attribute name="action" use="required">
+                        <simpleType>
+                            <restriction base="string">
+                                <enumeration value="ignore"></enumeration>
+                                <enumeration value="restrict"></enumeration>
+                                <enumeration value="cascade"></enumeration>
+                                <enumeration value="setnull"></enumeration>
+                            </restriction>
+                        </simpleType>
+                    </attribute>
+                </complexType>
+            </element>
+        </all>
+        <attribute name="name" type="string" use="required">
+            <annotation>
+                <documentation>
+                    the name of this reference to identify it for schema
+                    updates.
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="entity" type="string" use="required">
+            <annotation>
+                <documentation>
+                    The name of the entity to reference to.
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="repository" type="string" use="optional">
+            <annotation>
+                <documentation>If the referenced entity is defined in another repository this should be provided in this attribute.</documentation>
+            </annotation></attribute>
+    </complexType>
+</schema>

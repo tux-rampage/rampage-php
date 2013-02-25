@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout xmlns="http://www.linux-rampage.org/LayoutConfig/">
+    <handle name="default">
+        <view type="t" name="content">
+            <data>
+                <item>a</item>
+                <item>b</item>
+            </data>
+        </view>
+        
+        <reference name="content">
+            <action method="something"></action>
+        </reference>
+        
+        <view type="custom.2">
+            <action method="init"></action>
+        </view>
+        
+        <reference name="content">
+            <action method="somethingElse"></action>
+        </reference>
+    </handle>
+    
+    <handle name="custom.1">
+        <reference name="foo">
+            <remove name="x" />
+        </reference>
+    </handle>
+    
+    <handle name="custom.2">
+        <view type="render" template="some/tpl"></view>
+    </handle>
+</layout>

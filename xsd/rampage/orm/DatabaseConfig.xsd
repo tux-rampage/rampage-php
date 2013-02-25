@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/orm/DatabaseConfig" elementFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema" xmlns:dbconfig="http://www.linux-rampage.org/orm/DatabaseConfig" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes" attributeFormDefault="unqualified">
+
+    <import schemaLocation="../core/PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+    <element name="config">
+        <complexType>
+            <sequence>
+                <element name="adapter" type="dbconfig:AdapterConfig"></element>
+            </sequence>
+        </complexType>
+    </element>
+
+    <complexType name="AdapterConfig">
+        <all>
+            <element name="driver" type="string" maxOccurs="1" minOccurs="1"></element>
+            <element name="hostname" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="username" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="password" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="database" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="port" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="charset" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="platform" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="platform_options" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+        </all>
+
+        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="use" type="string" use="optional"></attribute>
+    </complexType>
+</schema>

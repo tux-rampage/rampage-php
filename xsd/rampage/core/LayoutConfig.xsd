@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/LayoutConfig/"
+    elementFormDefault="unqualified" attributeFormDefault="unqualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rampagelayout="http://www.linux-rampage.org/LayoutConfig/" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+    <import schemaLocation="PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+    <element name="layout" type="rampagelayout:LayoutRootNode"></element>
+
+    <complexType name="LayoutRootNode">
+        <all>
+            <element name="handle" type="rampagelayout:LayoutHandle" maxOccurs="unbounded" minOccurs="0"></element>
+        </all>
+    </complexType>
+
+    <complexType name="LayoutHandle">
+        <all>
+            <element name="update" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <attribute name="handle" type="string" use="required"></attribute>
+                </complexType>
+            </element>
+            <element name="view" type="rampagelayout:ViewDefinition" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="reference" type="rampagelayout:ViewReference" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="remove" type="rampagelayout:RemoveDefinition" maxOccurs="unbounded" minOccurs="0"></element>
+
+        </all>
+        <attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="ViewReference">
+        <all>
+            <element name="action" type="rampagelayout:ViewAction" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="view" type="rampagelayout:ViewDefinition"></element>
+            <element name="data" type="phptypes:ArrayType"></element>
+            <element name="remove" type="rampagelayout:RemoveDefinition"></element>
+        </all>
+        <attribute name="name" type="string" use="optional"></attribute>
+        <attribute name="label" type="string" use="optional"></attribute>
+    </complexType>
+
+    <complexType name="ViewAction">
+        <complexContent>
+            <extension base="phptypes:ArrayType">
+                <attribute name="method" type="string" use="required"></attribute>
+
+            </extension>
+        </complexContent>
+    </complexType>
+
+
+    <complexType name="ViewDefinition">
+        <complexContent>
+            <extension base="rampagelayout:ViewReference">
+                <attribute name="type" type="string" use="required"></attribute>
+                <attribute name="template" type="string" use="optional"></attribute>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="RemoveDefinition">
+        <attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+</schema>
