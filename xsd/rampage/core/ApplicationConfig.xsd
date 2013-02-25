@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/ApplicationConfig" elementFormDefault="unqualified"
+    xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rampageappcfg="http://www.linux-rampage.org/ApplicationConfig" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+    <import schemaLocation="PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+
+    <element name="config">
+        <complexType>
+            <sequence>
+                <element name="property" maxOccurs="unbounded" minOccurs="0">
+                    <complexType>
+                        <complexContent>
+                            <extension base="phptypes:ArrayType">
+                                <attribute name="name" type="string" use="required"></attribute>
+                                <attribute name="value" type="string" use="optional"></attribute>
+                                <attribute name="class" type="string" use="optional"></attribute>
+                                <attribute name="type" use="optional">
+                                    <simpleType>
+                                        <restriction base="string">
+                                            <enumeration value="string"></enumeration>
+                                            <enumeration value="array"></enumeration>
+                                            <enumeration value="int"></enumeration>
+                                            <enumeration value="float"></enumeration>
+                                            <enumeration value="bool"></enumeration>
+                                            <enumeration value="instance"></enumeration>
+                                        </restriction>
+                                    </simpleType>
+                                </attribute>
+                            </extension>
+                        </complexContent>
+                    </complexType>
+                </element>
+            </sequence>
+        </complexType>
+    </element>
+</schema>

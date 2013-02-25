@@ -105,7 +105,7 @@ class LayoutConfig extends Config
      */
     protected function _init()
     {
-        $this->setXml('<?xml version="1.0" encoding="UTF-8"?><layout xmlns="http://www.linux-rampage.org/LayoutConfig/"></layout>');
+        $this->setXml('<?xml version="1.0" encoding="UTF-8"?><layout></layout>');
         $config = new Config();
 
         foreach ($this->getFiles() as $file) {

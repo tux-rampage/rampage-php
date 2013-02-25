@@ -239,9 +239,9 @@ class SimpleXmlElement extends \SimpleXMLElement
      * @param string $type
      * @return mixed
      */
-    public function toValue($type = null)
+    public function toValue($type = null, $valueAttribute = null)
     {
-        $value = (string)$this;
+        $value = ($valueAttribute)? $this[$valueAttribute] : (string)$this;
         $type = ($type)? (string)$this['type'] : $type;
 
         switch ($type) {

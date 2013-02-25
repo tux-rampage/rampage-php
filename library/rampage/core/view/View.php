@@ -32,7 +32,7 @@ use Zend\View\Renderer\RendererInterface;
 /**
  * Default view implementation
  */
-class View extends Object implements LayoutViewInterface, TemplateInterface
+class View extends Object implements LayoutViewInterface
 {
     /**
      * Child elements
@@ -47,13 +47,6 @@ class View extends Object implements LayoutViewInterface, TemplateInterface
      * @var array
      */
     private $_serializedChildren = array();
-
-    /**
-     * Template
-     *
-     * @var string
-     */
-    private $template = null;
 
     /**
      * Name in layout
@@ -75,25 +68,6 @@ class View extends Object implements LayoutViewInterface, TemplateInterface
      * @var \Zend\View\Renderer\RendererInterface
      */
     private $renderer = null;
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\core\view\TemplateInterface::getTemplate()
-     */
-    public function getTemplate()
-    {
-        return $this->template;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\core\view\TemplateInterface::setTemplate()
-     */
-    public function setTemplate($template)
-    {
-        $this->template = ($template === null)?: (string)$template;
-        return $this;
-    }
 
     /**
      * (non-PHPdoc)

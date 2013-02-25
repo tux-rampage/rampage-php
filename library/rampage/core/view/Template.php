@@ -23,30 +23,36 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core;
-
-use rampage\core\modules\AggregatedXmlConfig;
+namespace rampage\core\view;
 
 /**
- * Application config
+ * Simple template view
  */
-class Config extends AggregatedXmlConfig
+class Template extends View implements TemplateInterface
 {
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
+    /**
+     * Template
+     *
+     * @var string
      */
-    protected function getGlobalFilename()
+    private $template = null;
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\view\TemplateInterface::getTemplate()
+     */
+    public function getTemplate()
     {
-        return 'application.xml';
+        return $this->template;
     }
 
-	/**
+    /**
      * (non-PHPdoc)
-     * @see \rampage\core\modules\AggregatedXmlConfig::getModuleFilename()
+     * @see \rampage\core\view\TemplateInterface::setTemplate()
      */
-    protected function getModuleFilename()
+    public function setTemplate($template)
     {
-        return 'etc/config.xml';
+        $this->template = ($template === null)?: (string)$template;
+        return $this;
     }
 }

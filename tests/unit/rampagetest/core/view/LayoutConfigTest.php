@@ -93,9 +93,11 @@ class LayoutConfigTest extends AbstractTestCase
     {
         $file = $this->getResourcePath($file);
         $instance = $this->instance(array(new \SplFileInfo($file), 'value', 'atleastonce', array('layout', 'test::layout.xml', null, true)));
+        $expected = file_get_contents($file);
+        $expected = preg_replace('~\?>\s*<layout[^>]+>~sm', '?><layout>', $expected);
 
         $instance->addFile('test::layout.xml');
-        $this->assertXmlStringEqualsXmlFile($file, $instance->getXml()->asXML());
+        $this->assertXmlStringEqualsXmlString($expected, $instance->getXml()->asXML());
     }
 
     /**

@@ -132,4 +132,25 @@ class PhtmlTemplate extends Object
 
         return $helper;
     }
+
+    /**
+     * Render a child view
+     *
+     * @param string $name The name of the child element to render
+     * @return mixed
+     */
+    public function renderChild($name)
+    {
+        return $this->getView()->renderChild($name);
+    }
+
+    /**
+     * Render all child elements
+     *
+     * @return string
+     */
+    public function renderChildren()
+    {
+        return $this->getView()->renderChildren();
+    }
 }
