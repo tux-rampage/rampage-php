@@ -1,0 +1,8 @@
+
+syntax: regexp
+^\.settings$
+syntax: regexp
+^.(project|buildpath)$
+
+syntax: regexp
+^library/rampage/di\.compiled\.php$
