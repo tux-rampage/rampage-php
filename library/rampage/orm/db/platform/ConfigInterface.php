@@ -49,7 +49,7 @@ interface ConfigInterface
     /**
      * Returns the hydrator class
      */
-    public function getHydratorClass();
+    public function getHydratorClass($entity);
 
     /**
      * Returns the fieldmap for the given entity

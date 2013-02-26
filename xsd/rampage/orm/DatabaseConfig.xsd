@@ -5,30 +5,58 @@
     <import schemaLocation="../core/PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
     <element name="config">
         <complexType>
-            <sequence>
-                <element name="adapter" type="dbconfig:AdapterConfig"></element>
-            </sequence>
+            <all>
+                <element name="platforms">
+                    <complexType>
+                        <all>
+                            <element name="platform" type="dbconfig:PlatformConfigType">
+                            </element>
+                        </all>
+                    </complexType>
+                </element>
+                <element name="adapters">
+                    <complexType>
+                        <all>
+                            <element name="adapter" type="dbconfig:AdapterConfig"></element>
+                        </all>
+                    </complexType>
+                </element>
+            </all>
         </complexType>
     </element>
 
     <complexType name="AdapterConfig">
         <all>
-            <element name="hostname" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="username" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="password" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="database" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="port" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="charset" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="platform" maxOccurs="1" minOccurs="0">
-                <complexType>
-                    <all>
-                        <element name="options" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
-                        <element name="map" type="dbconfig:PlatformMapType"></element>
-                    </all>
-                    <attribute name="name" type="string" use="required"></attribute>
-                </complexType>
+            <element name="hostname" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="username" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="password" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="database" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="port" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="charset" type="string" maxOccurs="1"
+                minOccurs="0">
             </element>
 
+            <element name="platform" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="options"
+                            type="phptypes:ArrayType" maxOccurs="1"
+                            minOccurs="0">
+                        </element>
+                    </sequence>
+                    <attribute name="name" type="string"></attribute>
+                </complexType>
+            </element>
         </all>
 
         <attribute name="name" type="string" use="required"></attribute>
@@ -39,14 +67,27 @@
 
     <complexType name="PlatformMapType">
         <all>
-            <element name="attribute" maxOccurs="unbounded" minOccurs="0">
+            <element name="attribute" maxOccurs="unbounded"
+                minOccurs="0">
                 <complexType>
-                    <attribute name="name" type="string" use="required"></attribute>
-                    <attribute name="field" type="string" use="required"></attribute>
+                    <attribute name="name" type="string"
+                        use="required">
+                    </attribute>
+                    <attribute name="field" type="string"
+                        use="required">
+                    </attribute>
                 </complexType>
             </element>
         </all>
-        <attribute name="entity" type="string" use="required"></attribute>
+        <attribute name="name" type="string" use="required"></attribute>
         <attribute name="table" type="string" use="required"></attribute>
+        <attribute name="hydrator" type="string" use="optional"></attribute>
+    </complexType>
+    <complexType name="PlatformConfigType">
+        <all>
+            <element name="entity" type="dbconfig:PlatformMapType"></element>
+        </all>
+        <attribute use="required" name="name" type="string"></attribute>
+        <attribute name="class" type="string" use="optional"></attribute>
     </complexType>
 </schema>

@@ -249,6 +249,10 @@ class DefaultPlatform
 
         $instance = $this->getObjectManager()->get($class);
 
+        if (is_callable(array($instance, 'setFieldMapper'))) {
+            $instance->setFieldMapper($this->getFieldMapper($entity));
+        }
+
         $this->getConfig()->configureHydrator($instance, $entity);
         $this->setHydrator($entity, $instance);
 
