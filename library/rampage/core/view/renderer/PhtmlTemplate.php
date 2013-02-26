@@ -113,10 +113,33 @@ class PhtmlTemplate extends Object
 
     /**
      * (non-PHPdoc)
+     * @see \rampage\core\data\Object::get()
+     */
+    public function get($key, $default)
+    {
+        return parent::get($key, $default);
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\data\Object::has()
+     */
+    public function has($field)
+    {
+        return parent::has($field);
+    }
+
+	/**
+     * (non-PHPdoc)
      * @see \rampage\core\data\Object::__call()
      */
     public function __call($method, $args)
     {
+        $viewDelegate = array($this->getView(), $method);
+        if (is_callable($viewDelegate)) {
+            return call_user_func_array($viewDelegate, $args);
+        }
+
         if (in_array(substr($method, 0, 3), array('get', 'set', 'has')) || (substr($method, 0, 5) == 'unset')) {
             return parent::__call($method, $args);
         }

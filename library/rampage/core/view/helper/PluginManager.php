@@ -47,7 +47,12 @@ class PluginManager extends HelperPluginManager
      */
     public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $configuration = null)
     {
-        $this->invokableClasses['resourceurl'] = 'rampage.core.view.helper.ResourceUrlHelper';
+        $this->invokableClasses = array_merge($this->invokableClasses, array(
+            'resourceurl' => 'rampage.core.view.helper.ResourceUrl',
+            'url' => 'rampage.core.view.helper.Url'
+        ));
+
+        $this->objectManager = $objectManager;
         parent::__construct($configuration);
     }
 

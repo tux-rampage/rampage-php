@@ -109,33 +109,57 @@ class SimpleXmlElement extends \SimpleXMLElement
     {
         $literals = array();
         $offset = 0;
-        $bsPlaceholder = '$$' . uniqid('bs') . '$$';
-
-        // Find a unique placeholder for bakslashes
-        while (strpos($xpath, $bsPlaceholder) !== false) {
-            $bsPlaceholder = '$$' . uniqid('bs') . '$$';
-        }
+        $keywords = array(
+            'and' => '$$_AND_$$',
+            'or' => '$$_OR_$$'
+        );
 
         // identified escaped backslashes
-        $modified = strtr($xpath, '\\\\', $bsPlaceholder);
-
-        // Extract literals
-        $modified = preg_replace_callback('~\'.*?(?<!\\\\)\'~is', function($m) use (&$literals, &$offset) {
+        $extractor = function($m) use (&$literals, &$offset) {
             $placeholder = '$$_' . $offset . '_$$';
             $literals[$placeholder] = $m[0];
             $offset++;
 
             return $placeholder;
-        }, $modified);
+        };
 
-        // Now find all names and replace them
-        $modified = preg_replace('~(?<!@|:)\b[a-z][a-z0-9_-]*\b(?!:|\s*\()~', $ns . ':$0', $modified);
+        // Extract literals
+        $modified = preg_replace_callback('~(\'|").*?\1~is', $extractor, $xpath);
+        $modified = strtr($modified, $keywords);
 
-        // re-insert literals and escaped backslashes
+        // Now find all unqualified names and prefix them with the namespace
+        $modified = preg_replace('~(?<!@|:)\b[a-z][a-z0-9_-]*\b(?!:|\s*\()~i', $ns . ':$0', $modified);
+
+        // re-insert keywords and literals
+        $modified = strtr($modified, array_flip($keywords));
         $modified = strtr($modified, $literals);
-        $modified = strtr($modified, $bsPlaceholder, '\\');
 
         return $modified;
+    }
+
+    /**
+     * Quote the given value for an xpath expression
+     *
+     * This will also automatically enclose the string
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function quoteXpathValue($string)
+    {
+        if (strpos($string, "'") === false) {
+            return "'$string'";
+        }
+
+        if (strpos($string, '"') === false) {
+            return '"' . $string . '"';
+        }
+
+        // String contains ' and " -> need to use concat ...
+        $parts = explode("'", $string);
+        $quoted = implode('\', "\'", \'', $parts);
+
+        return "concat('$quoted')";
     }
 
     /**
@@ -147,7 +171,8 @@ class SimpleXmlElement extends \SimpleXMLElement
     {
         try {
             if (!$skipNsSanitizing) {
-                // XPath has some trouble when xmlns is set
+                // XPath has some trouble with unqualified node names when
+                // default xmlns is set.
                 // try to find out if namespaces should be registered and
                 // if the xpath must be sanitized (i.E. default xmlns)
                 foreach ($this->getNamespaces() as $prefix => $ns) {

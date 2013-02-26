@@ -133,7 +133,7 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
      * (non-PHPdoc)
      * @see \Zend\ServiceManager\ServiceLocatorInterface::has()
      */
-    public function has($name, array $options = array())
+    public function has($name)
     {
         $cName = $this->canonicalizeName($name);
         $available = isset($this->invokables[$cName]);

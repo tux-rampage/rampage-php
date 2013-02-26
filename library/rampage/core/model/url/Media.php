@@ -23,55 +23,33 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\core\model\url;
 
-use rampage\core\view\Template;
-use rampage\core\resource\FileLocatorInterface;
+use rampage\core\model\Url;
 
 /**
- * Html header view
+ * Media URL model
  */
-class Head extends Template
+class Media extends Url
 {
-    /**
-     * Javascript
-     *
-     * @var array
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\core\model\Url::getType()
      */
-    protected $js;
-
-    /**
-     * Css
-     *
-     * @var array
-     */
-    protected $css;
-
-    /**
-     * Add a javascript
-     *
-     * @param string $file
-     */
-    public function addJs($file)
+    public function getType()
     {
-        $this->js[$file] = $file;
+        return 'media';
     }
 
     /**
-     * Add a css file
-     *
-     * @param string $file
+     * (non-PHPdoc)
+     * @see \rampage\core\model\Url::getDefaultBaseUrl()
      */
-    public function addCss($file)
+    protected function getDefaultBaseUrl()
     {
-        $this->css[$file] = $file;
-    }
+        $baseUrl = rtrim(parent::getDefaultBaseUrl(), '/');
+        $baseUrl .= '/media';
 
-    /**
-     *
-     */
-    public function getJsHtml()
-    {
-
+        return $baseUrl;
     }
 }

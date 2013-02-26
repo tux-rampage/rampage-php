@@ -25,17 +25,20 @@
 
 namespace rampage\orm\db;
 
-use rampage\core\PathManager;
+// XML dependencies
 use rampage\core\xml\Config as XmlConfig;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\xml\mergerule\UniqueAttributeRule;
 use rampage\core\xml\mergerule\AllowSiblingsRule;
+
+use rampage\core\PathManager;
 use rampage\orm\exception\RuntimeException;
+use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
 
 /**
  * Adapter config implemetnation
  */
-class AdapterConfig extends XmlConfig implements AdapterConfigInterface
+class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platform\ConfigInterface
 {
     /**
      * Adapter option mapping
@@ -43,15 +46,12 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface
      * @var array
      */
     protected $optionMap = array(
-        'driver' => 'string',
         'hostname' => 'string',
         'port' => 'int',
         'username' => 'string',
         'password' => 'string',
         'database' => 'string',
         'charset' => 'string',
-        'platform' => 'string',
-        'platform_options' => 'array'
     );
 
     /**
@@ -110,14 +110,33 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface
         return parent::_init();
     }
 
-	/**
+    /**
+     * Extracts platform specific options from the given node
+     *
+     * @param SimpleXmlElement $node
+     * @return array|null
+     */
+    protected function getPlatformOptions(SimpleXmlElement $node)
+    {
+        $platform = $this->xpathQuote((string)$node['platform']);
+        $options = null;
+
+        $optionNode = $node->xpath("./platform[@name = $platform]/options")->current();
+        if ($optionNode instanceof SimpleXmlElement) {
+            $options = $optionNode->toPhpValue('array');
+        }
+
+        return $options;
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\db\AdapterConfigInterface::getAdapterOptions()
      */
     public function getAdapterOptions($name)
     {
         $name = $this->xpathQuote($name);
-        $node = $this->getNode("adapter[@name='$name']");
+        $node = $this->getNode("./adapter[@name='$name']");
         $options = array(
             'driver' => 'Pdo_Mysql',
             'hostname' => 'localhost'
@@ -127,12 +146,25 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface
             return $options;
         }
 
+        if (isset($node['driver'])) {
+            $options['driver'] = (string)$node['driver'];
+        }
+
         foreach ($this->optionMap as $option => $type) {
             if (!isset($node->$option)) {
                 continue;
             }
 
             $options[$option] = $node->{$option}->toPhpValue($type);
+        }
+
+        if (isset($node['platform'])) {
+            $options['platform'] = (string)$node['platform'];
+            $platformOptions = $this->getPlatformOptions($node);
+
+            if ($platformOptions) {
+                $options['platform_options'];
+            }
         }
 
         return $options;
@@ -216,4 +248,18 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface
         $this->aliases[$requested] = $name;
         return $name;
     }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\ConfigInterface::configurePlatformServiceLocator()
+     */
+    public function configurePlatformServiceLocator(PlatformServiceLocator $locator)
+    {
+        foreach ($this->getXml()->xpath('./platform[@name != "" and @class != ""]') as $node) {
+            $locator->setServiceClass((string)$node['name'], (string)$node['class']);
+        }
+
+        return $this;
+    }
+
 }

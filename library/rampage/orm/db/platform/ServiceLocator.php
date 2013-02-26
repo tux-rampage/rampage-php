@@ -17,61 +17,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\orm\db\platform;
 
-use rampage\core\view\Template;
-use rampage\core\resource\FileLocatorInterface;
+use rampage\core\service\AbstractObjectLocator;
 
 /**
- * Html header view
+ * Service locator for DB Platform instances
  */
-class Head extends Template
+class ServiceLocator extends AbstractObjectLocator
 {
     /**
-     * Javascript
+     * Only allow defined invokables
      *
-     * @var array
+     * @var bool
      */
-    protected $js;
+    protected $strict = true;
 
     /**
-     * Css
+     * Service locator
      *
-     * @var array
+     * @param string $config
      */
-    protected $css;
-
-    /**
-     * Add a javascript
-     *
-     * @param string $file
-     */
-    public function addJs($file)
+    public function __construct(ConfigInterface $config)
     {
-        $this->js[$file] = $file;
+        $this->setServiceClass('default', 'rampage.orm.db.platform.DefaultPlatform');
+        $config->configurePlatformServiceLocator($this);
     }
 
     /**
-     * Add a css file
+     * Returns the db platform
      *
-     * @param string $file
+     * @return object
      */
-    public function addCss($file)
+    public function get($name, array $options = array())
     {
-        $this->css[$file] = $file;
-    }
+        if (!$this->has($name)) {
+            $name = 'default';
+        }
 
-    /**
-     *
-     */
-    public function getJsHtml()
-    {
-
+        return parent::get($name, $options);
     }
 }

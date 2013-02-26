@@ -24,6 +24,7 @@
  */
 
 namespace rampage\orm;
+
 use rampage\core\xml\Config as XmlConfig;
 use rampage\core\ObjectManagerInterface;
 

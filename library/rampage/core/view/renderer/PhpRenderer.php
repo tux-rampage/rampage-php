@@ -36,6 +36,8 @@ use Zend\View\Renderer\RendererInterface;
 use Zend\View\Resolver\ResolverInterface;
 use Zend\View\HelperPluginManager;
 use rampage\core\view\RenderableInterface;
+use rampage\core\view\helper\PluginManager;
+use rampage\core\xml\exception\DependencyException;
 
 /**
  * PHP File render strategy
@@ -87,8 +89,9 @@ class PhpRenderer implements RendererInterface
     /**
      * Constructor
      */
-    public function __construct()
+    public function __construct(PluginManager $pluginManager)
     {
+        $this->setPluginManager($pluginManager);
         $this->data = new ArrayObject();
     }
 
@@ -99,7 +102,7 @@ class PhpRenderer implements RendererInterface
      * @return PhpRenderer
      * @throws Exception\InvalidArgumentException
      */
-    public function setHelperPluginManager($helpers)
+    public function setPluginManager($helpers)
     {
         if (is_string($helpers)) {
             if (!class_exists($helpers)) {
@@ -114,7 +117,7 @@ class PhpRenderer implements RendererInterface
 
         if (!$helpers instanceof HelperPluginManager) {
             throw new InvalidArgumentException(sprintf(
-                'Helper helpers must extend Zend\View\HelperPluginManager; got type "%s" instead',
+                'Helper plugin manager must extend Zend\View\HelperPluginManager; got type "%s" instead',
                 (is_object($helpers) ? get_class($helpers) : gettype($helpers))
             ));
         }
@@ -130,11 +133,12 @@ class PhpRenderer implements RendererInterface
      *
      * @return HelperPluginManager
      */
-    public function getHelperPluginManager()
+    public function getPluginManager()
     {
         if (null === $this->helpers) {
-            $this->setHelperPluginManager(new HelperPluginManager());
+            throw new DependencyException('Missing plugin manager instance for php renderer');
         }
+
         return $this->helpers;
     }
 
@@ -147,7 +151,7 @@ class PhpRenderer implements RendererInterface
      */
     public function plugin($name, array $options = null)
     {
-        return $this->getHelperPluginManager()->get($name, $options);
+        return $this->getPluginManager()->get($name, $options);
     }
 
     /**
@@ -218,6 +222,18 @@ class PhpRenderer implements RendererInterface
             $this->data = $values;
         }
 
+        return $this;
+    }
+
+    /**
+     * Set HTML cache
+     *
+     * @param HtmlCache $cache
+     * @return \rampage\core\view\renderer\PhpRenderer
+     */
+    public function setCache(HtmlCache $cache)
+    {
+        $this->cache = $cache;
         return $this;
     }
 

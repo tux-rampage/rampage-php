@@ -27,7 +27,8 @@ namespace rampage\core\resource;
 
 use SplFileInfo;
 use rampage\core\PathManager;
-use rampage\core\model\Url as UrlModel;
+use rampage\core\model\url\Media as MediaUrl;
+use rampage\core\exception\RuntimeException;
 
 /**
  * Theme auto publishing
@@ -56,12 +57,19 @@ class UrlLocator implements UrlLocatorInterface
     private $urlModel = null;
 
     /**
+     * Cached url locations
+     *
+     * @var string
+     */
+    protected $locations = null;
+
+    /**
      * Construct
      *
      * @param FileLocatorInterface $fileLocator
      * @param PathManager $pathmanager
      */
-    public function __construct(FileLocatorInterface $fileLocator, PathManager $pathManager, UrlModel $model)
+    public function __construct(FileLocatorInterface $fileLocator, PathManager $pathManager, MediaUrl $model)
     {
         $this->fileLocator = $fileLocator;
         $this->pathManager = $pathManager;
@@ -108,7 +116,7 @@ class UrlLocator implements UrlLocatorInterface
             return $this->getFileLocator()->getCurrentTheme();
         }
 
-        return null;
+        return '__default__';
     }
 
     /**
@@ -121,7 +129,12 @@ class UrlLocator implements UrlLocatorInterface
      */
     protected function publish($file, $scope, SplFileInfo $target)
     {
-        $source = $this->getFileLocator()->resolve('public', $file, $scope, true);
+        if ($file instanceof SplFileInfo) {
+            $source = $file;
+        } else {
+            $source = $this->getFileLocator()->resolve('public', $file, $scope, true);
+        }
+
         if (!$source || !$source->isReadable() || !$source->isFile()) {
             return false;
         }
@@ -140,25 +153,33 @@ class UrlLocator implements UrlLocatorInterface
      * @param string $file
      * @param string $scope
      */
-    protected function resolve($file, $scope)
+    protected function resolve($filename, $scope, $theme)
     {
-        $segments = array('theme', $this->getCurrentTheme(), $scope, $file);
+        if (isset($this->locations[$theme][$scope][$file])) {
+            return $this->locations[$theme][$scope][$file];
+        }
+
+        $segments = array('theme', $theme, $scope, $filename);
         $relative = implode('/', array_filter($segments));
         $file = new SplFileInfo($this->getPathManager()->get('public', $relative));
 
         if ($file->isFile() && $file->isReadable()) {
+            $this->locations[$theme][$scope][$file] = $relative;
             return $relative;
         }
 
         $file = new SplFileInfo($this->getPathManager()->get('media', $relative));
         $relative = 'media/' . $relative;
+        $source = $this->getFileLocator()->resolve('public', $filename, $scope, true);
+        $this->locations[$theme][$scope][$file] = $relative;
 
-        if ($file->isReadable() && $file->isFile()) {
+        if ($file->isReadable() && $file->isFile()
+          && (!$source || ($source->getMTime() <= $file->getMTime()))) {
             return $relative;
         }
 
-        if (!$this->publish($file, $scope, $file)) {
-            return 'not-found';
+        if (!$this->publish(($source)?: $file, $scope, $file)) {
+            throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $file, $theme));
         }
 
         return $relative;
@@ -170,10 +191,11 @@ class UrlLocator implements UrlLocatorInterface
      */
     public function getUrl($file, $scope = null)
     {
+        $theme = $this->getCurrentTheme();
         if (!$scope && (strpos($file, '::') !== false)) {
             @list($scope, $file) = explode('::', $file, 2);
         }
 
-        return $this->getUrlModel()->getUrl($this->resolve($file, $scope));
+        return $this->getUrlModel()->getUrl($this->resolve($file, $scope, $theme));
     }
 }

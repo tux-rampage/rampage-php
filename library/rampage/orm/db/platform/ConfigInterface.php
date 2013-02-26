@@ -17,57 +17,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\view\helper;
+namespace rampage\orm\db\platform;
 
-use Zend\View\Helper\AbstractHelper;
-use rampage\core\resource\UrlLocatorInterface;
+use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
- * Resource URL locator helper
+ * Platform config interface
  */
-class ResourceUrlHelper extends AbstractHelper
+interface ConfigInterface
 {
     /**
-     * URL locator
+     * Configure the platform service locator
      *
-     * @var \rampage\core\resource\UrlLocatorInterface
+     * @param ServiceLocator $locator
      */
-    private $locator = null;
+    public function configurePlatformServiceLocator(ServiceLocator $locator);
 
     /**
-     * Construct
+     * Returns the db table for the given entity
      *
-     * @param UrlLocatorInterface $urlLocator
+     * @param string $entity
      */
-    public function __construct(UrlLocatorInterface $urlLocator)
-    {
-        $this->locator = $urlLocator;
-    }
+    public function getTable($entity);
 
     /**
-     * URL locator
-     *
-     * @return \rampage\core\resource\UrlLocatorInterface
+     * Returns the hydrator class
      */
-    protected function getUrlLocator()
-    {
-        return $this->locator;
-    }
+    public function getHydratorClass();
 
     /**
-     * Invoke helper
+     * Returns the fieldmap for the given entity
      *
-     * @param string $file
-     * @param string $scope
+     * @param string $entity
      */
-    public function __invoke($file, $scope = null)
-    {
-        return $this->getUrlLocator()->getUrl($file, $scope);
-    }
+    public function configureFieldMapper(FieldMapper $mapper, $entity);
+
+    /**
+     * Configure hydrator
+     *
+     * @param Hydrator $entity
+     */
+    public function configureHydrator(HydratorInterface $hydrator, $entity);
 }

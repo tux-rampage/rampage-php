@@ -117,7 +117,7 @@ class Di extends DependencyInjector
         return parent::get($name, $params);
     }
 
-	/**
+    /**
      * Resolve parameters referencing other services
      *
      * @param  string                                $class

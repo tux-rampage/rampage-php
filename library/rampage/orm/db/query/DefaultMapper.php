@@ -23,54 +23,26 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\orm\db\query;
 
-use rampage\core\view\Template;
-use rampage\core\resource\FileLocatorInterface;
+use rampage\orm\query\Query;
+use Zend\Db\Sql\Select;
 
 /**
- * Html header view
+ * Default query mapper
  */
-class Head extends Template
+class DefaultMapper implements MapperInterface
 {
-    /**
-     * Javascript
-     *
-     * @var array
-     */
-    protected $js;
-
-    /**
-     * Css
-     *
-     * @var array
-     */
-    protected $css;
-
-    /**
-     * Add a javascript
-     *
-     * @param string $file
-     */
-    public function addJs($file)
+    public function setPlatform()
     {
-        $this->js[$file] = $file;
+
     }
 
     /**
-     * Add a css file
-     *
-     * @param string $file
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\query\MapperInterface::mapToSelect()
      */
-    public function addCss($file)
-    {
-        $this->css[$file] = $file;
-    }
-
-    /**
-     *
-     */
-    public function getJsHtml()
+    public function mapToSelect(Query $query, Select $select)
     {
 
     }

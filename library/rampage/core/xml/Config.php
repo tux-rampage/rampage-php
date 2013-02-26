@@ -108,8 +108,7 @@ class Config implements EventManagerAwareInterface
      */
     protected function xpathQuote($string)
     {
-        $string = "'" . addslashes($string) . "'";
-        return $string;
+        return SimpleXmlElement::quoteXpathValue($string);
     }
 
     /**

@@ -26,7 +26,9 @@
 namespace rampage\core\model;
 
 use rampage\core\modules\AggregatedXmlConfig;
-use rampage\core\xml\mergerule\UniqueAttributeRule;
+use rampage\core\exception\InvalidArgumentException;
+use rampage\core\xml\SimpleXmlElement;
+use rampage\core\model\config\PropertyMergeRule;
 
 /**
  * Application config
@@ -41,12 +43,26 @@ class Config extends AggregatedXmlConfig
     protected $values = array();
 
     /**
+     * Requested but undefined config values cache
+     *
+     * @var array
+     */
+    protected $undefined = array();
+
+    /**
+     * Current domain for retrieving the config values
+     *
+     * @var string
+     */
+    private $domain = null;
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\xml\Config::initMergeRules()
      */
     protected function initMergeRules()
     {
-        $this->getMergeRules()->add(new UniqueAttributeRule('~/property$~', 'name'));
+        $this->getMergeRules()->add(new PropertyMergeRule('~/property$~'));
         return $this;
     }
 
@@ -69,22 +85,81 @@ class Config extends AggregatedXmlConfig
     }
 
     /**
+     * Domain to use for retrieving config
+     *
+     * @param string $domain
+     */
+    public function setDomain($domain)
+    {
+        $this->domain = $domain;
+        return $this;
+    }
+
+    /**
+     * Current domain for retrieving values
+     *
+     * @return string
+     */
+    protected function getDomain()
+    {
+        if ($this->domain !== null) {
+            return $this->domain;
+        }
+
+        if (PHP_SAPI == 'cli') {
+            $this->domain = '__CLI__';
+            return $this->domain;
+        }
+
+        $this->domain = isset($_SERVER['SERVER_NAME'])? $_SERVER['SERVER_NAME'] : 'default';
+        return $this->domain;
+    }
+
+    /**
      * Get a property name
      *
      * @param string $name
      * @return mixed
      */
-    public function getConfigValue($name, $default = null)
+    public function getConfigValue($name, $default = null, $domain = null)
     {
-        if (array_key_exists($name, $this->values)) {
-            return $this->values[$name];
+        if ($domain === null) {
+            $domain = $this->getDomain();
+        } else if ($domain === false) {
+            $domain = '__default__';
         }
 
-        $node = $this->getNode("./property[@name = $name]");
-        if (!$node) {
+        $domain = strtolower($domain);
+
+        if (isset($this->values[$domain]) && array_key_exists($name, $this->values[$domain])) {
+            return $this->values[$domain][$name];
+        }
+
+        // already tried to fetch this property without success
+        if (isset($this->undefined[$domain][$name])) {
             return $default;
         }
 
+        // Find the matching node
+        $xpathName = $this->xpathQuote($name);
+        if ($domain == '__default__') {
+            $node = $this->getNode("./property[@name = $xpathName and not(@domain)]");
+        } else {
+            $xpathDomain = $this->xpathQuote($this->getDomain());
+            $node = $this->getNode("./property[@name = $xpathName and @domain = $xpathDomain]");
+
+            if (!$node instanceof SimpleXmlElement) {
+                $node = $this->getNode("./property[@name = $xpathName and not(@domain)]");
+            }
+        }
+
+        // node was not found?
+        if (!$node instanceof SimpleXmlElement) {
+            $this->undefined[$domain][$name] = true;
+            return $default;
+        }
+
+        // extract the node value by type
         $type = (string)$node['type'];
         switch ($type) {
             case 'array':
@@ -97,7 +172,32 @@ class Config extends AggregatedXmlConfig
                 break;
         }
 
-        $this->values[$name] = $value;
+        $this->values[$domain][$name] = $value;
+        return $value;
+    }
+
+    /**
+     * Replace placeholders with config values
+     *
+     * @param string $value
+     * @param string $prefix
+     */
+    protected function processConfigVariables($value, $prefix = null)
+    {
+        if ($prefix && !preg_match('~^[a-z0-9._-]*$~i', $prefix)) {
+            throw new InvalidArgumentException('Invalid config var prefix: ' . $prefix);
+        }
+
+        if ($prefix) {
+            // dots should be literal in regex
+            $prefix = strtr($prefix, '.', '\\.');
+        }
+
+        $config = $this;
+        $value = preg_replace_callback("~{{({$prefix}[a-z0-9._-]+)}}~i", function($match) use ($config) {
+            return (string)$config->getConfigValue($match[1], '');
+        }, $value);
+
         return $value;
     }
 
@@ -108,11 +208,15 @@ class Config extends AggregatedXmlConfig
      */
     public function configureUrlModel(Url $url)
     {
-        if ($unsecure = $this->getConfigValue('web.baseurl')) {
+        $property = ($url->getType()?: 'baseurl');
+
+        if ($unsecure = $this->getConfigValue('web.url.unsecure.' . $property)) {
+            $unsecure = $this->processConfigVariables($unsecure, 'web.url.');
             $url->setBaseUrl($unsecure, false);
         }
 
-        if ($secure = $this->getConfigValue('web.baseurl.secure')) {
+        if ($secure = $this->getConfigValue('web.url.secure.' . $property)) {
+            $secure = $this->processConfigVariables($secure, 'web.url.');
             $url->setBaseUrl($secure, true);
         } else if ($unsecure) {
             $url->setBaseUrl($unsecure, true);

@@ -23,55 +23,51 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\core\view\helper;
 
-use rampage\core\view\Template;
-use rampage\core\resource\FileLocatorInterface;
+use Zend\View\Helper\AbstractHelper;
+use rampage\core\resource\UrlLocatorInterface;
 
 /**
- * Html header view
+ * Resource URL locator helper
  */
-class Head extends Template
+class ResourceUrl extends AbstractHelper
 {
     /**
-     * Javascript
+     * URL locator
      *
-     * @var array
+     * @var \rampage\core\resource\UrlLocatorInterface
      */
-    protected $js;
+    private $locator = null;
 
     /**
-     * Css
+     * Construct
      *
-     * @var array
+     * @param UrlLocatorInterface $urlLocator
      */
-    protected $css;
-
-    /**
-     * Add a javascript
-     *
-     * @param string $file
-     */
-    public function addJs($file)
+    public function __construct(UrlLocatorInterface $urlLocator)
     {
-        $this->js[$file] = $file;
+        $this->locator = $urlLocator;
     }
 
     /**
-     * Add a css file
+     * URL locator
      *
-     * @param string $file
+     * @return \rampage\core\resource\UrlLocatorInterface
      */
-    public function addCss($file)
+    protected function getUrlLocator()
     {
-        $this->css[$file] = $file;
+        return $this->locator;
     }
 
     /**
+     * Invoke helper
      *
+     * @param string $file
+     * @param string $scope
      */
-    public function getJsHtml()
+    public function __invoke($file, $scope = null)
     {
-
+        return $this->getUrlLocator()->getUrl($file, $scope);
     }
 }

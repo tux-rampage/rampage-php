@@ -45,7 +45,7 @@ class Url
      *
      * @var array[\Zend\Http\Uri]
      */
-    protected $baseUrl = array();
+    private $baseUrl = array();
 
     /**
      * Http request
@@ -61,7 +61,19 @@ class Url
         }
 
         $this->request = $request;
+        $this->setConfig($config);
+
         return $this;
+    }
+
+    /**
+     * Returns the base url type
+     *
+     * @return string|null
+     */
+    public function getType()
+    {
+        return null;
     }
 
     /**
@@ -92,7 +104,7 @@ class Url
         }
 
         $uri = new HttpUri();
-        $requestUri = $this->request->getUri();
+        $requestUri = $this->getRequest()->getUri();
         $scheme = ($secure)? 'https' : 'http';
         $defaultPort = ($secure)? 443 : 80;
 
@@ -107,6 +119,26 @@ class Url
         $this->baseUrl[$type] = $uri;
 
         return $this;
+    }
+
+    /**
+     * HTTP request
+     *
+     * @return \Zend\Http\PhpEnvironment\Request
+     */
+    protected function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
+     * Default base url
+     *
+     * @return string
+     */
+    protected function getDefaultBaseUrl()
+    {
+        return $this->getRequest()->getBaseUrl();
     }
 
     /**
@@ -125,7 +157,7 @@ class Url
         if ($secure && isset($this->baseUrl['unsecure'])) {
             $default = clone $this->baseUrl['unsecure'];
         } else {
-            $default = $this->request->getBaseUrl();
+            $default = $this->getDefaultBaseUrl();
         }
 
         $this->setBaseUrl($default, $secure);
@@ -137,14 +169,20 @@ class Url
      *
      * @return string
      */
-    public function getUrl($path, $params = null)
+    public function getUrl($path = null, $params = null)
     {
-        $uri = clone $this->getBaseUrl();
+        $secure = (isset($params['secure']))? (bool)$params['secure'] : ($this->getRequest()->getUri()->getScheme() == 'https');
+        $uri = clone $this->getBaseUrl($secure);
+
+        if ($path === null) {
+            return $uri;
+        }
+
         $base = $uri->getPath();
         $url = $base . '/' . ltrim($path);
 
         $uri->setPath($url);
-        if (isset($params) && $params[''])
+        if (isset($params['secure']) && $params['secure'])
 
         return $uri;
     }

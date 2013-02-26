@@ -27,7 +27,6 @@ namespace rampage\orm\db;
 
 use rampage\core\service\AbstractObjectLocator;
 use rampage\core\ObjectManagerInterface;
-use Zend\Db\Adapter\Adapter;
 use Zend\Db\Adapter\AdapterInterface;
 
 /**
@@ -86,7 +85,7 @@ class AdapterManager extends AbstractObjectLocator
     /**
      * (non-PHPdoc)
      * @see \rampage\core\service\AbstractObjectLocator::get()
-     * @return \Zend\Db\Adapter\Adapter
+     * @return \rampage\orm\db\Adapter
      */
     public function get($name)
     {
@@ -105,7 +104,7 @@ class AdapterManager extends AbstractObjectLocator
             $this->instances[$name] = $instance;
         }
 
-        $this->instances[$cName] = $instance;
+        $this->setAdapter($cName, $instance);
         return $instance;
     }
 

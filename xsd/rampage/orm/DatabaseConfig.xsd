@@ -13,18 +13,40 @@
 
     <complexType name="AdapterConfig">
         <all>
-            <element name="driver" type="string" maxOccurs="1" minOccurs="1"></element>
             <element name="hostname" type="string" maxOccurs="1" minOccurs="0"></element>
             <element name="username" type="string" maxOccurs="1" minOccurs="0"></element>
             <element name="password" type="string" maxOccurs="1" minOccurs="0"></element>
             <element name="database" type="string" maxOccurs="1" minOccurs="0"></element>
             <element name="port" type="string" maxOccurs="1" minOccurs="0"></element>
             <element name="charset" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="platform" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="platform_options" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+            <element name="platform" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <all>
+                        <element name="options" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+                        <element name="map" type="dbconfig:PlatformMapType"></element>
+                    </all>
+                    <attribute name="name" type="string" use="required"></attribute>
+                </complexType>
+            </element>
+
         </all>
 
         <attribute name="name" type="string" use="required"></attribute>
         <attribute name="use" type="string" use="optional"></attribute>
+        <attribute name="driver" type="string" use="required"></attribute>
+        <attribute name="platform" type="string" use="optional"></attribute>
+    </complexType>
+
+    <complexType name="PlatformMapType">
+        <all>
+            <element name="attribute" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <attribute name="name" type="string" use="required"></attribute>
+                    <attribute name="field" type="string" use="required"></attribute>
+                </complexType>
+            </element>
+        </all>
+        <attribute name="entity" type="string" use="required"></attribute>
+        <attribute name="table" type="string" use="required"></attribute>
     </complexType>
 </schema>
