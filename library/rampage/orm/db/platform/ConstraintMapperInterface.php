@@ -25,42 +25,27 @@
 
 namespace rampage\orm\db\platform;
 
-use rampage\core\service\AbstractObjectLocator;
+use rampage\orm\query\constraint\ConstraintInterface;
+use rampage\orm\db\query\MapperInterface;
+use Zend\Db\Sql\Predicate\Predicate;
 
 /**
- * Service locator for DB Platform instances
+ * Interface for constraint mappers
  */
-class ServiceLocator extends AbstractObjectLocator
+interface ConstraintMapperInterface
 {
     /**
-     * Only allow defined invokables
+     * Set the platform
      *
-     * @var bool
+     * @param PlatformInterface $platform
      */
-    protected $strict = true;
+    public function setPlatform(PlatformInterface $platform);
 
     /**
-     * Service locator
+     * Map the constraint into the sql predicate
      *
-     * @param string $config
+     * @param ConstraintInterface $onstraint
+     * @param Predicate $predicate
      */
-    public function __construct(ConfigInterface $config)
-    {
-        $this->setServiceClass('default', 'rampage.orm.db.platform.Platform');
-        $config->configurePlatformServiceLocator($this);
-    }
-
-    /**
-     * Returns the db platform
-     *
-     * @return object
-     */
-    public function get($name, array $options = array())
-    {
-        if (!$this->has($name)) {
-            $name = 'default';
-        }
-
-        return parent::get($name, $options);
-    }
+    public function map(ConstraintInterface $onstraint, Predicate $predicate, MapperInterface $queryMapper);
 }

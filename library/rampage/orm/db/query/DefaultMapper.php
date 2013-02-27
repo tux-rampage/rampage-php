@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -25,25 +25,9 @@
 
 namespace rampage\orm\db\query;
 
-use rampage\orm\query\Query;
-use Zend\Db\Sql\Select;
-
 /**
  * Default query mapper
  */
-class DefaultMapper implements MapperInterface
+class DefaultMapper extends AbstractMapper
 {
-    public function setPlatform()
-    {
-
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\orm\db\query\MapperInterface::mapToSelect()
-     */
-    public function mapToSelect(Query $query, Select $select)
-    {
-
-    }
 }

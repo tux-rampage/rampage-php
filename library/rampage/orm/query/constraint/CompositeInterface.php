@@ -46,4 +46,11 @@ interface CompositeInterface extends ConstraintInterface, Traversable
      * @return \rampage\orm\query\constraint\CompositeInterface $this
      */
     public function clear();
+
+    /**
+     * Check if constraint composite has items
+     *
+     * @return bool
+     */
+    public function isEmpty();
 }

@@ -23,33 +23,54 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db;
+namespace rampage\orm\db\platform;
 
 /**
- * Adapter configuration
+ * Platform interface
  */
-interface AdapterConfigInterface
+interface PlatformInterface
 {
     /**
-     * Check if adapter config is present
+     * Must return the platform name
      *
-     * @param string $name
-     * @return bool
-     */
-    public function hasAdapterConfig($name);
-
-    /**
-     * Resolve an adapter alias
-     *
-     * @param string $name
      * @return string
      */
-    public function resolveAdapterAlias($name);
+    public function getName();
 
     /**
-     * Returns options for the given adapter
+     * Allow to set the platform name
      *
      * @param string $name
      */
-    public function getAdapterOptions($name);
+    public function setName($name);
+
+    /**
+     * Return the table name for the given entity name
+     *
+     * @param string $entity
+     */
+    public function getTable($entity);
+
+    /**
+     * Get the field mapper for the given entity
+     *
+     * @param string $entity
+     * @return FieldMapper
+     */
+    public function getFieldMapper($entity);
+
+    /**
+     * Fetch the hydrator for the given entity
+     *
+     * @param string $entity
+     */
+    public function getHydrator($entity);
+
+    /**
+     * Returns a platform constraint mapper
+     *
+     * @param string $constraint
+     * @return \rampage\orm\db\platform\ConstraintMapperInterface|null
+     */
+    public function getConstraintMapper($constraint);
 }

@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db;
+namespace rampage\orm\db\adapter;
 
 use rampage\core\service\AbstractObjectLocator;
 use rampage\core\ObjectManagerInterface;
@@ -37,7 +37,7 @@ class AdapterManager extends AbstractObjectLocator
     /**
      * Adapter config
      *
-     * @var \rampage\orm\db\AdapterConfigInterface
+     * @var \rampage\orm\db\adapter\ConfigInterface
      */
     private $config = null;
 
@@ -52,7 +52,7 @@ class AdapterManager extends AbstractObjectLocator
      * (non-PHPdoc)
      * @see \rampage\core\service\AbstractObjectLocator::__construct()
      */
-    public function __construct(ObjectManagerInterface $objectManager, AdapterConfigInterface $config)
+    public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config)
     {
         parent::__construct($objectManager);
         $this->config = $config;
@@ -61,7 +61,7 @@ class AdapterManager extends AbstractObjectLocator
     /**
      * Retruns the adapter configuration
      *
-     * @return \rampage\orm\db\AdapterConfigInterface
+     * @return \rampage\orm\db\adapter\ConfigInterface
      */
     protected function getAdapterConfig()
     {

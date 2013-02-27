@@ -36,11 +36,12 @@ use rampage\orm\exception\RuntimeException;
 use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
 use rampage\orm\db\platform\FieldMapper;
 use Zend\Stdlib\Hydrator\HydratorInterface;
+use rampage\orm\db\platform\PlatformInterface;
 
 /**
- * Adapter config implemetnation
+ * Database config implementation
  */
-class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platform\ConfigInterface
+class Config extends XmlConfig implements adapter\ConfigInterface, platform\ConfigInterface
 {
     /**
      * Adapter option mapping
@@ -268,9 +269,9 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platfor
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::configureFieldMapper()
      */
-    public function configureFieldMapper(FieldMapper $mapper, $platform, $entity)
+    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $entity)
     {
-        $platformName = $this->xpathQuote($platform);
+        $platformName = $this->xpathQuote($platform->getName());
         $entityName = $this->xpathQuote($entity);
         $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
 
@@ -285,18 +286,19 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platfor
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::configureHydrator()
      */
-    public function configureHydrator(HydratorInterface $hydrator, $platform, $entity)
+    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity)
     {
         // TODO: hydrator config
+        return $this;
     }
 
     /**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getHydratorClass()
      */
-    public function getHydratorClass($platform, $entity)
+    public function getHydratorClass(PlatformInterface $platform, $entity)
     {
-        $platformName = $this->xpathQuote($platform);
+        $platformName = $this->xpathQuote($platform->getName());
         $entityName = $this->xpathQuote($entity);
         $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @hydrator != '']");
 
@@ -311,9 +313,9 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platfor
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getTable()
      */
-    public function getTable($platform, $entity)
+    public function getTable(PlatformInterface $platform, $entity)
     {
-        $platformName = $this->xpathQuote($platform);
+        $platformName = $this->xpathQuote($platform->getName());
         $entityName = $this->xpathQuote($entity);
         $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @table != '']");
 
@@ -323,4 +325,22 @@ class AdapterConfig extends XmlConfig implements AdapterConfigInterface, platfor
 
         return (string)$node['table'];
     }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\ConfigInterface::getConstraintMapperClass()
+     */
+    public function getConstraintMapperClass(PlatformInterface $platform)
+    {
+        $name = $platform->getName();
+        $quotedName = $this->xpathQuote($name);
+        $node = $this->getNode("./platforms/platform[@name = $quotedName]/constraint[@mapper != '']");
+
+        if (!$node instanceof SimpleXmlElement) {
+            $node = $this->getNode("./platforms/defaults/constraint[@mapper != '']");
+        }
+    }
+
+
+
 }

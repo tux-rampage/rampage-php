@@ -44,24 +44,31 @@ interface ConfigInterface
      *
      * @param string $entity
      */
-    public function getTable($entity);
+    public function getTable(PlatformInterface $platform, $entity);
 
     /**
      * Returns the hydrator class
      */
-    public function getHydratorClass($entity);
+    public function getHydratorClass(PlatformInterface $platform, $entity);
+
+    /**
+     * Platform interface
+     *
+     * @param PlatformInterface $platform
+     */
+    public function getConstraintMapperClass(PlatformInterface $platform);
 
     /**
      * Returns the fieldmap for the given entity
      *
      * @param string $entity
      */
-    public function configureFieldMapper(FieldMapper $mapper, $entity);
+    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $entity);
 
     /**
      * Configure hydrator
      *
      * @param Hydrator $entity
      */
-    public function configureHydrator(HydratorInterface $hydrator, $entity);
+    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity);
 }

@@ -27,12 +27,32 @@ namespace rampage\orm\db;
 
 use rampage\orm\RepositoryInterface;
 use rampage\orm\repository\PersistenceFeatureInterface;
+use rampage\orm\ConfigInterface;
+use rampage\orm\entity\EntityInterface;
+
+use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
+use rampage\orm\db\platform\PlatformInterface;
+use rampage\orm\db\adapter\AdapterManager;
+
+use SplObjectStorage;
+use Zend\Db\Adapter\Adapter;
+use rampage\orm\query\QueryInterface;
+use rampage\orm\entity\LazyLoadableCollection;
+use rampage\orm\entity\feature\LazyCollectionInterface;
+use rampage\orm\entity\CollectionInterface;
+use rampage\core\ObjectManagerInterface;
+use rampage\orm\entity\QueryableCollectionInterface;
 
 /**
  * Abstract DB repository
  */
 class AbstractRepository implements RepositoryInterface, PersistenceFeatureInterface
 {
+    /**
+     * The query mapper for this repository
+     *
+     * @var string
+     */
     private $queryMapper = null;
 
     /**
@@ -43,11 +63,209 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     private $name = null;
 
     /**
-     * Database adapter
+     * Database adapter name
      *
      * @var string
      */
-    private $adapter = null;
+    protected $adapterName = null;
+
+    /**
+     * Object manager
+     *
+     * @var \rampage\core\ObjectManagerInterface
+     */
+    private $objectManager = null;
+
+    /**
+     * Adapter manager
+     *
+     * @var AdapterManager
+     */
+    private $adapterManager = null;
+
+    /**
+     * Platform service locator
+     *
+     * @var \rampage\orm\db\platform\ServiceLocator
+     */
+    private $platformLocator = null;
+
+    /**
+     * Read adapter
+     *
+     * @var \Zend\Db\Adapter\Adapter
+     */
+    private $read = null;
+
+    /**
+     * Write adapter
+     *
+     * @var \Zend\Db\Adapter\Adapter
+     */
+    private $write = null;
+
+    /**
+     * DB Platform instance
+     *
+     * @var \SplObjectStorage
+     */
+    private $platforms = null;
+
+    /**
+     * Returns the repository platform to use
+     *
+     * @var PlatformInterface
+     */
+    private $platform = null;
+
+    /**
+     * Repository Config
+     *
+     * @var \rampage\orm\ConfigInterface
+     */
+    private $config = null;
+
+    /**
+     * Construct
+     */
+    public function __construct(ObjectManagerInterface $objectManager, PlatformServiceLocator $platformLocator, AdapterManager $adapterManager)
+    {
+        $this->objectManager = $objectManager;
+        $this->platformLocator = $platformLocator;
+        $this->adapterManager = $adapterManager;
+        $this->platforms = new SplObjectStorage();
+    }
+
+    /**
+     * Object manager
+     *
+     * @return \rampage\core\ObjectManagerInterface
+     */
+    protected function getObjectManager()
+    {
+        return $this->objectManager;
+    }
+
+	/**
+     * Read adapter
+     *
+     * @return \Zend\Db\Adapter\Adapter
+     */
+    protected function getReadAdapter()
+    {
+        if ($this->read) {
+            return $this->read;
+        }
+
+        $read = $this->getAdapterManager()->get($this->adapterName . '.read');
+        $this->setReadAdapter($read);
+
+        return $read;
+    }
+
+	/**
+     * Returns the read adapter
+     *
+     * @param \Zend\Db\Adapter\Adapter $read
+     */
+    public function setReadAdapter(Adapter $read)
+    {
+        $this->read = $read;
+        return $this;
+    }
+
+	/**
+     * Returns the write adapter
+     *
+     * @return \Zend\Db\Adapter\Adapter
+     */
+    protected function getWriteAdapter()
+    {
+        if ($this->write) {
+            return $this->write;
+        }
+
+        $write = $this->getAdapterManager()->get($this->adapterName . '.write');
+        $this->setWriteAdapter($write);
+
+        return $write;
+    }
+
+    /**
+     * Set the write adapter
+     *
+     * @param \Zend\Db\Adapter\Adapter $write
+     */
+    protected function setWriteAdapter(Adapter $write)
+    {
+        $this->write = $write;
+        return $this;
+    }
+
+    /**
+     * The adapter manager to fetch adapters by name
+     *
+     * @return \rampage\orm\db\AdapterManager
+     */
+    protected function getAdapterManager()
+    {
+        return $this->adapterManager;
+    }
+
+	/**
+     * Platform locator
+     *
+     * @return \rampage\orm\db\platform\ServiceLocator
+     */
+    protected function getPlatformLocator()
+    {
+        return $this->platformLocator;
+    }
+
+    /**
+     * Platform instance
+     *
+     * @return \rampage\orm\db\platform\PlatformInterface
+     */
+    protected function getPlatformByAdapter(Adapter $adapter)
+    {
+        if (isset($this->platforms[$adapter])) {
+            return $this->platforms[$adapter];
+        }
+
+        $platform = $this->getPlatformLocator()->get($adapter->getPlatform()->getName());
+        $this->platforms[$adapter] = $platform;
+
+        return $platform;
+    }
+
+    /**
+     * Current platform to use
+     *
+     * @return \rampage\orm\db\platform\PlatformInterface
+     */
+    protected function getPlatform()
+    {
+        if ($this->platform) {
+            return $this->platform;
+        }
+
+        $platform = $this->getPlatformByAdapter($this->getReadAdapter());
+        $this->setPlatform($platform);
+
+        return $platform;
+    }
+
+    /**
+     * Set the platform to use
+     *
+     * @param \rampage\orm\db\platform\PlatformInterface $platform
+     */
+    public function setPlatform(PlatformInterface $platform)
+    {
+        $this->platform = $platform;
+        return $this;
+    }
 
     /**
      * (non-PHPdoc)
@@ -73,26 +291,46 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
      */
     public function setAdapterName($name)
     {
-        // TODO Auto-generated method stub
-
+        $this->adapterName = $name;
     }
 
     /**
      * (non-PHPdoc)
      * @see \rampage\orm\RepositoryInterface::setConfig()
      */
-    public function setConfig(\rampage\orm\ConfigInterface $config)
+    public function setConfig(ConfigInterface $config)
     {
-        // TODO Auto-generated method stub
-
+        $this->config = $config;
+        return $this;
     }
-	/**
+
+    /**
+     * Get query mapper
+     *
+     * @return \rampage\orm\db\query\MapperInterface
+     */
+    protected function getQueryMapper(QueryInterface $query)
+    {
+        return $this->getObjectManager()->get('rampage.orm.db.query.DefaultMapper');
+    }
+
+    /**
+     * Create a new collection
+     *
+     * @param QueryInterface $query
+     * @return \rampage\orm\entity\LazyLoadableCollection
+     */
+    protected function newCollection(QueryInterface $query)
+    {
+        return new LazyLoadableCollection();
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::delete()
      */
-    public function delete(\rampage\orm\entity\EntityInterface $entity)
+    public function delete(EntityInterface $entity)
     {
-        // TODO Auto-generated method stub
 
     }
 
@@ -100,10 +338,25 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::getCollection()
      */
-    public function getCollection(\rampage\orm\query\QueryInterface $query)
+    public function getCollection(QueryInterface $query)
     {
-        // TODO Auto-generated method stub
+        $collection = $this->newCollection($query);
 
+        if ($collection instanceof QueryableCollectionInterface) {
+            $collection->setPersistenceQuery($query);
+        }
+
+        if ($collection instanceof LazyCollectionInterface) {
+            $repository = $this;
+            $collection->setLoaderDelegate(function($collection) use ($repository, $query) {
+                $repository->loadCollection($collection, $query);
+            });
+
+            return $collection;
+        }
+
+        $this->loadCollection($collection, $query);
+        return $collection;
     }
 
 	/**
@@ -120,10 +373,11 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::loadCollection()
      */
-    public function loadCollection(\rampage\orm\entity\CollectionInterface $collection,\rampage\orm\query\QueryInterface $query)
+    public function loadCollection(CollectionInterface $collection, QueryInterface $query)
     {
-        // TODO Auto-generated method stub
-
+        $mapper = $this->getQueryMapper($query);
+        $select = $this->getReadAdapter()->
+        $mapper->mapToSelect($query, $select);
     }
 
 	/**

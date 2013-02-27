@@ -31,8 +31,15 @@ use rampage\core\ObjectManagerInterface;
 /**
  * Default Platform
  */
-class DefaultPlatform
+class Platform implements PlatformInterface
 {
+    /**
+     * Platform name
+     *
+     * @var string
+     */
+    private $name = null;
+
     /**
      * Config instance
      *
@@ -92,6 +99,27 @@ class DefaultPlatform
     }
 
     /**
+     * Platform name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+	/**
+     * Platform name
+     *
+     * @param string $name
+     */
+    public function setName($name)
+    {
+        $this->name = (string)$name;
+        return $this;
+    }
+
+	/**
      * Object manager
      *
      * @return \rampage\core\ObjectManagerInterface
@@ -227,7 +255,7 @@ class DefaultPlatform
      */
     protected function getDefaultHydratorClass()
     {
-        return 'rampage.orm.db.platform.hydrator.DefaultHydrator';
+        return 'rampage.orm.db.platform.hydrator.Default';
     }
 
     /**
@@ -257,5 +285,15 @@ class DefaultPlatform
         $this->setHydrator($entity, $instance);
 
         return $instance;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\PlatformInterface::getConstraintMapper()
+     */
+    public function getConstraintMapper($constraint)
+    {
+
+        return null;
     }
 }

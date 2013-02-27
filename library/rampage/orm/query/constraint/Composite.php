@@ -160,4 +160,13 @@ class Composite implements CompositeInterface, IteratorAggregate
         $this->constraints = array();
         return $this;
     }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\query\constraint\CompositeInterface::isEmpty()
+     */
+    public function isEmpty()
+    {
+        return (count($this->constraints) > 0);
+    }
 }

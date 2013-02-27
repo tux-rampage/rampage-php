@@ -23,44 +23,33 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform;
-
-use rampage\core\service\AbstractObjectLocator;
+namespace rampage\orm\db\adapter;
 
 /**
- * Service locator for DB Platform instances
+ * Adapter configuration
  */
-class ServiceLocator extends AbstractObjectLocator
+interface ConfigInterface
 {
     /**
-     * Only allow defined invokables
+     * Check if adapter config is present
      *
-     * @var bool
+     * @param string $name
+     * @return bool
      */
-    protected $strict = true;
+    public function hasAdapterConfig($name);
 
     /**
-     * Service locator
+     * Resolve an adapter alias
      *
-     * @param string $config
+     * @param string $name
+     * @return string
      */
-    public function __construct(ConfigInterface $config)
-    {
-        $this->setServiceClass('default', 'rampage.orm.db.platform.Platform');
-        $config->configurePlatformServiceLocator($this);
-    }
+    public function resolveAdapterAlias($name);
 
     /**
-     * Returns the db platform
+     * Returns options for the given adapter
      *
-     * @return object
+     * @param string $name
      */
-    public function get($name, array $options = array())
-    {
-        if (!$this->has($name)) {
-            $name = 'default';
-        }
-
-        return parent::get($name, $options);
-    }
+    public function getAdapterOptions($name);
 }

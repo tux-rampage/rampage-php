@@ -9,8 +9,14 @@
                 <element name="platforms">
                     <complexType>
                         <all>
-                            <element name="platform" type="dbconfig:PlatformConfigType">
-                            </element>
+                            <element name="platform" type="dbconfig:PlatformConfigType" maxOccurs="unbounded" minOccurs="1"></element>
+                            <element name="defaults" maxOccurs="1" minOccurs="0">
+                                <complexType>
+                                    <all>
+                                        <element name="entity" type="dbconfig:PlatformMapType" maxOccurs="unbounded" minOccurs="0"></element>
+                                    </all>
+                                    <attribute name="class" type="string" use="optional"></attribute>
+                                </complexType></element>
                         </all>
                     </complexType>
                 </element>
@@ -85,7 +91,7 @@
     </complexType>
     <complexType name="PlatformConfigType">
         <all>
-            <element name="entity" type="dbconfig:PlatformMapType"></element>
+            <element name="entity" type="dbconfig:PlatformMapType" maxOccurs="unbounded" minOccurs="0"></element>
         </all>
         <attribute use="required" name="name" type="string"></attribute>
         <attribute name="class" type="string" use="optional"></attribute>
