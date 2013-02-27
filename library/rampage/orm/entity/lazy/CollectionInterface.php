@@ -23,17 +23,18 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity\feature;
+namespace rampage\orm\entity\lazy;
 
 /**
  * Lazy loadable collection
  */
-interface LazyCollectionInterface
+interface CollectionInterface
 {
     /**
      * Loader delegate
      *
-     * @param callable $delegate
+     * @param callable $loader
+     * @param callable $sizeLoader
      */
-    public function setLoaderDelegate($delegate);
+    public function setLoaderDelegate(delegate\CollectionLoaderInterface $delegate);
 }

@@ -85,4 +85,13 @@ interface PersistenceFeatureInterface
      * @param Query $query
      */
     public function loadCollection(CollectionInterface $collection, QueryInterface $query);
+
+    /**
+     * Load the collection size
+     *
+     * @param CollectionInterface $collection
+     * @param QueryInterface $query
+     * @return \rampage\orm\db\AbstractRepository
+     */
+    public function loadCollectionSize(CollectionInterface $collection, QueryInterface $query);
 }

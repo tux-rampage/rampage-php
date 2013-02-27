@@ -46,7 +46,7 @@ class Collection implements IteratorAggregate, Countable
      *
      * @var int
      */
-    private $size = null;
+    protected $size = null;
 
     /**
      * set collection size

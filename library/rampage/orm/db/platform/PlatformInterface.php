@@ -63,6 +63,7 @@ interface PlatformInterface
      * Fetch the hydrator for the given entity
      *
      * @param string $entity
+     * @return \Zend\Stdlib\Hydrator\HydratorInterface
      */
     public function getHydrator($entity);
 

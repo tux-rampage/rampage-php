@@ -26,14 +26,13 @@
 namespace rampage\orm\entity;
 
 use rampage\core\data\Object;
-use rampage\orm\entity\feature\LazyLoadableInterface;
-use rampage\orm\entity\feature\CustomIdentifierEntityInterface;
+use rampage\orm\entity\lazy\EntityInterface as LazyEntityInterface;
 use rampage\orm\exception\RuntimeException;
 
 /**
  * Abstract entity class
  */
-abstract class AbstractEntity extends Object implements EntityInterface, LazyLoadableInterface
+abstract class AbstractEntity extends Object implements EntityInterface, LazyEntityInterface
 {
     /**
      * Identifier
@@ -126,8 +125,7 @@ abstract class AbstractEntity extends Object implements EntityInterface, LazyLoa
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \rampage\orm\entity\feature\LazyLoadableInterface::addLazyAttribute()
+     * @see \rampage\orm\entity\lazy\EntityInterface::addLazyAttribute()
      */
     public function addLazyAttribute($name, $delegate)
     {

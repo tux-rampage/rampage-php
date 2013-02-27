@@ -33,5 +33,19 @@ use Zend\Db\Sql\Select;
  */
 interface MapperInterface
 {
+    /**
+     * Map the query to the select instance
+     *
+     * @param Query $query
+     * @param Select $select
+     */
     public function mapToSelect(Query $query, Select $select);
+
+    /**
+     * Map the query to size select
+     *
+     * @param Query $query
+     * @param Select $select
+     */
+    public function mapToSizeSelect(Query $query, Select $selectPrototype);
 }

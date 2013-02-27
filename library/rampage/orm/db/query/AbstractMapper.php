@@ -41,6 +41,7 @@ use Zend\Db\Sql\Predicate\Predicate;
 use Zend\Db\Sql\Predicate\Operator;
 use rampage\orm\query\QueryInterface;
 use rampage\orm\db\platform\PlatformInterface;
+use Zend\Db\Sql\Expression;
 
 /**
  * Default query mapper
@@ -369,5 +370,27 @@ abstract class AbstractMapper implements MapperInterface
             ->prepareSelectLimit($select);
 
         return $select;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\query\MapperInterface::mapToSizeSelect()
+     */
+    public function mapToSizeSelect(Query $query, Select $select)
+    {
+        $sizeSelect = clone $select;
+        $this->mapToSelect($query, $sizeSelect);
+
+        $sizeSelect->reset(Select::COLUMNS)
+            ->reset(Select::GROUP)
+            ->reset(Select::LIMIT)
+            ->reset(Select::OFFSET)
+            ->reset(Select::ORDER);
+
+        $sizeSelect->columns(array(
+            'size' => new Expression('COUNT(*)')
+        ));
+
+        return $sizeSelect;
     }
 }

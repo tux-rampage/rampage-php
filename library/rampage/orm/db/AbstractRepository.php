@@ -25,23 +25,21 @@
 
 namespace rampage\orm\db;
 
+use rampage\core\ObjectManagerInterface;
 use rampage\orm\RepositoryInterface;
 use rampage\orm\repository\PersistenceFeatureInterface;
 use rampage\orm\ConfigInterface;
-use rampage\orm\entity\EntityInterface;
+use rampage\orm\query\QueryInterface;
+use rampage\orm\db\adapter\AdapterAggregate;
 
-use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
-use rampage\orm\db\platform\PlatformInterface;
-use rampage\orm\db\adapter\AdapterManager;
+use rampage\orm\entity\CollectionInterface;
+use rampage\orm\entity\EntityInterface;
+use rampage\orm\entity\lazy\Collection as LazyCollection;
+use rampage\orm\entity\lazy\CollectionInterface as  LazyCollectionInterface;
+use rampage\orm\entity\feature\QueryableCollectionInterface;
 
 use SplObjectStorage;
-use Zend\Db\Adapter\Adapter;
-use rampage\orm\query\QueryInterface;
-use rampage\orm\entity\LazyLoadableCollection;
-use rampage\orm\entity\feature\LazyCollectionInterface;
-use rampage\orm\entity\CollectionInterface;
-use rampage\core\ObjectManagerInterface;
-use rampage\orm\entity\QueryableCollectionInterface;
+use rampage\orm\db\lazy\CollectionLoadDelegate;
 
 /**
  * Abstract DB repository
@@ -77,20 +75,6 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     private $objectManager = null;
 
     /**
-     * Adapter manager
-     *
-     * @var AdapterManager
-     */
-    private $adapterManager = null;
-
-    /**
-     * Platform service locator
-     *
-     * @var \rampage\orm\db\platform\ServiceLocator
-     */
-    private $platformLocator = null;
-
-    /**
      * Read adapter
      *
      * @var \Zend\Db\Adapter\Adapter
@@ -105,20 +89,6 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     private $write = null;
 
     /**
-     * DB Platform instance
-     *
-     * @var \SplObjectStorage
-     */
-    private $platforms = null;
-
-    /**
-     * Returns the repository platform to use
-     *
-     * @var PlatformInterface
-     */
-    private $platform = null;
-
-    /**
      * Repository Config
      *
      * @var \rampage\orm\ConfigInterface
@@ -128,11 +98,9 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     /**
      * Construct
      */
-    public function __construct(ObjectManagerInterface $objectManager, PlatformServiceLocator $platformLocator, AdapterManager $adapterManager)
+    public function __construct(ObjectManagerInterface $objectManager)
     {
         $this->objectManager = $objectManager;
-        $this->platformLocator = $platformLocator;
-        $this->adapterManager = $adapterManager;
         $this->platforms = new SplObjectStorage();
     }
 
@@ -146,19 +114,32 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
         return $this->objectManager;
     }
 
-	/**
-     * Read adapter
+    /**
+     * Create a new adapter aggregate
      *
-     * @return \Zend\Db\Adapter\Adapter
+     * @param string $name
+     * @return \rampage\orm\db\adapter\AdapterAggregate
      */
-    protected function getReadAdapter()
+    protected function newAdapterAggregate($name)
+    {
+        return $this->getObjectManager()->get('rampage.orm.db.adapter.AdapterAggregate', array(
+            'adapterName' => $name
+        ));
+    }
+
+	/**
+     * Read adapter aggregate
+     *
+     * @return \rampage\orm\db\adapter\AdapterAggregate
+     */
+    protected function getReadAggregate()
     {
         if ($this->read) {
             return $this->read;
         }
 
-        $read = $this->getAdapterManager()->get($this->adapterName . '.read');
-        $this->setReadAdapter($read);
+        $read = $this->newAdapterAggregate($this->adapterName . '.read');
+        $this->setReadAggregate($read);
 
         return $read;
     }
@@ -166,9 +147,9 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
 	/**
      * Returns the read adapter
      *
-     * @param \Zend\Db\Adapter\Adapter $read
+     * @param \rampage\orm\db\adapter\AdapterAggregate $read
      */
-    public function setReadAdapter(Adapter $read)
+    public function setReadAggregate(AdapterAggregate $read)
     {
         $this->read = $read;
         return $this;
@@ -177,16 +158,16 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
 	/**
      * Returns the write adapter
      *
-     * @return \Zend\Db\Adapter\Adapter
+     * @return \rampage\orm\db\adapter\AdapterAggregate
      */
-    protected function getWriteAdapter()
+    protected function getWriteAggregate()
     {
         if ($this->write) {
             return $this->write;
         }
 
-        $write = $this->getAdapterManager()->get($this->adapterName . '.write');
-        $this->setWriteAdapter($write);
+        $write = $this->newAdapterAggregate($this->adapterName . '.write');
+        $this->setWriteAggregate($write);
 
         return $write;
     }
@@ -194,76 +175,11 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     /**
      * Set the write adapter
      *
-     * @param \Zend\Db\Adapter\Adapter $write
+     * @param \rampage\orm\db\adapter\AdapterAggregate $write
      */
-    protected function setWriteAdapter(Adapter $write)
+    protected function setWriteAggregate(AdapterAggregate $write)
     {
         $this->write = $write;
-        return $this;
-    }
-
-    /**
-     * The adapter manager to fetch adapters by name
-     *
-     * @return \rampage\orm\db\AdapterManager
-     */
-    protected function getAdapterManager()
-    {
-        return $this->adapterManager;
-    }
-
-	/**
-     * Platform locator
-     *
-     * @return \rampage\orm\db\platform\ServiceLocator
-     */
-    protected function getPlatformLocator()
-    {
-        return $this->platformLocator;
-    }
-
-    /**
-     * Platform instance
-     *
-     * @return \rampage\orm\db\platform\PlatformInterface
-     */
-    protected function getPlatformByAdapter(Adapter $adapter)
-    {
-        if (isset($this->platforms[$adapter])) {
-            return $this->platforms[$adapter];
-        }
-
-        $platform = $this->getPlatformLocator()->get($adapter->getPlatform()->getName());
-        $this->platforms[$adapter] = $platform;
-
-        return $platform;
-    }
-
-    /**
-     * Current platform to use
-     *
-     * @return \rampage\orm\db\platform\PlatformInterface
-     */
-    protected function getPlatform()
-    {
-        if ($this->platform) {
-            return $this->platform;
-        }
-
-        $platform = $this->getPlatformByAdapter($this->getReadAdapter());
-        $this->setPlatform($platform);
-
-        return $platform;
-    }
-
-    /**
-     * Set the platform to use
-     *
-     * @param \rampage\orm\db\platform\PlatformInterface $platform
-     */
-    public function setPlatform(PlatformInterface $platform)
-    {
-        $this->platform = $platform;
         return $this;
     }
 
@@ -322,7 +238,7 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
      */
     protected function newCollection(QueryInterface $query)
     {
-        return new LazyLoadableCollection();
+        return new LazyCollection();
     }
 
     /**
@@ -347,15 +263,13 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
         }
 
         if ($collection instanceof LazyCollectionInterface) {
-            $repository = $this;
-            $collection->setLoaderDelegate(function($collection) use ($repository, $query) {
-                $repository->loadCollection($collection, $query);
-            });
-
+            $collection->setLoaderDelegate(new CollectionLoadDelegate($this, $query));
             return $collection;
         }
 
+        $this->loadCollectionSize($collection, $query);
         $this->loadCollection($collection, $query);
+
         return $collection;
     }
 
@@ -369,6 +283,26 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
 
     }
 
+    /**
+     * Load the collection size
+     *
+     * @param CollectionInterface $collection
+     * @param QueryInterface $query
+     * @return \rampage\orm\db\AbstractRepository
+     */
+    public function loadCollectionSize(CollectionInterface $collection, QueryInterface $query)
+    {
+        $mapper = $this->getQueryMapper($query);
+        $sql = $this->getReadAggregate()->sql();
+        $select = $this->getQueryMapper($query)->mapToSizeSelect($query, $sql->select());
+        $result = $sql->prepareStatementForSqlObject($select)->execute()->current();
+
+        $size = (is_array($result) && isset($result['size']))? (int)$result['size'] : 0;
+        $collection->setSize($size);
+
+        return $this;
+    }
+
 	/**
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::loadCollection()
@@ -376,8 +310,21 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     public function loadCollection(CollectionInterface $collection, QueryInterface $query)
     {
         $mapper = $this->getQueryMapper($query);
-        $select = $this->getReadAdapter()->
+        $sql = $this->getReadAggregate()->sql();
+        $select = $sql->select();
+
         $mapper->mapToSelect($query, $select);
+        $result = $sql->prepareStatementForSqlObject($select)->execute();
+        $hydrator = $this->getReadAggregate()->getPlatform()->getHydrator($query->getEntityType());
+
+        foreach ($result as $data) {
+            $entity = $this->newEntity();
+            $hydrator->hydrate($data, $entity);
+
+            $collection->addItem($entity);
+        }
+
+        return $collection;
     }
 
 	/**

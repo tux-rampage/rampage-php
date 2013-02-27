@@ -23,19 +23,20 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity;
+namespace rampage\orm\entity\lazy;
 
-use rampage\orm\entity\feature\LazyCollectionInterface;
+use rampage\orm\entity\Collection as EntityCollection;
+use rampage\orm\entity\lazy\delegate\CollectionLoaderInterface;
 
 /**
  * Lazy loadable collection
  */
-class LazyLoadableCollection extends Collection implements LazyCollectionInterface
+class Collection extends EntityCollection implements CollectionInterface
 {
     /**
      * Load delegate
      *
-     * @var callable
+     * @var \rampage\orm\entity\lazy\delegate\CollectionLoaderInterface
      */
     protected $loadDelegate = null;
 
@@ -67,29 +68,17 @@ class LazyLoadableCollection extends Collection implements LazyCollectionInterfa
     }
 
     /**
-     * Load delegate
-     *
-     * @param callable $delegate
-     * @return \rampage\orm\entity\LazyLoadableCollection
-     */
-    public function setLoaderDelegate($delegate)
-    {
-        $this->loadDelegate = $delegate;
-        return $this;
-    }
-
-    /**
      * Load collection
      *
-     * @return \rampage\orm\entity\LazyLoadableCollection
+     * @return \rampage\orm\entity\Collection
      */
     public function load()
     {
-        if ($this->isLoaded || !is_callable($this->loadDelegate)) {
+        if ($this->isLoaded || !($this->loadDelegate instanceof CollectionLoaderInterface)) {
             return $this;
         }
 
-        call_user_func($this->loadDelegate, $this);
+        $this->loadDelegate->load($this);
         $this->isLoaded = true;
 
         return $this;
@@ -103,5 +92,28 @@ class LazyLoadableCollection extends Collection implements LazyCollectionInterfa
     {
         $this->isLoaded = false;
         return parent::reset();
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\data\Collection::getSize()
+     */
+    public function getSize()
+    {
+        if (($this->size === null) && ($this->loadDelegate instanceof CollectionLoaderInterface)) {
+            $this->loadDelegate->loadSize($this);
+        }
+
+        return parent::getSize();
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\entity\lazy\CollectionInterface::setLoaderDelegate()
+     */
+    public function setLoaderDelegate(CollectionLoaderInterface $delegate)
+    {
+        $this->loadDelegate = $delegate;
+        return $this;
     }
 }

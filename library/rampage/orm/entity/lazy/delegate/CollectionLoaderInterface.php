@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,32 +17,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity\feature;
+namespace rampage\orm\entity\lazy\delegate;
 
-use rampage\orm\query\QueryInterface;
+use rampage\orm\entity\CollectionInterface;
 
 /**
- * Interface for queryable collections
+ * Collection loader delegate
  */
-interface QueryableCollectionInterface
+interface CollectionLoaderInterface
 {
     /**
-     * Set the persistence query
+     * Load the given collection
      *
-     * @param QueryInterface $query
+     * @param CollectionInterface $collection
      */
-    public function setPersistenceQuery(QueryInterface $query);
+    public function load(CollectionInterface $collection);
 
     /**
-     * Returns the persistence query
+     * Load collection size
      *
-     * @return \rampage\orm\query\Query
+     * @param CollectionInterface $collection
      */
-    public function getPersistenceQuery();
+    public function loadSize(CollectionInterface $collection);
+
 }

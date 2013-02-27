@@ -28,6 +28,7 @@ namespace rampage\orm\db\adapter;
 use Zend\Db\Sql\Sql;
 use rampage\orm\db\platform\ServiceLocator as PlatformLocator;
 use Zend\Db\Adapter\Adapter;
+use rampage\orm\db\platform\PlatformInterface;
 
 /**
  * Adapter
@@ -82,10 +83,25 @@ class AdapterAggregate
      * @param AdapterManager $adapterManager
      * @param PlatformLocator $platformLocator
      */
-    public function __construct(AdapterManager $adapterManager, PlatformLocator $platformLocator)
+    public function __construct(AdapterManager $adapterManager, PlatformLocator $platformLocator, $adapterName = null)
     {
         $this->adapterManager = $adapterManager;
         $this->platformLocator = $platformLocator;
+
+        if ($adapterName) {
+            $this->setAdapterName($adapterName);
+        }
+    }
+
+    /**
+     * Adapter name
+     *
+     * @param string $name
+     */
+    public function setAdapterName($name)
+    {
+        $this->adapterName = (string)$name;
+        return $this;
     }
 
     /**
@@ -113,7 +129,7 @@ class AdapterAggregate
      *
      * @return \Zend\Db\Adapter\Adapter
      */
-    protected function getAdapter()
+    public function getAdapter()
     {
         if ($this->adapter) {
             return $this->adapter;
@@ -130,37 +146,58 @@ class AdapterAggregate
      *
      * @return \rampage\orm\db\platform\PlatformInterface
      */
-    protected function getPlatform()
+    public function getPlatform()
     {
         if ($this->platform) {
             return $this->platform;
         }
 
+        $platform = $this->getPlatformLocator()->get($this->getAdapter()->getPlatform()->getName());
+        $this->setPlatform($platform);
+
         return $platform;
     }
 
-	/**
-     *
+    /**
+     * Set the adapter
      *
      * @param \Zend\Db\Adapter\Adapter $adapter
      */
-    protected function setAdapter($adapter)
+    public function setAdapter(Adapter $adapter)
     {
         $this->adapter = $adapter;
         return $this;
     }
 
-	/**
-     *
+    /**
+     * Set the platform instance
      *
      * @param \rampage\orm\db\platform\PlatformInterface $platform
      */
-    protected function setPlatform($platform)
+    public function setPlatform(PlatformInterface $platform)
     {
         $this->platform = $platform;
         return $this;
     }
 
+    /**
+     * Get the sql builder instance
+     *
+     * @param string $table Optional
+     */
+    public function sql($table = null)
+    {
+        if ($table) {
+            return new Sql($this->getAdapter(), $table);
+        }
 
+        if ($this->sql) {
+            return $this->sql;
+        }
 
+        $sql = new Sql($this->getAdapter());
+        $this->sql = $sql;
+
+        return $sql;
+    }
 }

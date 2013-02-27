@@ -23,12 +23,12 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity\feature;
+namespace rampage\orm\entity\lazy;
 
 /**
  * Lazy loadable entity feature
  */
-interface LazyLoadableInterface
+interface EntityInterface
 {
     /**
      * Add a lazy loadable attribute.
