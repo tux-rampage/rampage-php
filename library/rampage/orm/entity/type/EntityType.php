@@ -25,6 +25,7 @@
 
 namespace rampage\orm\entity\type;
 
+use rampage\orm\RepositoryInterface;
 /**
  * Entity type
  */
@@ -56,10 +57,149 @@ class EntityType
      *
      * @var array
      */
-    private $idexes = array();
+    private $indexes = array();
 
+    /**
+     * Entity type name
+     *
+     * @var string
+     */
+    private $name = null;
+
+    /**
+     * Repository
+     *
+     * @var \rampage\orm\RepositoryInterface
+     */
+    private $repository = null;
+
+    /**
+     * Construct
+     *
+     * @param string $name
+     * @param RepositoryInterface $repository
+     */
+    public function __construct($name, RepositoryInterface $repository, ConfigInterface $config)
+    {
+        $this->name = (string)$name;
+        $this->repository = $repository;
+
+        $config->configureEntityType($this);
+    }
+
+    /**
+     * @return the $name
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Repository
+     *
+     * @return \rampage\orm\RepositoryInterface
+     */
+    public function getRepository()
+    {
+        return $this->repository;
+    }
+
+    /**
+     * Add an attribute
+     *
+     * @param Attribute $attribute
+     * @return \rampage\orm\entity\type\EntityType
+     */
     public function addAttribute(Attribute $attribute)
     {
+        $this->attributes[$attribute->getName()] = $attribute;
+        return $this;
+    }
 
+    /**
+     * Add an index
+     *
+     * @param string $name
+     * @param array $attributes
+     */
+    public function addIndex($name, array $attributes)
+    {
+        $this->indexes[$name] = $attributes;
+        return $this;
+    }
+
+    /**
+     * Add a reference
+     *
+     * @param string $name
+     * @param string $entity
+     * @param array $localAttributes
+     * @param array $referencedAttributes
+     * @return \rampage\orm\entity\type\EntityType
+     */
+    public function addReference($name, $entity, array $localAttributes, array $referencedAttributes)
+    {
+        $this->references[$name] = array(
+            'attributes' => $localAttributes,
+            'references' => array(
+                'entity' => $entity,
+                'attributes' => $referencedAttributes
+            )
+        );
+
+        return $this;
+    }
+
+    /**
+     * @return the $attributes
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * @return the $references
+     */
+    public function getReferences()
+    {
+        return $this->references;
+    }
+
+    /**
+     * @return the $identifier
+     */
+    public function getIdentifier()
+    {
+        if ($this->identifier !== null) {
+            return $this->identifier;
+        }
+
+        $identifier = array();
+        foreach ($this->getAttributes() as $attribute) {
+            if (!$attribute->isIdentifier()) {
+                continue;
+            }
+
+            $identifier[] = $attribute->getName();
+        }
+
+        if (count($identifier) < 1) {
+            $identifier = false;
+        } else if (count($identifier) == 1) {
+            $identifier = array_pop($identifier);
+        }
+
+        $this->identifier = $identifier;
+        return $identifier;
+    }
+
+    /**
+     * @return the $idexes
+     */
+    public function getIndexes()
+    {
+        return $this->indexes;
     }
 }

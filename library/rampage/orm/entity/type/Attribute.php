@@ -49,32 +49,41 @@ class Attribute
      *
      * @var bool
      */
-    protected $allowNull = false;
+    protected $nullable = false;
 
     /**
      * Is a primary key
      *
      * @var bool
      */
-    protected $isPrimaryKey = false;
+    protected $identifier = false;
 
     /**
      * Is identity (sequence or auto increment)
      *
      * @var bool
      */
-    protected $isIdentity = false;
+    protected $identity = false;
 
     /**
-     * Set the name of this attribute
+     * Construct
      *
      * @param string $name
-     * @return \rampage\orm\entity\type\Attribute
+     * @param string $type
+     * @param bool $primary
+     * @param bool $identity
+     * @param bool $nullable
      */
-    public function setName($name)
+    public function __construct($name, $type = null, $primary = false, $identity = false, $nullable = false)
     {
-        $this->name = $name;
-        return $this;
+        $this->name = (string)$name;
+        $this->identifier = (bool)$primary;
+        $this->identity = (bool)$identity;
+        $this->nullable = (bool)$nullable;
+
+        if ($type) {
+            $this->type = (string)$type;
+        }
     }
 
     /**
@@ -87,5 +96,43 @@ class Attribute
         return $this->name;
     }
 
+    /**
+     * Attribute type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
 
+    /**
+     * Check null allowed
+     *
+     * @return bool
+     */
+    public function isNullable()
+    {
+        return $this->nullable;
+    }
+
+    /**
+     * Check if it is an identifier
+     *
+     * @return bool
+     */
+    public function isIdentifier()
+    {
+        return $this->identifier;
+    }
+
+    /**
+     * Check for identity
+     *
+     * @return the $isIdentity
+     */
+    public function isIdentity()
+    {
+        return $this->identity;
+    }
 }

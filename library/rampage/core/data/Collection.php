@@ -28,6 +28,7 @@ namespace rampage\core\data;
 use IteratorAggregate;
 use Countable;
 use ArrayIterator;
+use rampage\core\exception\InvalidArgumentException;
 
 /**
  * Class for data collections
@@ -47,6 +48,27 @@ class Collection implements IteratorAggregate, Countable
      * @var int
      */
     protected $size = null;
+
+    /**
+     * Item type restriction
+     *
+     * @var string
+     */
+    protected $itemTypeRestriction = null;
+
+    /**
+     * Restrict the item type for this collection
+     *
+     * @param string $class
+     * @return \rampage\core\data\Collection
+     */
+    public function restrictItemType($class)
+    {
+        $class = trim(strtr($class, '.', '\\'), '\\');
+        $this->itemTypeRestriction = $class;
+
+        return $this;
+    }
 
     /**
      * set collection size
@@ -87,6 +109,14 @@ class Collection implements IteratorAggregate, Countable
      */
     public function addItem($item)
     {
+        if ($this->itemTypeRestriction && !($item instanceof $this->itemTypeRestriction)) {
+            throw new InvalidArgumentException(sprintf(
+                'Invalid item: must be an instance of %s, "%s" given.',
+                $this->itemTypeRestriction,
+                (is_object($item))? get_class($item) : gettype($item)
+            ));
+        }
+
         $this->items[] = $item;
         return $this;
     }

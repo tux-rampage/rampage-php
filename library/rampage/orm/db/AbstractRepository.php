@@ -31,20 +31,24 @@ use rampage\orm\repository\PersistenceFeatureInterface;
 use rampage\orm\ConfigInterface;
 use rampage\orm\query\QueryInterface;
 use rampage\orm\db\adapter\AdapterAggregate;
+use rampage\orm\db\lazy\CollectionLoadDelegate;
+use rampage\orm\exception\RuntimeException;
 
 use rampage\orm\entity\CollectionInterface;
 use rampage\orm\entity\EntityInterface;
 use rampage\orm\entity\lazy\Collection as LazyCollection;
 use rampage\orm\entity\lazy\CollectionInterface as  LazyCollectionInterface;
 use rampage\orm\entity\feature\QueryableCollectionInterface;
+use rampage\orm\entity\type\EntityType;
+use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 
 use SplObjectStorage;
-use rampage\orm\db\lazy\CollectionLoadDelegate;
+use rampage\orm\db\platform\FieldMapper;
 
 /**
  * Abstract DB repository
  */
-class AbstractRepository implements RepositoryInterface, PersistenceFeatureInterface
+abstract class AbstractRepository implements RepositoryInterface, PersistenceFeatureInterface
 {
     /**
      * The query mapper for this repository
@@ -96,6 +100,13 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     private $config = null;
 
     /**
+     * Entity types
+     *
+     * @var array
+     */
+    protected $entityTypes = array();
+
+    /**
      * Construct
      */
     public function __construct(ObjectManagerInterface $objectManager)
@@ -103,6 +114,13 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
         $this->objectManager = $objectManager;
         $this->platforms = new SplObjectStorage();
     }
+
+    /**
+     * New entity instance
+     *
+     * @return \rampage\orm\entity\EntityInterfaces
+     */
+    abstract protected function newEntity();
 
     /**
      * Object manager
@@ -184,6 +202,87 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     }
 
     /**
+     * Returns the entity type instance
+     *
+     * @param string $name
+     * @throws RuntimeException
+     * @return \rampage\orm\entity\type\EntityType
+     */
+    protected function getEntityType($name)
+    {
+        if (isset($this->entityTypes[$name])) {
+            return $this->entityTypes[$name];
+        }
+
+        $config = $this->getConfig();
+        if (!$config instanceof EntityTypeConfigInterface) {
+            throw new RuntimeException('Config does not implement rampage\orm\entity\type\ConfigInterface');
+        }
+
+        $type = new EntityType($name, $this, $this->getConfig());
+        $this->entityTypes[$name] = $type;
+
+        return $type;
+    }
+
+    /**
+     * Prepare id for object
+     *
+     * @param array $data
+     * @return string|int
+     */
+    protected function prepareIdForObject($entity, array $data, FieldMapper $mapper)
+    {
+        $identifier = $this->getEntityType($entity)->getIdentifier();
+
+        if (!$identifier) {
+            return null;
+        }
+
+        if (!is_array($identifier)) {
+            $key = $mapper->mapAttribute($identifier);
+            $id = (isset($data[$key]))? $data[$key] : null;
+
+            return $id;
+        }
+
+        $id = array();
+        foreach ($identifier as $attribute) {
+            $field = $mapper->mapAttribute($attribute);
+            $id[$field] = isset($data[$field])? $data[$field] : null;
+        }
+
+        ksort($id);
+        $id = base64_encode(json_encode($id));
+
+        return $id;
+    }
+
+    /**
+     * Prepare ID for DB
+     *
+     * @param string $entity
+     * @param string|int $id
+     * @return string|int|array
+     */
+    public function prepareIdForDatabase($entity, $id)
+    {
+        $identifier = $this->getEntityType($entity)->getIdentifier();
+
+        if (!$identifier) {
+            return null;
+        }
+
+        if (!is_array($identifier)) {
+            return $id;
+        }
+
+        $id = json_decode(base64_decode($id), true);
+        return $id;
+
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\RepositoryInterface::getName()
      */
@@ -218,6 +317,16 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
     {
         $this->config = $config;
         return $this;
+    }
+
+    /**
+     * Config instance
+     *
+     * @return \rampage\orm\ConfigInterface
+     */
+    protected function getConfig()
+    {
+        return $this->config;
     }
 
     /**
@@ -341,14 +450,8 @@ class AbstractRepository implements RepositoryInterface, PersistenceFeatureInter
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::save()
      */
-    public function save(\rampage\orm\entity\EntityInterface $entity)
+    public function save(EntityInterface $entity)
     {
-        // TODO Auto-generated method stub
 
     }
-
-
-
-
-
 }
