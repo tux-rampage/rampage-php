@@ -78,7 +78,7 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
         $class = isset($node['class'])? (string)$node['class'] : (string)$node['name'];
         return $class;
     }
-    primary
+
     /**
      * (non-PHPdoc)
      * @see \rampage\orm\ConfigInterface::hasRepositoryConfig()
@@ -123,9 +123,10 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
      */
     public function configureEntityType(EntityType $type)
     {
-        $repoName = $this->xpathQuote($type->getRepository()->getName());
-        $typeName = $this->xpathQuote($type->getName());
+        list($repoName, $typeName) = explode(':', $type->getFullName(), 2);
 
+        $repoName = $this->xpathQuote($repoName);
+        $typeName = $this->xpathQuote($typeName);
         $xpath = "./repository[@name = $repoName]/entity[@name = $typeName]";
         $xml = $this->getXml();
 

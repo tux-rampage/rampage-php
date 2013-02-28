@@ -144,7 +144,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
      */
     public function addAliases($config)
     {
-        if (!is_array($config) || (!$config instanceof \Traversable)) {
+        if (!is_array($config) && (!$config instanceof \Traversable)) {
             throw new exception\InvalidArgumentException('Aliases must be an array or implement Traversable');
         }
 
@@ -203,7 +203,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     /**
      * Get the DI Container
      *
-     * @return \rampage\core\di\ObjectLocatorInterface
+     * @return \rampage\core\di\Di
      */
     protected function getDi()
     {
@@ -270,6 +270,24 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     }
 
     /**
+     * Format class name
+     *
+     * @param string $class
+     * @return string
+     */
+    protected function resolveClassName($name)
+    {
+        $class = $this->resolveAlias($name);
+        $event = $this->getEvent();
+        $event->setClassName($class);
+        $this->getEventManager()->trigger(Event::EVENT_RESOLVE_CLASS, $event);
+
+        $class = trim(str_replace('.', '\\', $event->getClassName()), '\\');
+
+        return $class;
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \Zend\ServiceManager\ServiceLocatorInterface::get()
      */
@@ -284,12 +302,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
             return $this->instances[$cName];
         }
 
-        $class = $this->resolveAlias($name);
-        $event = $this->getEvent();
-        $event->setClassName($class);
-        $this->getEventManager()->trigger('get', $event);
-
-        $class = trim(str_replace('.', '\\', $event->getClassName()), '\\');
+        $class = $this->resolveClassName($name);
         $instance = $this->getDi()->get($class, $params);
 
         if ($callInitializers) {
@@ -303,5 +316,15 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
         }
 
         return $instance;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\ObjectManagerInterface::newInstance()
+     */
+    public function newInstance($name, $params)
+    {
+        $class = $this->resolveClassName($name);
+        return $this->getDi()->newInstance($name, $params, false);
     }
 }

@@ -28,7 +28,8 @@ return array(
                     'Application' => 'rampage\core\service\ApplicationFactory',
                     'rampage.core.view.ViewInitializer' => 'rampage\core\service\ViewInitializerFactory',
                     'DependencyInjector' => 'rampage\core\service\DiFactory',
-                    'ObjectManager' => 'rampage\core\service\ObjectManagerFactory'
+                    'ObjectManager' => 'rampage\core\service\ObjectManagerFactory',
+                    'AggregatedServiceManager' => 'rampage\core\service\AggregatedServicesFactory',
                 ),
                 'aliases' => array(
                     'rampage.Layout' => 'rampage.core.view.Layout',
@@ -38,6 +39,11 @@ return array(
                     'rampage.resource.BootstapListener' => 'rampage.core.resource.BootstrapListener',
                     'om' => 'ObjectManager',
                     'rampage.ObjectManager' => 'ObjectManager',
+                    'repositorymanager' => 'rampage.orm.RepositoryManager',
+
+                    // ORM
+                    'rampage.orm.db.AdapterManager' => 'rampage.orm.db.adapter.AdapterManager',
+                    'rampage.orm.db.PlatformManager' => 'rampage.orm.db.platform.ServiceLocator',
                 ),
                 'abstract_factories' => array(
                     'rampage\core\service\DiAbstractServiceFactory'
@@ -48,7 +54,7 @@ return array(
                     'rampage.core.view.ViewIntializer' => false,
                     'rampage.core.view.renderer.PhpRenderer' => false,
                     'rampage.core.view.http.Renderer' => false,
-                    'rampage.core.resource.BootstrapListener' => false,
+                    'rampage.core.resource.BootstrapListener' => false
                 )
             ),
 

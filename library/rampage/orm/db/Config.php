@@ -35,8 +35,9 @@ use rampage\core\PathManager;
 use rampage\orm\exception\RuntimeException;
 use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
 use rampage\orm\db\platform\FieldMapper;
-use Zend\Stdlib\Hydrator\HydratorInterface;
 use rampage\orm\db\platform\PlatformInterface;
+
+use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
  * Database config implementation
@@ -288,7 +289,6 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
      */
     public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity)
     {
-        // TODO: hydrator config
         return $this;
     }
 
@@ -340,7 +340,4 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
             $node = $this->getNode("./platforms/defaults/constraint[@mapper != '']");
         }
     }
-
-
-
 }

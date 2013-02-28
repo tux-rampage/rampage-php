@@ -58,6 +58,7 @@ class ServiceConfig extends ServiceManagerConfig
     {
         $this->invokables['SharedEventManager'] = 'rampage\core\event\SharedEventManager';
         $this->factories['rampage.ModuleRegistry'] = 'rampage\core\service\ModuleRegistryFactory';
+        $this->factories['AggregatedServiceLocator'] = 'rampage\core\service\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 
         parent::__construct($config);
@@ -84,6 +85,7 @@ class ServiceConfig extends ServiceManagerConfig
 
         parent::configureServiceManager($serviceManager);
 
+        $serviceManager->addPeeringServiceManager($serviceManager->get('AggregatedServiceLocator'));
         $serviceManager->addInitializer(function($instance, $serviceManager) {
             if ($instance instanceof ModuleManagerInterface) {
                 $instance->getEventManager()->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);

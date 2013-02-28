@@ -26,6 +26,7 @@
 namespace rampage\orm\entity\type;
 
 use rampage\orm\RepositoryInterface;
+
 /**
  * Entity type
  */
@@ -67,6 +68,13 @@ class EntityType
     private $name = null;
 
     /**
+     * Full entity name including the repository name
+     *
+     * @var string
+     */
+    private $fullName = null;
+
+    /**
      * Repository
      *
      * @var \rampage\orm\RepositoryInterface
@@ -93,6 +101,26 @@ class EntityType
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Returns the full entity name including the repository
+     *
+     * @return string
+     */
+    public function getFullName()
+    {
+        if ($this->fullName !== null) {
+            return $this->fullName;
+        }
+
+        $name = $this->getName();
+        if (strpos($name, ':') === false) {
+            $name = $this->getRepository()->getName() . ':' . $name;
+        }
+
+        $this->fullName = $name;
+        return $name;
     }
 
     /**

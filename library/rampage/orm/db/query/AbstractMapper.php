@@ -30,6 +30,11 @@ use rampage\orm\query\Query;
 use rampage\orm\query\constraint\ConstraintInterface;
 use rampage\orm\query\constraint\CompositeInterface as ConstraintCompositeInterface;
 use rampage\orm\query\constraint\DefaultConstraint;
+use rampage\orm\query\QueryInterface;
+
+// DB Deps
+use rampage\orm\db\platform\PlatformInterface;
+use rampage\orm\db\AbstractRepository;
 
 // Exceptions
 use rampage\orm\exception\DependencyException;
@@ -39,9 +44,8 @@ use rampage\orm\exception\RuntimeException;
 use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Predicate\Predicate;
 use Zend\Db\Sql\Predicate\Operator;
-use rampage\orm\query\QueryInterface;
-use rampage\orm\db\platform\PlatformInterface;
 use Zend\Db\Sql\Expression;
+
 
 /**
  * Default query mapper
@@ -63,6 +67,13 @@ abstract class AbstractMapper implements MapperInterface
     private $query = null;
 
     /**
+     * Repository
+     *
+     * @var \rampage\orm\db\AbstractRepository
+     */
+    private $repository = null;
+
+    /**
      * Operator map
      *
      * @var string
@@ -81,8 +92,9 @@ abstract class AbstractMapper implements MapperInterface
      *
      * @param PlatformInterface $platform
      */
-    public function __construct(PlatformInterface $platform = null)
+    public function __construct(AbstractRepository $repository, PlatformInterface $platform = null)
     {
+        $this->repository = $repository;
         if ($platform) {
             $this->setPlatform($platform);
         }
@@ -103,6 +115,16 @@ abstract class AbstractMapper implements MapperInterface
     }
 
     /**
+     * Repository
+     *
+     * @return \rampage\orm\db\AbstractRepository
+     */
+    protected function getRepository()
+    {
+        return $this->repository;
+    }
+
+	/**
      * Current query
      *
      * @return \rampage\orm\query\Query
@@ -125,6 +147,45 @@ abstract class AbstractMapper implements MapperInterface
     }
 
     /**
+     * Entity type name
+     *
+     * @return string
+     */
+    protected function getEntityTypeName($entityType = null)
+    {
+        if ($entityType === null) {
+            $entityType = $this->getQuery()->getEntityType();
+        }
+
+        return $this->getRepository()->getEntityType($entityType);
+    }
+
+    /**
+     * Returns the table name
+     *
+     * @param string $entityType
+     */
+    protected function getTable($entityType = null)
+    {
+        $this->getPlatform()->getTable($this->getEntityTypeName($entityType));
+    }
+
+    /**
+     * Returns the table alias
+     *
+     * @param string $entityType
+     * @return string
+     */
+    protected function getTableAlias($entityType = null)
+    {
+        if (($entityType === null) || ($this->getEntityTypeName($entityType) == $this->getEntityTypeName())) {
+            return 'entity';
+        }
+
+        return $this->getTable($entityType);
+    }
+
+    /**
      * Set the platform instance to use
      *
      * @param \rampage\orm\db\platform\PlatformInterface $platform
@@ -144,13 +205,13 @@ abstract class AbstractMapper implements MapperInterface
     protected function getAttributeIdentifier($attribute)
     {
         $field = $attribute;
-        $mapper = $this->getPlatform()->getFieldMapper($this->getQuery()->getEntityType());
+        $mapper = $this->getPlatform()->getFieldMapper($this->getEntityTypeName());
 
         if ($mapper) {
             $field = $mapper->mapAttribute($attribute);
         }
 
-        return $field;
+        return $this->getTableAlias() . '.' . $field;
     }
 
     /**
@@ -162,7 +223,7 @@ abstract class AbstractMapper implements MapperInterface
      */
     protected function prepareSelectFrom(Select $select)
     {
-        $select->from($this->getPlatform()->getTable($this->getQuery()->getEntityType()));
+        $select->from(array($this->getTableAlias() => $this->getTable()));
         return $this;
     }
 

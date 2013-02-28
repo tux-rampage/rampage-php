@@ -25,10 +25,12 @@
 
 namespace rampage\orm\db\adapter;
 
-use Zend\Db\Sql\Sql;
 use rampage\orm\db\platform\ServiceLocator as PlatformLocator;
-use Zend\Db\Adapter\Adapter;
 use rampage\orm\db\platform\PlatformInterface;
+
+use Zend\Db\Sql\Sql;
+use Zend\Db\Adapter\Adapter;
+use Zend\Db\Metadata\Metadata;
 
 /**
  * Adapter
@@ -76,6 +78,13 @@ class AdapterAggregate
      * @var string
      */
     protected $adapterName = null;
+
+    /**
+     * Metadata
+     *
+     * @var \Zend\Db\Metadata\Metadata
+     */
+    protected $metadata = null;
 
     /**
      * construct
@@ -199,5 +208,19 @@ class AdapterAggregate
         $this->sql = $sql;
 
         return $sql;
+    }
+
+    /**
+     * Metadata
+     *
+     * @return \Zend\Db\Metadata\Metadata
+     */
+    public function metadata()
+    {
+        if (!$this->metadata) {
+            $this->metadata = new Metadata($this->getAdapter());
+        }
+
+        return $this->metadata;
     }
 }

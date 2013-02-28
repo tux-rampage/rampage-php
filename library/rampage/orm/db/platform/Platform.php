@@ -255,7 +255,7 @@ class Platform implements PlatformInterface
      */
     protected function getDefaultHydratorClass()
     {
-        return 'rampage.orm.db.platform.hydrator.Default';
+        return 'rampage.orm.db.platform.hydrator.FieldHydrator';
     }
 
     /**
@@ -275,7 +275,7 @@ class Platform implements PlatformInterface
             $class = $this->getDefaultHydratorClass();
         }
 
-        $instance = $this->getObjectManager()->get($class);
+        $instance = $this->getObjectManager()->newInstance($class);
 
         if (is_callable(array($instance, 'setFieldMapper'))) {
             $instance->setFieldMapper($this->getFieldMapper($entity));

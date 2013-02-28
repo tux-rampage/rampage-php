@@ -38,11 +38,16 @@ interface PersistenceFeatureInterface
      * Load the given entity
      *
      * When $entity is an instance of EntityInterface it should load
-     * the data into this object
+     * the data into this object.
+     * Otherwise assume an $entity is an entity type name. The implementing
+     * class should instanciate the entity and load the data into it.
+     *
+     * The loaded entity instance should be returned on success and false if
+     * the entity does not exist
      *
      * @param string $id
      * @param string|\rampage\orm\entity\EntityInterface $entity
-     * @return \rampage\orm\repository\PersistenceFeatureInterface $this Fluent interface
+     * @return \rampage\orm\entity\EntityInterface|false
      */
     public function load($id, $entity);
 

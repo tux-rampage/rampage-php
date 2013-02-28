@@ -110,8 +110,8 @@ class SimpleXmlElement extends \SimpleXMLElement
         $literals = array();
         $offset = 0;
         $keywords = array(
-            'and' => '$$_AND_$$',
-            'or' => '$$_OR_$$'
+            '$$_AND_$$' => 'and',
+            '$$_OR_$$' => 'or'
         );
 
         // identified escaped backslashes
@@ -125,13 +125,15 @@ class SimpleXmlElement extends \SimpleXMLElement
 
         // Extract literals
         $modified = preg_replace_callback('~(\'|").*?\1~is', $extractor, $xpath);
-        $modified = strtr($modified, $keywords);
+        $modified = preg_replace_callback('~\b(and|or)\b~i', function($match) {
+            return '$$_' . strtoupper(trim($match[1])) . '_$$';
+        }, $modified);
 
         // Now find all unqualified names and prefix them with the namespace
         $modified = preg_replace('~(?<!@|:)\b[a-z][a-z0-9_-]*\b(?!:|\s*\()~i', $ns . ':$0', $modified);
 
         // re-insert keywords and literals
-        $modified = strtr($modified, array_flip($keywords));
+        $modified = strtr($modified, $keywords);
         $modified = strtr($modified, $literals);
 
         return $modified;

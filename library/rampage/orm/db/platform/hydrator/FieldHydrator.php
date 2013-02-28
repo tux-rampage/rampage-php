@@ -32,7 +32,7 @@ use Zend\Stdlib\Exception;
 /**
  * Default hydration
  */
-class DefaultHydrator extends ArraySerializable
+class FieldHydrator extends ArraySerializable implements FieldHydratorInterface, MappingHydratorInterface
 {
     /**
      * Field mapper instance
@@ -42,11 +42,39 @@ class DefaultHydrator extends ArraySerializable
     private $fieldMapper = null;
 
     /**
+     * Allowed fields
+     *
+     * @var array
+     */
+    private $allowedFields = null;
+
+    /**
+     * Allowed fields
+     *
+     * @return string
+     */
+    public function getAllowedFields()
+    {
+        return $this->allowedFields;
+    }
+
+	/**
+     * Set allowed fields
+     *
+     * @param array $allowedFields
+     */
+    public function setAllowedFields(array $allowedFields = null)
+    {
+        $this->allowedFields = $allowedFields;
+        return $this;
+    }
+
+	/**
      * Returns the field mapper instance
      *
      * @return \rampage\orm\db\platform\FieldMapper
      */
-    protected function getFieldMapper()
+    public function getFieldMapper()
     {
         return $this->fieldMapper;
     }
@@ -77,13 +105,14 @@ class DefaultHydrator extends ArraySerializable
         $self = $this;
         $data = array();
         $mapper = $this->getFieldMapper();
+        $allowed = $this->getAllowedFields();
 
         foreach ($object->getArrayCopy() as $name => $value) {
-            if (!$this->getFilter()->filter($name)) {
+            $key = ($mapper)? $mapper->mapAttribute($name) : $name;
+            if (!$this->getFilter()->filter($name) || ($allowed && !in_array($key, $allowed))) {
                 continue;
             }
 
-            $key = ($mapper)? $mapper->mapAttribute($name) : $name;
             $data[$key] = $this->extractValue($name, $value);
         }
 
@@ -110,7 +139,7 @@ class DefaultHydrator extends ArraySerializable
             $object->populate($data);
         } else {
             throw new Exception\BadMethodCallException(sprintf(
-            '%s expects the provided object to implement exchangeArray() or populate()', __METHOD__
+                '%s expects the provided object to implement exchangeArray() or populate()', __METHOD__
             ));
         }
 

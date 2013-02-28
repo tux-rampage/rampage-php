@@ -16,7 +16,15 @@ return array(
             'rampage\core\resource\Theme' => 'rampage.Theme',
             'rampage\core\resource\FileLocatorInterface' => 'rampage.Theme',
             'rampage\core\view\Layout' => 'rampage.Layout',
-            'rampage\orm\db\AdapterConfigInterface' => 'rampage\orm\db\AdapterConfig',
+
+            // ORM
+            'rampage\orm\ConfigInterface' => 'rampage\orm\Config',
+            'rampage\orm\entity\type\ConfigInterface' => 'rampage\orm\Config',
+            'rampage\orm\db\adapter\ConfigInterface' => 'rampage\orm\db\Config',
+            'rampage\orm\db\platform\ConfigInterface' => 'rampage\orm\db\Config',
+            'rampage\orm\db\adapter\AdapterManager' => 'rampage.orm.db.AdapterManager',
+            'rampage\orm\db\platform\ServiceLocator' => 'rampage.orm.db.PlatformManager',
+
         ),
         'rampage\auth\service\AuthServiceManager' => array(
             'preferences' => array(

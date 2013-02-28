@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,45 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core;
+namespace rampage\orm\db\platform\hydrator;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
- * Object manager interface
+ * Field hydrator
  */
-interface ObjectManagerInterface extends ServiceLocatorInterface
+interface FieldHydratorInterface extends HydratorInterface
 {
     /**
-     * Add aliases
-     *
-     * @param array|\Traversable $config
-     * @throws \rampage\core\exception\InvalidArgumentException
+     * Returns the allowed fields
      */
-    public function addAliases($config);
+    public function getAllowedFields();
 
     /**
-     * Extended service locator interface to allow parameters and disable initializers
+     * Set the allowed fields
      *
-     * @param string $name
-     * @param array $params
-     * @param bool $callInitializers
-     * @return object
+     * @param array $fields
      */
-    public function get($name, array $params = array(), $callInitializers = true);
-
-    /**
-     * Create a new instance for the requested class
-     *
-     * @param string $name
-     * @param string $params
-     * @return string
-     */
-    public function newInstance($name, $params);
+    public function setAllowedFields(array $fields = null);
 }
