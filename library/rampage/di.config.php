@@ -26,9 +26,16 @@ return array(
             'rampage\orm\db\platform\ServiceLocator' => 'rampage.orm.db.PlatformManager',
 
         ),
+
+        'rampage\core\resource\Theme' => array(
+            'parameters' => array(
+                'fallback' => 'rampage.resource.FileLocator',
+            )
+        ),
+
         'rampage\auth\service\AuthServiceManager' => array(
             'preferences' => array(
-                ''
+                // TODO
             )
         )
     )

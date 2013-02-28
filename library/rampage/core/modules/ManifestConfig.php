@@ -314,6 +314,16 @@ class ManifestConfig extends Config
                 break;
         }
 
+        if ($config) {
+            $type = $config['type'];
+            unset($config['type']);
+
+            $config = array(
+                'type' => $type,
+                'options' => $config
+            );
+        }
+
         return $config;
     }
 

@@ -65,16 +65,20 @@ return array(
             'routes' => array(
                 'foo.bar.default' => array(
                     'type' => 'rampage.route.standard',
-                    'frontname' => 'foo',
-                    'namespace' => 'foo.bar',
-                    'allowed_params' => array('id' => 'id', 'type' => 'type'),
-                    'defaults' => array()
+                    'options' => array(
+                        'frontname' => 'foo',
+                        'namespace' => 'foo.bar',
+                        'allowed_params' => array('id' => 'id', 'type' => 'type'),
+                        'defaults' => array()
+                    )
                 ),
                 'foo.bar.info' => array(
                     'type' => 'rampage.route.layout',
-                    'route' => '/fooinfo',
-                    'layout' => 'a',
-                    'handles' => array('b' => 'b', 'c' => 'c')
+                    'options' => array(
+                        'route' => '/fooinfo',
+                        'layout' => 'a',
+                        'handles' => array('b' => 'b', 'c' => 'c')
+                    )
                 )
             )
         )

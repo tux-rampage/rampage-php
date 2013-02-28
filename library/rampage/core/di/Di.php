@@ -105,6 +105,17 @@ class Di extends DependencyInjector
     }
 
     /**
+     * Format class name
+     *
+     * @param string $name
+     */
+    protected function formatClassName($name)
+    {
+        $class = trim(strtr($name, '.', '\\'), '\\');
+        return $class;
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \Zend\Di\Di::get()
      */
@@ -114,10 +125,20 @@ class Di extends DependencyInjector
             return $this->instanceManager->getService($name);
         }
 
-        return parent::get($name, $params);
+        return parent::get($this->formatClassName($name), $params);
     }
 
     /**
+     * @see \Zend\Di\Di::newInstance()
+     */
+    public function newInstance($name, array $params = array(), $isShared = true)
+    {
+        $class = $this->formatClassName($name);
+        return parent::newInstance($class, $params, $isShared);
+    }
+
+
+	/**
      * Resolve parameters referencing other services
      *
      * @param  string                                $class

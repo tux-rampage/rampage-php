@@ -41,6 +41,16 @@ abstract class AbstractLayoutController extends AbstractActionController impleme
      */
     private $layout = null;
 
+    /**
+     * Construct
+     *
+     * @param Layout $layout
+     */
+    public function __construct(Layout $layout)
+    {
+        $this->setLayout($layout);
+    }
+
 	/**
      * (non-PHPdoc)
      * @see \rampage\core\view\LayoutAwareInterface::setLayout()

@@ -78,7 +78,7 @@ class Application extends MvcApplication
      */
     public static function init($config = array())
     {
-        self::registerDevelopmentErrorHandler();
+        self::registerDevelopmentErrorHandler(true);
         if (!is_array($config) && (!$config instanceof \Traversable)) {
             $config = array();
             $config['service_manager']['path_manager'] = (string)$config;

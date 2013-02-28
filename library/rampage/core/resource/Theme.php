@@ -59,7 +59,6 @@ class Theme extends FileLocator
     /**
      * Set fallback
      *
-     * @service rampage.resource.FileLocator $fallback
      * @param FileLocatorInterface $fallback
      * @return \rampage\core\resource\Theme
      */

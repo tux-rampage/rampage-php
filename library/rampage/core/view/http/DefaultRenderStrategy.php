@@ -149,7 +149,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
 
             case Application::ERROR_EXCEPTION:
             default:
-                $layout['exception'] = $event->getParam('exception');
+                $data['exception'] = $event->getParam('exception');
 
                 $layout->load(static::ERROR_EXCEPTION_LAYOUT);
                 $response->setStatusCode(500);

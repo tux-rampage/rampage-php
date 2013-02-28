@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,40 +25,21 @@
 
 namespace rampage\core\controller;
 
-use Zend\Mvc\Exception;
-use Zend\Mvc\MvcEvent;
+use Zend\Mvc\Controller\ControllerManager as ZendControllerManager;
 
 /**
- * Layout only controller
+ * Controller Manager
  */
-class LayoutOnlyController extends AbstractLayoutController
+class ControllerManager extends ZendControllerManager
 {
-	/**
-     * (non-PHPdoc)
-     * @see \Zend\Mvc\Controller\AbstractActionController::onDispatch()
+    /**
+     * @see \Zend\ServiceManager\AbstractPluginManager::createFromInvokable()
      */
-    public function onDispatch(MvcEvent $e)
+    protected function createFromInvokable($canonicalName, $requestedName)
     {
-        $routeMatch = $e->getRouteMatch();
-        if (!$routeMatch) {
-            throw new Exception\DomainException('Missing route matches; unsure how to retrieve layout');
-        }
-
-        $layout = $this->getLayout();
-        $name = $routeMatch->getParam('layout');
-        $handles = $routeMatch->getParam('handles');
-
-        if (!$name) {
-            throw new Exception\DomainException('Missing layout name');
-        }
-
-        if (is_array($handles)) {
-            $layout->getUpdate()->add($handles);
-        }
-
-        $layout->load($name);
-        $e->setResult($layout);
-
-        return $layout;
+        $invokable = $this->invokableClasses[$canonicalName];
+        return $this->getServiceLocator()->get('ObjectManager')->get($invokable, $this->creationOptions);
     }
+
+
 }

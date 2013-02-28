@@ -9,8 +9,9 @@ return array(
                     'rampage.core.layoutonly' => 'rampage\core\controller\LayoutOnlyController',
                 )
             ),
-            'router' => array(
-                'route_plugins' => array(
+
+            'route_manager' => array(
+                'invokables' => array(
                     'rampage.route.standard' => 'rampage\core\router\http\StandardRoute',
                     'rampage.route.layout' => 'rampage\core\router\http\LayoutRoute',
                 )
@@ -24,12 +25,15 @@ return array(
             ),
 
             'service_manager' => array(
+                'invokables' => array(
+                    'rampage.core.service.DiAbstractServiceFactory' => 'rampage\core\service\DiAbstractServiceFactory',
+                ),
                 'factories' => array(
                     'Application' => 'rampage\core\service\ApplicationFactory',
                     'rampage.core.view.ViewInitializer' => 'rampage\core\service\ViewInitializerFactory',
                     'DependencyInjector' => 'rampage\core\service\DiFactory',
                     'ObjectManager' => 'rampage\core\service\ObjectManagerFactory',
-                    'AggregatedServiceManager' => 'rampage\core\service\AggregatedServicesFactory',
+                    'ControllerLoader' => 'rampage\core\service\ControllerLoaderFactory',
                 ),
                 'aliases' => array(
                     'rampage.Layout' => 'rampage.core.view.Layout',
@@ -40,6 +44,7 @@ return array(
                     'om' => 'ObjectManager',
                     'rampage.ObjectManager' => 'ObjectManager',
                     'repositorymanager' => 'rampage.orm.RepositoryManager',
+                    'DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
 
                     // ORM
                     'rampage.orm.db.AdapterManager' => 'rampage.orm.db.adapter.AdapterManager',
@@ -49,12 +54,9 @@ return array(
                     'rampage\core\service\DiAbstractServiceFactory'
                 ),
                 'shared' => array(
-                    'rampage.core.resource.FileLocator' => false,
-                    'rampage.core.resource.Theme' => false,
                     'rampage.core.view.ViewIntializer' => false,
                     'rampage.core.view.renderer.PhpRenderer' => false,
                     'rampage.core.view.http.Renderer' => false,
-                    'rampage.core.resource.BootstrapListener' => false
                 )
             ),
 
