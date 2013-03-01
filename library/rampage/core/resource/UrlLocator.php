@@ -185,7 +185,7 @@ class UrlLocator implements UrlLocatorInterface
         }
 
         if (!$this->publish(($source)?: $file, $scope, $file)) {
-            throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $file, $theme));
+            throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $filename, $theme));
         }
 
         return $relative;

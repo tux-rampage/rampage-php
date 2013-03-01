@@ -422,7 +422,7 @@ class ManifestConfig extends Config
             $path = (string)$node['path'];
             $name = (string)$node['name'];
 
-            $this->manifest['application_config']['rampage']['themes'][$name] = $path;
+            $this->manifest['application_config']['rampage']['themes'][$name] = $this->getModulePath($path);
         }
 
         return $this;

@@ -28,6 +28,8 @@ namespace rampage\core\service;
 use rampage\core\view\helper\PluginManager;
 use Zend\Mvc\Service\ViewHelperManagerFactory as DefaultViewHelperManagerFactory;
 use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\Console\Console;
+use Zend\Mvc\Router\RouteMatch;
 
 /**
  * View halper manager factory
@@ -46,6 +48,23 @@ class ViewHelperManagerFactory extends DefaultViewHelperManagerFactory
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $instance = parent::createService($serviceLocator);
+
+        // Configure URL view helper with router
+        $instance->setFactory('url', function ($sm) use ($serviceLocator) {
+            $helper = $serviceLocator->get('objectmanager')->get('rampage.core.view.helper.Url');
+            $router = Console::isConsole() ? 'HttpRouter' : 'Router';
+            $helper->setRouter($serviceLocator->get($router));
+
+            $match = $serviceLocator->get('application')
+                ->getMvcEvent()
+                ->getRouteMatch();
+
+            if ($match instanceof RouteMatch) {
+                $helper->setRouteMatch($match);
+            }
+
+            return $helper;
+        });
 
         if ($instance instanceof PluginManager) {
             $instance->setObjectManager($serviceLocator->get('objectmanager'));

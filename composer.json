@@ -1,6 +1,7 @@
 {
     "name": "rampage/rampagephp",
     "require" : {
-        "zendframework/zendframework": "~2.1.0"
+        "zendframework/zendframework": "~2.1.0",
+        "ext-intl": "*"
     }
 }

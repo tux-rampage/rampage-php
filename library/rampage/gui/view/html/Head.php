@@ -169,9 +169,9 @@ class Head extends Template
      *
      * @param string $file
      */
-    public function addCss($file)
+    public function addCss($file, $media = null)
     {
-        $this->css[$file] = $file;
+        $this->css[$file] = array($file, $media);
     }
 
     /**
@@ -181,14 +181,16 @@ class Head extends Template
     {
         $html = array();
 
-        foreach ($this->css as $file) {
+        foreach ($this->css as $css) {
             try {
+                @list($file, $media) = $css;
                 $url = $this->getUrlLocator()->getUrl($file);
             } catch (RuntimeException $e) {
                 continue;
             }
 
-            $html[] = '<link rel="stylesheet" type="text/css" href="' . $url . '" />';
+            $media = ($media)?: 'screen';
+            $html[] = '<link rel="stylesheet" type="text/css" href="' . $url . '" media="' . $media . '" />';
         }
 
         return implode("\n", $html);
@@ -199,6 +201,18 @@ class Head extends Template
      */
     public function jsHtml()
     {
+        $html = array();
 
+        foreach ($this->js as $file) {
+            try {
+                $url = $this->getUrlLocator()->getUrl($file);
+            } catch (RuntimeException $e) {
+                continue;
+            }
+
+            $html[] = '<script type="text/javascript" src="' . $url . '"></script>';
+        }
+
+        return implode("\n", $html);
     }
 }

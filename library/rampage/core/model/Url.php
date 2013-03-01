@@ -193,7 +193,7 @@ class Url
         }
 
         $base = $uri->getPath();
-        $url = $base . '/' . ltrim($path);
+        $url = $base . '/' . ltrim($path, '/');
 
         $uri->setPath($url);
         return $uri;

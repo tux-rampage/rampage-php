@@ -51,6 +51,15 @@ class ViewLocator extends ServiceManager
         return false;
     }
 
+    /**
+     * @see \Zend\ServiceManager\ServiceManager::shareByDefault()
+     */
+    public function shareByDefault()
+    {
+        return false;
+    }
+
+
 	/**
      * Retrieve a view instance
      *

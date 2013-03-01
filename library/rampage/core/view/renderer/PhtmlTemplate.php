@@ -31,7 +31,9 @@ use ArrayObject;
 /**
  * Render wrapper
  *
- * @method string __() __()
+ * @method string url() url()
+ * @method string resourceUrl() resourceUrl()
+ * @method string translate() translate();
  */
 class PhtmlTemplate extends Object
 {
@@ -131,16 +133,24 @@ class PhtmlTemplate extends Object
         return parent::has($field);
     }
 
+    /**
+     * Translate with arguments sprintf like
+     *
+     * @param string $message
+     * @param ...
+     * @return string
+     */
+    public function __($message)
+    {
+        return $this->__call('translateArgs', func_get_args());
+    }
+
 	/**
      * (non-PHPdoc)
      * @see \rampage\core\data\Object::__call()
      */
     public function __call($method, $args)
     {
-        if ($method == '__') {
-            $method = 'translateArgs';
-        }
-
         $viewDelegate = array($this->getView(), $method);
         if (method_exists($this->getView(), $method) && is_callable($viewDelegate)) {
             return call_user_func_array($viewDelegate, $args);

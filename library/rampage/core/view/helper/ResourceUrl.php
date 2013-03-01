@@ -27,6 +27,7 @@ namespace rampage\core\view\helper;
 
 use Zend\View\Helper\AbstractHelper;
 use rampage\core\resource\UrlLocatorInterface;
+use rampage\core\exception\RuntimeException;
 
 /**
  * Resource URL locator helper
@@ -68,6 +69,10 @@ class ResourceUrl extends AbstractHelper
      */
     public function __invoke($file, $scope = null)
     {
-        return $this->getUrlLocator()->getUrl($file, $scope);
+        try {
+            return $this->getUrlLocator()->getUrl($file, $scope);
+        } catch (RuntimeException $exception) {
+            return 'not-found';
+        }
     }
 }

@@ -77,6 +77,10 @@ class Url extends DefaultUrlHelper
      */
     public function __invoke($name = null, array $params = array(), $options = array(), $reuseMatchedParams = false)
     {
+        if ($name === null) {
+            return $this->getUrlModel()->getUrl();
+        }
+
         if ((func_num_args() == 3) && is_bool($options)) {
             // to meet this check for num args in parent method imeplementation
             $reuseMatchedParams = $options;

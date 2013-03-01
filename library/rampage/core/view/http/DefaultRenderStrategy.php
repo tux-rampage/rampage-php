@@ -109,6 +109,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
             return;
         }
 
+        $result->getData()->offsetSet('mvc_event', $event);
         $result->setRequest($request)
                ->setResponse($response);
 

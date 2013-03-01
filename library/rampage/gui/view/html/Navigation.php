@@ -26,11 +26,90 @@
 namespace rampage\gui\view\html;
 
 use rampage\core\view\Template;
+use rampage\core\data\Object;
+use Zend\Mvc\MvcEvent;
 
 /**
  * Navigation view
  */
 class Navigation extends Template
 {
-    // TODO
+    /**
+     * Navigation items
+     *
+     * @var array
+     */
+    protected $items = array();
+
+    /**
+     * Check mvc event
+     *
+     * @return boolean
+     */
+    public function hasMvcEvent()
+    {
+        return ($this->getMvcEvent() !== null);
+    }
+
+    /**
+     * MVC Event
+     *
+     * @return \Zend\Mvc\MvcEvent|null
+     */
+    public function getMvcEvent()
+    {
+        if (!$this->getLayout()->getData()->offsetExists('mvc_event')) {
+            return null;
+        }
+
+        $event = $this->getLayout()->getData()->offsetGet('mvc_event');
+        if (!$event instanceof MvcEvent) {
+            return null;
+        }
+
+        return $event;
+    }
+
+    /**
+     * Add a route link
+     *
+     * @param string $route
+     * @param string $label
+     * @param array $params
+     */
+    public function addRouteLink($id, $route, $label, array $params = array())
+    {
+        $item = new Object(array(
+            'id' => $id,
+            'type' => 'route',
+            'route' => $route,
+            'label' => $label,
+            'options' => $params
+        ));
+
+        $this->items[$id] = $item;
+        return $this;
+    }
+
+    public function isActive(Object $item)
+    {
+        if (($item->getType() != 'route') || !$this->hasMvcEvent()) {
+            return false;
+        }
+
+        $event = $this->getMvcEvent();
+        // TODO: Failsafe ...
+        $result = ($item->getRoute() == $event->getRouteMatch()->getMatchedRouteName());
+        return $result;
+    }
+
+    /**
+     * Returns all items
+     *
+     * @return array
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
 }

@@ -283,11 +283,23 @@
 	    <all>
 	        <element name="path" maxOccurs="unbounded" minOccurs="0">
 	            <complexType>
-	                <attribute name="scope" type="string" use="optional"></attribute>
-	                <attribute name="type" type="string" use="optional"></attribute>
+	                <attribute name="scope" type="string"
+	                    use="optional">
+	                </attribute>
+	                <attribute name="type" type="string"
+	                    use="optional">
+	                </attribute>
 	            </complexType>
 	        </element>
-	        <element name="layout" type="rampage:LayoutSection" maxOccurs="1" minOccurs="0"></element>
+	        <element name="theme" maxOccurs="unbounded" minOccurs="0">
+	            <complexType>
+	                <attribute name="name" type="string" use="required"></attribute>
+	                <attribute name="path" type="string" use="required"></attribute>
+	            </complexType>
+	        </element>
+	        <element name="layout" type="rampage:LayoutSection"
+	            maxOccurs="1" minOccurs="0">
+	        </element>
 	    </all>
 	</complexType>
 
