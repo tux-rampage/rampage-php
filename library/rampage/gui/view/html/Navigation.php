@@ -17,27 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.gui
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\model\url;
+namespace rampage\gui\view\html;
 
-use rampage\core\model\Url;
+use rampage\core\view\Template;
 
 /**
- * Media URL model
+ * Navigation view
  */
-class Media extends Url
+class Navigation extends Template
 {
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\model\Url::getType()
-     */
-    public function getType()
-    {
-        return 'media';
-    }
+    // TODO
 }

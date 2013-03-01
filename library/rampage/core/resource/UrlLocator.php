@@ -27,7 +27,7 @@ namespace rampage\core\resource;
 
 use SplFileInfo;
 use rampage\core\PathManager;
-use rampage\core\model\url\Media as MediaUrl;
+use rampage\core\model\url\Repository as UrlRepository;
 use rampage\core\exception\RuntimeException;
 
 /**
@@ -52,9 +52,9 @@ class UrlLocator implements UrlLocatorInterface
     /**
      * URL Model
      *
-     * @var \rampage\core\model\Url
+     * @var \rampage\core\model\url\Repository
      */
-    private $urlModel = null;
+    private $urlRepository = null;
 
     /**
      * Cached url locations
@@ -69,21 +69,21 @@ class UrlLocator implements UrlLocatorInterface
      * @param FileLocatorInterface $fileLocator
      * @param PathManager $pathmanager
      */
-    public function __construct(FileLocatorInterface $fileLocator, PathManager $pathManager, MediaUrl $model)
+    public function __construct(FileLocatorInterface $fileLocator, PathManager $pathManager, UrlRepository $urlRepository)
     {
         $this->fileLocator = $fileLocator;
         $this->pathManager = $pathManager;
-        $this->urlModel = $model;
+        $this->urlRepository = $urlRepository;
     }
 
     /**
      * URL model
      *
-     * @return \rampage\core\model\Url
+     * @return \rampage\core\model\url\Repository
      */
-    protected function getUrlModel()
+    protected function getUrlModel($type)
     {
-        return $this->urlModel;
+        return $this->urlRepository->getUrlModel($type);
     }
 
 	/**
@@ -111,7 +111,7 @@ class UrlLocator implements UrlLocatorInterface
      *
      * @return null
      */
-    protected function getCurrentTheme()
+    public function getCurrentTheme()
     {
         if ($this->getFileLocator() instanceof Theme) {
             return $this->getFileLocator()->getCurrentTheme();
@@ -156,18 +156,28 @@ class UrlLocator implements UrlLocatorInterface
      * @param string $file
      * @param string $scope
      */
-    protected function resolve($filename, $scope, $theme)
+    protected function resolve($filename, $scope, $theme, &$urlType)
     {
         if (isset($this->locations[$theme][$scope][$filename])) {
-            return $this->locations[$theme][$scope][$filename];
+            list($relative, $urlType) = $this->locations[$theme][$scope][$filename];
+            return $relative;
         }
 
         $segments = array('theme', $theme, $scope, $filename);
         $relative = implode('/', array_filter($segments));
+        $urlType = null;
+
+        $file = new SplFileInfo($this->getPathManager()->get('public', $relative));
+        if ($file->isFile() && $file->isReadable()) {
+            $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
+            return $relative;
+        }
+
+        $urlType = 'media';
         $file = new SplFileInfo($this->getPathManager()->get('media', $relative));
         $source = $this->getFileLocator()->resolve('public', $filename, $scope, true);
 
-        $this->locations[$theme][$scope][$filename] = $relative;
+        $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
 
         if ($file->isReadable() && $file->isFile()
           && (($source === false) || ($source->getMTime() <= $file->getMTime()))) {
@@ -183,15 +193,27 @@ class UrlLocator implements UrlLocatorInterface
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\core\resource\UrlLocatorInterface::getUrl()
+     * @see \rampage\core\resource\UrlLocatorInterface::getRelativePath()
      */
-    public function getUrl($file, $scope = null)
+    public function getRelativePath($file, $scope = null, &$urlType = null)
     {
-        $theme = $this->getCurrentTheme();
         if (!$scope && (strpos($file, '::') !== false)) {
             @list($scope, $file) = explode('::', $file, 2);
         }
 
-        return $this->getUrlModel()->getUrl($this->resolve($file, $scope, $theme));
+        $theme = $this->getCurrentTheme();
+        return $this->resolve($file, $scope, $theme, $urlType);
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\core\resource\UrlLocatorInterface::getUrl()
+     */
+    public function getUrl($file, $scope = null)
+    {
+        $urlType = null;
+        $path = $this->getRelativePath($file, $scope, $urlType);
+
+        return $this->getUrlModel($urlType)->getUrl($path);
     }
 }

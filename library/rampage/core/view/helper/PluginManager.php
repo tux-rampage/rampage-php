@@ -45,15 +45,30 @@ class PluginManager extends HelperPluginManager
      * (non-PHPdoc)
      * @see \Zend\View\HelperPluginManager::__construct()
      */
-    public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $configuration = null)
+    public function __construct(ConfigInterface $configuration = null, ObjectManagerInterface $objectManager = null)
     {
         $this->invokableClasses = array_merge($this->invokableClasses, array(
             'resourceurl' => 'rampage.core.view.helper.ResourceUrl',
-            'url' => 'rampage.core.view.helper.Url'
+            'url' => 'rampage.core.view.helper.Url',
+            'translateargs' => 'rampage.core.view.helper.Translator'
         ));
 
-        $this->objectManager = $objectManager;
+        if ($objectManager) {
+            $this->setObjectManager($objectManager);
+        }
+
         parent::__construct($configuration);
+    }
+
+    /**
+     * Object manager
+     *
+     * @param ObjectManagerInterface $objectManager
+     */
+    public function setObjectManager(ObjectManagerInterface $objectManager)
+    {
+        $this->objectManager = $objectManager;
+        return $this;
     }
 
     /**

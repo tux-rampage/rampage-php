@@ -23,21 +23,34 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\model\url;
+namespace rampage\core\service;
 
-use rampage\core\model\Url;
+use rampage\core\view\helper\PluginManager;
+use Zend\Mvc\Service\ViewHelperManagerFactory as DefaultViewHelperManagerFactory;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Media URL model
+ * View halper manager factory
  */
-class Media extends Url
+class ViewHelperManagerFactory extends DefaultViewHelperManagerFactory
 {
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\model\Url::getType()
+    /**
+     * Plugin manager class
      */
-    public function getType()
+    const PLUGIN_MANAGER_CLASS = 'rampage\core\view\helper\PluginManager';
+
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Mvc\Service\ViewHelperManagerFactory::createService()
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return 'media';
+        $instance = parent::createService($serviceLocator);
+
+        if ($instance instanceof PluginManager) {
+            $instance->setObjectManager($serviceLocator->get('objectmanager'));
+        }
+
+        return $instance;
     }
 }

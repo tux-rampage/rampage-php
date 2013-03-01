@@ -69,6 +69,7 @@ class PathManager
             'public' => '{{root_dir}}/public',
             'var' => '{{root_dir}}/var',
             'cache' => '{{var_dir}}/cache',
+            'maps' => '{{var_dir}}/maps',
             'etc' => '{{app_dir}}/etc',
             'modules' => array('{{root_dir}}/modules'),
             'media' => '{{public_dir}}/media'

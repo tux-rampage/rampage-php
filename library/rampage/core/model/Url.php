@@ -41,6 +41,13 @@ class Url
     private $request = null;
 
     /**
+     * Type
+     *
+     * @var string
+     */
+    protected $type = null;
+
+    /**
      * Base Url
      *
      * @var array[\Zend\Http\Uri]
@@ -54,13 +61,14 @@ class Url
      * @param HttpRequest $request
      * @return \rampage\core\model\Url
      */
-    public function __construct(Config $config, HttpRequest $request = null)
+    public function __construct(Config $config, HttpRequest $request = null, $type = null)
     {
         if (!$request) {
             $request = new HttpRequest();
         }
 
         $this->request = $request;
+        $this->type = ($type === null)? null : (string)$type;
         $this->setConfig($config);
 
         return $this;
@@ -73,7 +81,7 @@ class Url
      */
     public function getType()
     {
-        return null;
+        return $this->type;
     }
 
     /**
@@ -138,7 +146,13 @@ class Url
      */
     protected function getDefaultBaseUrl()
     {
-        return $this->getRequest()->getBaseUrl();
+        $baseUrl = $this->getRequest()->getBaseUrl();
+
+        if ($type = $this->getType()) {
+            $baseUrl = rtrim($baseUrl, '/') . '/' . trim($type, '/');
+        }
+
+        return $baseUrl;
     }
 
     /**

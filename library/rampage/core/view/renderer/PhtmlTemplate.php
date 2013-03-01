@@ -30,6 +30,8 @@ use ArrayObject;
 
 /**
  * Render wrapper
+ *
+ * @method string __() __()
  */
 class PhtmlTemplate extends Object
 {
@@ -135,6 +137,10 @@ class PhtmlTemplate extends Object
      */
     public function __call($method, $args)
     {
+        if ($method == '__') {
+            $method = 'translateArgs';
+        }
+
         $viewDelegate = array($this->getView(), $method);
         if (method_exists($this->getView(), $method) && is_callable($viewDelegate)) {
             return call_user_func_array($viewDelegate, $args);

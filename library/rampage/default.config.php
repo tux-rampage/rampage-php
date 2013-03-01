@@ -34,25 +34,40 @@ return array(
                     'DependencyInjector' => 'rampage\core\service\DiFactory',
                     'ObjectManager' => 'rampage\core\service\ObjectManagerFactory',
                     'ControllerLoader' => 'rampage\core\service\ControllerLoaderFactory',
+                    'ViewHelperManager' => 'rampage\core\service\ViewHelperManagerFactory',
+                    'Translator' => 'Zend\I18n\Translator\TranslatorServiceFactory',
                 ),
                 'aliases' => array(
+                    // Layout
                     'rampage.Layout' => 'rampage.core.view.Layout',
                     'rampage.Theme' => 'rampage.core.resource.Theme',
+
+                    // Resources
                     'rampage.resource.FileLocator' => 'rampage\core\resource\FileLocator',
-                    'rampage.core.view.http.Renderer' => 'rampage\core\view\renderer\PhpRenderer',
+                    // change to rampage.core.resource.UrlLocator to disable caching proxy
+                    'rampage.resource.UrlLocator' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.core.resource.UrlLocator' : 'rampage.core.resource.url.locator.CachingProxy',
                     'rampage.resource.BootstapListener' => 'rampage.core.resource.BootstrapListener',
+
+                    // core
                     'om' => 'ObjectManager',
                     'rampage.ObjectManager' => 'ObjectManager',
                     'repositorymanager' => 'rampage.orm.RepositoryManager',
                     'DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
+                    'rampage.core.view.http.Renderer' => 'rampage\core\view\renderer\PhpRenderer',
 
                     // ORM
                     'rampage.orm.db.AdapterManager' => 'rampage.orm.db.adapter.AdapterManager',
                     'rampage.orm.db.PlatformManager' => 'rampage.orm.db.platform.ServiceLocator',
+
+                    // URLS
+                    'rampage.url.base' => 'rampage.core.model.Url',
+                    'rampage.url.media' => 'rampage.core.model.url.Media'
                 ),
+
                 'abstract_factories' => array(
                     'rampage\core\service\DiAbstractServiceFactory'
                 ),
+
                 'shared' => array(
                     'rampage.core.view.ViewIntializer' => false,
                     'rampage.core.view.renderer.PhpRenderer' => false,

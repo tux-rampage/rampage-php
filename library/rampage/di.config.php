@@ -16,7 +16,11 @@ return array(
             'rampage\core\resource\Theme' => 'rampage.Theme',
             'rampage\core\resource\FileLocatorInterface' => 'rampage.Theme',
             'rampage\core\view\Layout' => 'rampage.Layout',
-            'rampage\core\resource\UrlLocatorInterface' => 'rampage.core.resource.UrlLocator',
+            'rampage\core\view\helper\PluginManager' => 'ViewHelperManager',
+            'rampage\core\resource\UrlLocatorInterface' => 'rampage.resource.UrlLocator',
+
+            // Zend
+            'Zend\View\HelperPluginManager' => 'ViewHelperManager',
 
             // ORM
             'rampage\orm\ConfigInterface' => 'rampage\orm\Config',
@@ -26,6 +30,9 @@ return array(
             'rampage\orm\db\adapter\AdapterManager' => 'rampage.orm.db.AdapterManager',
             'rampage\orm\db\platform\ServiceLocator' => 'rampage.orm.db.PlatformManager',
 
+            // URLs
+            'rampage\core\model\Url' => 'rampage.url.base',
+            'rampage\core\model\url\Media' => 'rampage.url.media'
         ),
 
         'rampage\core\resource\Theme' => array(
@@ -34,10 +41,16 @@ return array(
             )
         ),
 
+        // Caching proxy - Parent should not be the type preference which could lead to cycle dependency
+        // to the caching proxy itself
+        'rampage\core\resource\url\locator\CachingProxy' => array(
+            'parameters' => array(
+                'parent' => 'rampage.core.resource.UrlLocator'
+            ),
+        ),
+
         'rampage\auth\service\AuthServiceManager' => array(
-            'preferences' => array(
-                // TODO
-            )
+            // TODO
         )
     )
 );

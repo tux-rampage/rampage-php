@@ -23,21 +23,28 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\model\url;
+namespace rampage\core\view\helper;
 
-use rampage\core\model\Url;
+use Zend\I18n\View\Helper\Translate as TranslateHelper;
 
 /**
- * Media URL model
+ * Translation helper
  */
-class Media extends Url
+class Translator extends TranslateHelper
 {
 	/**
      * (non-PHPdoc)
-     * @see \rampage\core\model\Url::getType()
+     * @see \Zend\I18n\View\Helper\Translate::__invoke()
      */
-    public function getType()
+    public function __invoke($message)
     {
-        return 'media';
+        $args = array_slice(func_get_args(), 1);
+        $message = parent::__invoke($message);
+
+        if (is_array($args) && (count($args) > 0)) {
+            $message = vsprintf($message, $args);
+        }
+
+        return $message;
     }
 }
