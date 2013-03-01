@@ -75,9 +75,10 @@ class Di extends DependencyInjector
      * @param string $type
      * @param string $fqParamPos
      * @param array $computedParams
+     * @param bool $isRequired
      * @return \rempage\core\di\Di
      */
-    protected function resolveTypePreference($type, $fqParamPos, &$computedParams)
+    protected function resolveTypePreference($type, $fqParamPos, &$computedParams, $isRequired)
     {
         if (!$type || !$this->instanceManager->hasTypePreferences($type)) {
             return false;
@@ -88,6 +89,11 @@ class Di extends DependencyInjector
             if (is_object($pInstance)) {
                 $computedParams['value'][$fqParamPos] = $pInstance;
                 return true;
+            }
+
+            // Preferences will not automatically make the parameter required
+            if (!$isRequired) {
+                continue;
             }
 
             $pInstanceClass = ($this->instanceManager->hasAlias($pInstance)) ?
@@ -291,12 +297,12 @@ class Di extends DependencyInjector
             // PRIORITY 6 - globally preferred implementations
 
             // next consult alias level preferred instances
-            if ($this->resolveTypePreference($alias, $fqParamPos, $computedParams)) {
+            if ($this->resolveTypePreference($alias, $fqParamPos, $computedParams, $isRequired)) {
                 continue;
             }
 
             // next consult class level preferred instances
-            if ($this->resolveTypePreference($type, $fqParamPos, $computedParams)) {
+            if ($this->resolveTypePreference($type, $fqParamPos, $computedParams, $isRequired)) {
                 continue;
             }
 

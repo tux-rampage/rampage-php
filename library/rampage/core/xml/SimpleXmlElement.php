@@ -335,18 +335,18 @@ class SimpleXmlElement extends \SimpleXMLElement
         switch ($type) {
             case 'array':
                 $value = array();
-                if (isset($this->items)) {
+                if (!isset($this->item)) {
                     return $value;
                 }
 
-                foreach ($this->items as $item) {
+                foreach ($this->item as $item) {
                     if (!($type = (string)$item['type'])) {
-                        continue;
+                        $type = 'string';
                     }
 
                     $current = null;
                     if ($item->$type) {
-                        $current = $item->{$type}->toPhpValue();
+                        $current = $item->{$type}->toPhpValue($type);
                     }
 
                     if (!isset($item['key']) && !isset($item['index'])) {

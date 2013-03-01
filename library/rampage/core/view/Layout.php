@@ -304,7 +304,7 @@ class Layout implements EventManagerAwareInterface, Serializable
      */
     protected function canProcessNode(SimpleXmlElement $node)
     {
-        if (in_array($node->getName(), array())) {
+        if (in_array($node->getName(), array('view', 'reference'))) {
             $name = (string)$node['name'];
             $ignore = (isset($this->ignoredViews[$name]))? $this->ignoredViews[$name] : false;
 
@@ -322,7 +322,7 @@ class Layout implements EventManagerAwareInterface, Serializable
      */
     protected function createViewFromXml(SimpleXmlElement $xml, LayoutViewInterface $parent = null)
     {
-        $class = (string)$xml['class'];
+        $class = (string)$xml['type'];
         $name = (string)$xml['name'];
         $data = array();
 
@@ -341,7 +341,7 @@ class Layout implements EventManagerAwareInterface, Serializable
         }
 
         if ($parent) {
-            $alias = isset($xml['alias'])? (string)$xml['alias'] : null;
+            $alias = isset($xml['alias'])? (string)$xml['alias'] : $name;
             $after = true;
             $sibling = null;
 
@@ -380,7 +380,7 @@ class Layout implements EventManagerAwareInterface, Serializable
     protected function createActionFromXml(LayoutViewInterface $view, SimpleXmlElement $xml)
     {
         $method = (string)$xml['method'];
-        if (!$method || is_callable(array($view, $method))) {
+        if (!$method || !is_callable(array($view, $method))) {
             return $this;
         }
 
@@ -443,9 +443,9 @@ class Layout implements EventManagerAwareInterface, Serializable
 
             switch ($type) {
                 case 'view':
-                    $view = $this->createViewFromXml($xml, $parent);
+                    $view = $this->createViewFromXml($child, $parent);
                     if ($view) {
-                        $this->createFromXml($xml, $view, true);
+                        $this->createFromXml($child, $view, true);
                     }
 
                     break;
@@ -460,14 +460,14 @@ class Layout implements EventManagerAwareInterface, Serializable
 
                 case 'action':
                     if ($parent) {
-                        $this->createActionFromXml($parent, $xml);
+                        $this->createActionFromXml($parent, $child);
                     }
 
                     break;
 
                 case 'data':
                     if (!$noData && $parent) {
-                        $this->addDataFromXml($parent, $xml);
+                        $this->addDataFromXml($parent, $child);
                     }
 
                     break;
@@ -520,7 +520,7 @@ class Layout implements EventManagerAwareInterface, Serializable
         }
 
         $this->setView($view, $name);
-        return $this;
+        return $view;
     }
 
     /**
@@ -612,7 +612,16 @@ class Layout implements EventManagerAwareInterface, Serializable
             return $this;
         }
 
-        $handles = $this->getUpdate()->collectNodes();
+        $update = $this->getUpdate();
+
+        if ($default !== false) {
+            $default = ($default)?: 'default';
+            $update->prepend($default);
+        }
+
+        $update->add($name);
+        $handles = $update->collectNodes();
+
         foreach ($handles as $xml) {
             $this->prepareIgnores($xml);
         }

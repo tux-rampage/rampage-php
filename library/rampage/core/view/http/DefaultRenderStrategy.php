@@ -113,6 +113,10 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
                ->setResponse($response);
 
         $response->setContent($renderer->render($result));
+
+        // Now change the result to response to prevend ZF's renderer to be applied
+        $event->setResult($response);
+        $event->setParam('layout', $result); // keep a reference to the layout
     }
 
     /**

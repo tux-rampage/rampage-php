@@ -58,15 +58,17 @@ class Config extends AggregatedXmlConfig
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\core\xml\Config::initMergeRules()
+     * @see \rampage\core\xml\Config::getDefaultMergeRulechain()
      */
-    protected function initMergeRules()
+    protected function getDefaultMergeRulechain()
     {
-        $this->getMergeRules()->add(new PropertyMergeRule('~/property$~'));
-        return $this;
+        $rules = parent::getDefaultMergeRulechain();
+        $rules->add(new PropertyMergeRule('~/property$~'));
+
+        return $rules;
     }
 
-	/**
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
      */
@@ -145,7 +147,7 @@ class Config extends AggregatedXmlConfig
         if ($domain == '__default__') {
             $node = $this->getNode("./property[@name = $xpathName and not(@domain)]");
         } else {
-            $xpathDomain = $this->xpathQuote($this->getDomain());
+            $xpathDomain = $this->xpathQuote($domain);
             $node = $this->getNode("./property[@name = $xpathName and @domain = $xpathDomain]");
 
             if (!$node instanceof SimpleXmlElement) {

@@ -27,6 +27,8 @@ namespace rampage\gui\view\html;
 
 use rampage\core\view\Template;
 use rampage\core\resource\FileLocatorInterface;
+use rampage\core\resource\UrlLocatorInterface;
+use rampage\core\exception\RuntimeException;
 
 /**
  * Html header view
@@ -38,16 +40,121 @@ class Head extends Template
      *
      * @var array
      */
-    protected $js;
+    protected $js = array();
 
     /**
      * Css
      *
      * @var array
      */
-    protected $css;
+    protected $css = array();
 
     /**
+     * Title fragments
+     *
+     * @var array
+     */
+    protected $titles = array();
+
+    /**
+     * Url locator
+     *
+     * @var \rampage\core\resource\UrlLocatorInterface
+     */
+    private $urlLocator = null;
+
+    /**
+     * Construct
+     */
+    public function __construct(UrlLocatorInterface $urlLocator)
+    {
+        $this->urlLocator = $urlLocator;
+        $this->setTemplate('core::html/head');
+    }
+
+    /**
+     * Url locator
+     *
+     * @return \rampage\core\resource\UrlLocatorInterface
+     */
+    protected function getUrlLocator()
+    {
+        return $this->urlLocator;
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\core\data\Object::get()
+     */
+    protected function get($key, $default = null)
+    {
+        if ($this->hasLayoutData($key)) {
+            return $this->fetchLayoutData($key);
+        }
+
+        return parent::get($key, $default);
+    }
+
+    /**
+     * Title prefix
+     *
+     * @return string
+     */
+	public function getTitlePrefix()
+    {
+        return (string)$this->get('title_prefix');
+    }
+
+    /**
+     * Title suffix
+     *
+     * @return string
+     */
+    public function getTitleSuffix()
+    {
+        return (string)$this->get('title_suffix');
+    }
+
+    /**
+     * Title separator
+     *
+     * @return string
+     */
+    public function getTitleSeparator()
+    {
+        return (string)$this->get('title_separator');
+    }
+
+    /**
+     * Add a title fragment
+     *
+     * @param string $title
+     * @return \rampage\gui\view\html\Head
+     */
+    public function addTitle($title)
+    {
+        $title = (string)$title;
+        $this->titles[$title] = $title;
+
+        return $this;
+    }
+
+    /**
+     * Title
+     */
+    public function title()
+    {
+        $fragments = $this->titles;
+        array_unshift($fragments, $this->getTitlePrefix());
+
+        $fragments[] = (string)$this->get('title');
+        $fragments[] = $this->getTitleSuffix();
+        $fragments = array_filter($fragments);
+
+        return implode($this->getTitleSeparator(), $fragments);
+    }
+
+	/**
      * Add a javascript
      *
      * @param string $file
@@ -68,9 +175,29 @@ class Head extends Template
     }
 
     /**
-     *
+     * Render CSS html
      */
-    public function getJsHtml()
+    public function cssHtml()
+    {
+        $html = array();
+
+        foreach ($this->css as $file) {
+            try {
+                $url = $this->getUrlLocator()->getUrl($file);
+            } catch (RuntimeException $e) {
+                continue;
+            }
+
+            $html[] = '<link rel="stylesheet" type="text/css" href="' . $url . '" />';
+        }
+
+        return implode("\n", $html);
+    }
+
+    /**
+     * Returns Javascript HTML
+     */
+    public function jsHtml()
     {
 
     }

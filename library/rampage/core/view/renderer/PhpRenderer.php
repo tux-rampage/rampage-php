@@ -276,9 +276,14 @@ class PhpRenderer implements RendererInterface
     protected function fetchView(TemplateInterface $view)
     {
         $file = $view->getTemplate();
+        if (!$file) {
+            return '';
+        }
+
+        $file .= '.phtml';
         $path = $this->getTemplateResolver()->resolve('template', $file, null, true);
 
-        if (!$path || !$path->isReadable()) {
+        if (($path === false) || !$path->isReadable()) {
             return '';
         }
 
@@ -301,7 +306,13 @@ class PhpRenderer implements RendererInterface
 
             foreach ($view->getOutputViews('html') as $childName) {
                 $child = $view->getView($childName);
-                $output .= $this->render($child);
+
+                if ($child instanceof RenderableInterface) {
+                    $child->setViewRenderer($this);
+                    $output .= $child->render();
+                } else {
+                    $output .= $this->render($child);
+                }
             }
 
             return $output;
@@ -321,7 +332,7 @@ class PhpRenderer implements RendererInterface
         }
 
         $html = $this->fetchView($view);
-        $this->saveCache($html);
+        $this->saveCache($view, $html);
 
         return $html;
     }

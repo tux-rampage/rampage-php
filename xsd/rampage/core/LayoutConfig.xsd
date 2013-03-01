@@ -51,6 +51,7 @@
             <extension base="rampagelayout:ViewReference">
                 <attribute name="type" type="string" use="required"></attribute>
                 <attribute name="template" type="string" use="optional"></attribute>
+                <attribute name="output" type="string" use="optional"></attribute>
             </extension>
         </complexContent>
     </complexType>

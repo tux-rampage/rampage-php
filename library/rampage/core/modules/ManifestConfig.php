@@ -410,6 +410,25 @@ class ManifestConfig extends Config
     }
 
     /**
+     * Load theme config
+     *
+     * @return \rampage\core\modules\ManifestConfig
+     */
+    protected function loadThemeConfig()
+    {
+        $xml = $this->getXml();
+
+        foreach ($xml->xpath('./resources/theme[@name != "" and @path != ""]') as $node) {
+            $path = (string)$node['path'];
+            $name = (string)$node['name'];
+
+            $this->manifest['application_config']['rampage']['themes'][$name] = $path;
+        }
+
+        return $this;
+    }
+
+    /**
      * Load layout config
      */
     protected function loadResourceConfig()
@@ -532,6 +551,7 @@ class ManifestConfig extends Config
         $this->loadPackagesConfig()
              ->loadLayoutConfig()
              ->loadResourceConfig()
+             ->loadThemeConfig()
              ->loadServiceConfig()
              ->loadLocaleConfig()
              ->loadControllersConfig()

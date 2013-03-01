@@ -182,8 +182,6 @@ class Url
         $url = $base . '/' . ltrim($path);
 
         $uri->setPath($url);
-        if (isset($params['secure']) && $params['secure'])
-
         return $uri;
     }
 }

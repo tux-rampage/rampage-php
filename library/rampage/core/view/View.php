@@ -70,6 +70,32 @@ class View extends Object implements LayoutViewInterface
     private $renderer = null;
 
     /**
+     * Check if data exists in layout
+     *
+     * @param string $name
+     * @return boolean
+     */
+    protected function hasLayoutData($name)
+    {
+        return $this->getLayout()->getData()->offsetExists($name);
+    }
+
+    /**
+     * Fetch layout data
+     *
+     * @param string $name
+     * @param string $default
+     */
+    protected function fetchLayoutData($name, $default = null)
+    {
+        if (!$this->hasLayoutData($name)) {
+            return $default;
+        }
+
+        return $this->getLayout()->getData()->offsetGet($name);
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\view\ViewInteface::addChild()
      */
@@ -281,7 +307,7 @@ class View extends Object implements LayoutViewInterface
      */
     public function render()
     {
-        $this->getViewRenderer()->render($this);
+        return $this->getViewRenderer()->render($this);
     }
 
     /**
@@ -293,7 +319,12 @@ class View extends Object implements LayoutViewInterface
         $output = '';
 
         foreach ($this->getChildren() as $child) {
-            $output .= $this->getViewRenderer()->render($child);
+            if (!$child instanceof RenderableInterface) {
+                continue;
+            }
+
+            $child->setViewRenderer($this->getViewRenderer());
+            $output .= $child->render();
         }
 
         return $output;

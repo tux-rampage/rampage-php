@@ -115,7 +115,7 @@ class PhtmlTemplate extends Object
      * (non-PHPdoc)
      * @see \rampage\core\data\Object::get()
      */
-    public function get($key, $default)
+    public function get($key, $default = null)
     {
         return parent::get($key, $default);
     }
@@ -136,7 +136,7 @@ class PhtmlTemplate extends Object
     public function __call($method, $args)
     {
         $viewDelegate = array($this->getView(), $method);
-        if (is_callable($viewDelegate)) {
+        if (method_exists($this->getView(), $method) && is_callable($viewDelegate)) {
             return call_user_func_array($viewDelegate, $args);
         }
 

@@ -16,6 +16,7 @@ return array(
             'rampage\core\resource\Theme' => 'rampage.Theme',
             'rampage\core\resource\FileLocatorInterface' => 'rampage.Theme',
             'rampage\core\view\Layout' => 'rampage.Layout',
+            'rampage\core\resource\UrlLocatorInterface' => 'rampage.core.resource.UrlLocator',
 
             // ORM
             'rampage\orm\ConfigInterface' => 'rampage\orm\Config',

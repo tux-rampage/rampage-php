@@ -44,7 +44,7 @@ class Theme extends FileLocator
      *
      * @var string
      */
-    protected $current = 'default';
+    protected $current = '__default__';
 
     /**
      * Constructor
@@ -125,10 +125,10 @@ class Theme extends FileLocator
         }
 
         $themePath = $scope . '/' . ltrim($file, '/');
-        $path = parent::resolve($this->current, $type, $themePath, false);
+        $path = parent::resolve($type, $themePath, $this->current, false);
 
-        if (file_exists($path) && $this->fallback) {
-            return $this->fallback->resolve($scope, $type, $file, $asFileInfo);
+        if (!file_exists($path) && $this->fallback) {
+            return $this->fallback->resolve($type, $file, $scope, $asFileInfo);
         }
 
         if ($asFileInfo) {

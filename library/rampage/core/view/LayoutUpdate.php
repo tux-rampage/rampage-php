@@ -40,7 +40,7 @@ class LayoutUpdate implements IteratorAggregate
      *
      * @var array
      */
-    private $handles = array('default' => 'default');
+    private $handles = array();
 
     /**
      * Applied handles
@@ -143,6 +143,26 @@ class LayoutUpdate implements IteratorAggregate
     {
         $this->collectedHandles = array();
         return $this->fetchHandles($this->handles);
+    }
+
+    /**
+     * Prepend handles
+     *
+     * @param string|array|Traversable $name
+     * @return \rampage\core\view\LayoutUpdate
+     */
+    public function prepend($name)
+    {
+        if (is_array($name) || ($name instanceof Traversable)) {
+            foreach ($name as $itemName) {
+                $this->prepend($itemName);
+            }
+
+            return $this;
+        }
+
+        $this->handles = array($name => $name) + $this->handles;
+        return $this;
     }
 
     /**

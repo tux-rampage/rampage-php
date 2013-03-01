@@ -73,6 +73,7 @@ class UrlLocator implements UrlLocatorInterface
     {
         $this->fileLocator = $fileLocator;
         $this->pathManager = $pathManager;
+        $this->urlModel = $model;
     }
 
     /**
@@ -135,11 +136,13 @@ class UrlLocator implements UrlLocatorInterface
             $source = $this->getFileLocator()->resolve('public', $file, $scope, true);
         }
 
-        if (!$source || !$source->isReadable() || !$source->isFile()) {
+        if (($source === false) || !$source->isReadable() || !$source->isFile()) {
             return false;
         }
 
-        if (!mkdir($target->getPath(), null, true)) {
+        $dir = $target->getPathInfo();
+        if (!$dir->isDir() && !@mkdir($dir->getPathname(), 0777, true)) {
+            $path = $dir->getPathname();
             return false;
         }
 
@@ -155,26 +158,19 @@ class UrlLocator implements UrlLocatorInterface
      */
     protected function resolve($filename, $scope, $theme)
     {
-        if (isset($this->locations[$theme][$scope][$file])) {
-            return $this->locations[$theme][$scope][$file];
+        if (isset($this->locations[$theme][$scope][$filename])) {
+            return $this->locations[$theme][$scope][$filename];
         }
 
         $segments = array('theme', $theme, $scope, $filename);
         $relative = implode('/', array_filter($segments));
-        $file = new SplFileInfo($this->getPathManager()->get('public', $relative));
-
-        if ($file->isFile() && $file->isReadable()) {
-            $this->locations[$theme][$scope][$file] = $relative;
-            return $relative;
-        }
-
         $file = new SplFileInfo($this->getPathManager()->get('media', $relative));
-        $relative = 'media/' . $relative;
         $source = $this->getFileLocator()->resolve('public', $filename, $scope, true);
-        $this->locations[$theme][$scope][$file] = $relative;
+
+        $this->locations[$theme][$scope][$filename] = $relative;
 
         if ($file->isReadable() && $file->isFile()
-          && (!$source || ($source->getMTime() <= $file->getMTime()))) {
+          && (($source === false) || ($source->getMTime() <= $file->getMTime()))) {
             return $relative;
         }
 
