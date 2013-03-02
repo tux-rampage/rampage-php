@@ -293,8 +293,13 @@
 	        </element>
 	        <element name="theme" maxOccurs="unbounded" minOccurs="0">
 	            <complexType>
-	                <attribute name="name" type="string" use="required"></attribute>
-	                <attribute name="path" type="string" use="required"></attribute>
+	                <attribute name="name" type="string"
+	                    use="required">
+	                </attribute>
+	                <attribute name="path" type="string"
+	                    use="required">
+	                </attribute>
+	                <attribute name="fallbacks" type="string" use="optional"></attribute>
 	            </complexType>
 	        </element>
 	        <element name="layout" type="rampage:LayoutSection"

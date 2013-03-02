@@ -118,6 +118,10 @@ class Config extends AggregatedXmlConfig implements ConfigInterface
         $objectManager = $this->getObjectManager();
 
         foreach ($this->data[$id][$name] as $listener) {
+            if (!$listener) {
+                continue;
+            }
+
             $priority = 1;
 
             if (is_array($listener) && isset($listener['listener'])) {

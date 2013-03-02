@@ -25,6 +25,9 @@
 
 namespace rampage\core\model\design;
 
+use Traversable;
+use ArrayAccess;
+
 /**
  * Design config
  */
@@ -42,18 +45,34 @@ class Config
      *
      * @param array $data
      */
-    public function __config($data)
+    public function __construct($data = array())
     {
-        // TODO
+        if (!isset($data['rampage']['themes'])
+          && (!is_array($data['rampage']['themes'])
+          || !($data['rampage']['themes'] instanceof ArrayAccess))) {
+            return;
+        }
+
+        $this->data = $data['rampage']['themes'];
     }
 
     /**
      * Retrieve the fallback theme
      *
      * @param string $name
+     * @return array
      */
-    public function getFallbackTheme($name)
+    public function getFallbackThemes($name)
     {
-        // TODO
+        if (!isset($this->data[$name]['fallbacks'])) {
+            return array();
+        }
+
+        if (!is_array($this->data[$name]['fallbacks'])
+          && !($this->data[$name]['fallbacks'] instanceof Traversable)) {
+            return array((string)$this->data[$name]['fallbacks']);
+        }
+
+        return $this->data[$name]['fallbacks'];
     }
 }

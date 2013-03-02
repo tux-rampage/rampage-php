@@ -32,6 +32,13 @@ use Zend\EventManager\SharedEventManagerInterface;
 interface ConfigInterface
 {
     /**
+     * Set the config array
+     *
+     * @param array $config
+     */
+    public function setConfigArray($config);
+
+    /**
      * Configure the given event manager instance for the given id and event name
      *
      * @param SharedEventManagerInterface $eventManager

@@ -169,6 +169,10 @@ class Config extends AggregatedXmlConfig
                 $value = $node->toPhpValue($type);
                 break;
 
+            case '':
+                $type = 'string';
+                // break intentionally omitted
+
             default:
                 $value = $node->toValue($type, 'value');
                 break;

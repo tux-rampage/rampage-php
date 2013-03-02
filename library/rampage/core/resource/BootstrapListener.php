@@ -49,8 +49,12 @@ class BootstrapListener
             return $this;
         }
 
-        foreach ($config as $name => $path) {
-            $theme->addLocation($name, $path);
+        foreach ($config as $name => $conf) {
+            if (!isset($conf['paths'])) {
+                continue;
+            }
+
+            $theme->addLocation($name, $conf['paths']);
         }
 
         return $this;

@@ -102,6 +102,7 @@ class ServiceConfig extends ServiceManagerConfig
 
                 if (($sharedEventManager instanceof SharedEventManager)
                   && ($config instanceof EventConfigInterface)) {
+                    $config->setConfigArray($serviceManager->get('config'));
                     $sharedEventManager->setConfig($config);
                 }
             }, 0);

@@ -24,6 +24,19 @@ return array(
                 )
             ),
 
+            'rampage' => array(
+                'events' => array(
+                    'rampage\core\Application' => array(
+                        'bootstrap' => array(
+                            'rampage.design' => array(
+                                'listener' => 'rampage.core.model.design.BootstrapListener',
+                                'priority' => 10000
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+
             'service_manager' => array(
                 'invokables' => array(
                     'rampage.core.service.DiAbstractServiceFactory' => 'rampage\core\service\DiAbstractServiceFactory',
@@ -41,6 +54,7 @@ return array(
                     // Layout
                     'rampage.Layout' => 'rampage.core.view.Layout',
                     'rampage.Theme' => 'rampage.core.resource.Theme',
+                    'rampage.theme.Config' => 'rampage.core.model.design.Config',
 
                     // Resources
                     'rampage.resource.FileLocator' => 'rampage\core\resource\FileLocator',
@@ -54,6 +68,7 @@ return array(
                     'repositorymanager' => 'rampage.orm.RepositoryManager',
                     'DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
                     'rampage.event.Config' => 'rampage.core.event.Config',
+                    'rampage.UserConfig' => 'rampage.core.model.Config',
                     'rampage.core.view.http.Renderer' => 'rampage\core\view\renderer\PhpRenderer',
 
                     // ORM

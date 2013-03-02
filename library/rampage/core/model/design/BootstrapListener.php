@@ -49,13 +49,29 @@ class BootstrapListener
     private $userConfig = null;
 
     /**
+     * Theme config
+     *
+     * @var Config
+     */
+    private $config = null;
+
+    /**
      * Construct
      * @param ObjectManagerInterface $objectManager
      */
-    public function __construct(Theme $theme, UserConfig $userConfig)
+    public function __construct(Theme $theme, UserConfig $userConfig, Config $config)
     {
         $this->theme = $theme;
         $this->userConfig = $userConfig;
+        $this->config = $config;
+    }
+
+    /**
+     * @return \rampage\core\model\design\Config
+     */
+    protected function getConfig()
+    {
+        return $this->config;
     }
 
     /**
@@ -69,7 +85,7 @@ class BootstrapListener
     /**
      * @return \rampage\core\model\Config
      */
-    protected function getConfig()
+    protected function getUserConfig()
     {
         return $this->userConfig;
     }
@@ -81,12 +97,40 @@ class BootstrapListener
      */
     public function __invoke(MvcEvent $event)
     {
-        $name = $this->getConfig()->getConfigValue('design.theme.name');
+        $name = $this->getUserConfig()->getConfigValue('design.theme.name');
         if (!$name) {
             return;
         }
 
         $theme = $this->getTheme();
         $theme->setCurrentTheme($name);
+
+        // Build fallback paths
+        // fb1 -> fb2 -> ... -> fbX
+
+        $fallbacks = $this->getConfig()->getFallbackThemes($name);
+        $fallback = null;
+        $last = null;
+
+        foreach ($fallbacks as $fallbackName) {
+            $current = clone $theme;
+            $current->setCurrentTheme($fallbackName);
+
+            // Define first as fallback path entry
+            if (!$fallback) {
+                $fallback = $current;
+            }
+
+            // build the fallback path
+            if ($last) {
+                $last->setFallback($current);
+            }
+
+            $last = $current;
+        }
+
+        if ($fallback) {
+            $theme->setFallback($fallback);
+        }
     }
 }

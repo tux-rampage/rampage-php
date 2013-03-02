@@ -15,18 +15,20 @@ return array(
             'rampage\core\ModuleManager' => 'rampage.ModuleManager',
             'rampage\core\resource\Theme' => 'rampage.Theme',
             'rampage\core\resource\FileLocatorInterface' => 'rampage.Theme',
+            'rampage\core\model\design\Config' => 'rampage.theme.Config',
             'rampage\core\view\Layout' => 'rampage.Layout',
             'rampage\core\view\helper\PluginManager' => 'ViewHelperManager',
             'rampage\core\resource\UrlLocatorInterface' => 'rampage.resource.UrlLocator',
+            'rampage\core\model\Config' => 'rampage.UserConfig',
 
             // Zend
             'Zend\View\HelperPluginManager' => 'ViewHelperManager',
 
             // ORM
-            'rampage\orm\ConfigInterface' => 'rampage\orm\Config',
-            'rampage\orm\entity\type\ConfigInterface' => 'rampage\orm\Config',
-            'rampage\orm\db\adapter\ConfigInterface' => 'rampage\orm\db\Config',
-            'rampage\orm\db\platform\ConfigInterface' => 'rampage\orm\db\Config',
+            'rampage\orm\ConfigInterface' => 'rampage.orm.Config',
+            'rampage\orm\entity\type\ConfigInterface' => 'rampage.orm.Config',
+            'rampage\orm\db\adapter\ConfigInterface' => 'rampage.orm.db.Config',
+            'rampage\orm\db\platform\ConfigInterface' => 'rampage.orm.db.Config',
             'rampage\orm\db\adapter\AdapterManager' => 'rampage.orm.db.AdapterManager',
             'rampage\orm\db\platform\ServiceLocator' => 'rampage.orm.db.PlatformManager',
 
@@ -38,6 +40,12 @@ return array(
         'rampage\core\resource\Theme' => array(
             'parameters' => array(
                 'fallback' => 'rampage.resource.FileLocator',
+            )
+        ),
+
+        'rampage\core\model\design\Config' => array(
+            'parameters' => array(
+                'data' => 'Config'
             )
         ),
 

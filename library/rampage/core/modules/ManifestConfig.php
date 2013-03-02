@@ -422,7 +422,14 @@ class ManifestConfig extends Config
             $path = (string)$node['path'];
             $name = (string)$node['name'];
 
-            $this->manifest['application_config']['rampage']['themes'][$name] = $this->getModulePath($path);
+            $this->manifest['application_config']['rampage']['themes'][$name]['paths'] = $this->getModulePath($path);
+
+            if (isset($node['fallbacks'])) {
+                $fallbacks = explode(',', (string)$node['fallbacks']);
+                $fallbacks = array_filter(array_map('trim', $fallbacks));
+
+                $this->manifest['application_config']['rampage']['themes'][$name]['fallbacks'] = $fallbacks;
+            }
         }
 
         return $this;
