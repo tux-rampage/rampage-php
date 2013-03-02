@@ -170,7 +170,11 @@ class Config implements EventManagerAwareInterface
      */
     public function setEventManager(EventManagerInterface $eventManager)
     {
-        $eventManager->setIdentifiers(trim(str_replace('\\', '.', get_class($this)), '.'));
+        $eventManager->setIdentifiers(array(
+            strtr(get_class($this), '\\', '.'),
+            'XmlConfig'
+        ));
+
         $this->_eventManager = $eventManager;
         return $this;
     }

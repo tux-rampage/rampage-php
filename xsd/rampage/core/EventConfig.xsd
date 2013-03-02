@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.linux-rampage.org/EventConfig"
+    elementFormDefault="qualified"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:rampagevents="http://www.linux-rampage.org/EventConfig" xmlns:phptypes="http://www.linux-rampage.org/PHPTypes">
+
+    <import schemaLocation="PHPTypes.xsd" namespace="http://www.linux-rampage.org/PHPTypes"></import>
+    <element name="events">
+        <complexType>
+            <all>
+                <element name="listener"
+                    type="rampagevents:EventListenerConfig"
+                    maxOccurs="unbounded" minOccurs="0">
+                </element>
+            </all>
+        </complexType>
+    </element>
+
+    <complexType name="EventListenerConfig">
+        <all>
+            <element name="options" type="phptypes:ArrayType" maxOccurs="1"
+                minOccurs="0">
+            </element>
+        </all>
+        <attribute name="scope" type="string" use="required"></attribute>
+        <attribute name="event" type="string" use="required"></attribute>
+        <attribute name="class" type="string" use="required"></attribute>
+    </complexType>
+</schema>

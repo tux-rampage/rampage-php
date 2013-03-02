@@ -23,39 +23,20 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core;
+namespace rampage\core\event;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
-
+use Zend\EventManager\SharedEventManagerInterface;
 /**
- * Object manager interface
+ * event config interface
  */
-interface ObjectManagerInterface extends ServiceLocatorInterface
+interface ConfigInterface
 {
     /**
-     * Add aliases
+     * Configure the given event manager instance for the given id and event name
      *
-     * @param array|\Traversable $config
-     * @throws \rampage\core\exception\InvalidArgumentException
+     * @param SharedEventManagerInterface $eventManager
+     * @param string $id
+     * @param string $event
      */
-    public function addAliases($config);
-
-    /**
-     * Extended service locator interface to allow parameters and disable initializers
-     *
-     * @param string $name
-     * @param array $params
-     * @param bool $callInitializers
-     * @return object
-     */
-    public function get($name, array $params = array(), $callInitializers = true);
-
-    /**
-     * Create a new instance for the requested class
-     *
-     * @param string $name
-     * @param string $params
-     * @return string
-     */
-    public function newInstance($name, array $params = array());
+    public function configureEventManager(SharedEventManagerInterface $eventManager, $id, $event);
 }

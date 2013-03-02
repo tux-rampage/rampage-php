@@ -30,6 +30,9 @@ use Zend\ServiceManager\ServiceManager as ZendServiceManager;
 use Zend\ModuleManager\ModuleManagerInterface;
 use Zend\ModuleManager\ModuleEvent;
 
+use rampage\core\event\SharedEventManager;
+use rampage\core\event\ConfigInterface as EventConfigInterface;
+
 /**
  * Custom service configuration
  */
@@ -87,9 +90,21 @@ class ServiceConfig extends ServiceManagerConfig
 
         $serviceManager->addPeeringServiceManager($serviceManager->get('AggregatedServiceLocator'));
         $serviceManager->addInitializer(function($instance, $serviceManager) {
-            if ($instance instanceof ModuleManagerInterface) {
-                $instance->getEventManager()->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
+            if (!$instance instanceof ModuleManagerInterface) {
+                return;
             }
+
+            $events = $instance->getEventManager();
+            $events->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
+            $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, function($event) use ($serviceManager) {
+                $sharedEventManager = $serviceManager->get('SharedEventManager');
+                $config = $serviceManager->get('rampage.event.Config');
+
+                if (($sharedEventManager instanceof SharedEventManager)
+                  && ($config instanceof EventConfigInterface)) {
+                    $sharedEventManager->setConfig($config);
+                }
+            }, 0);
         });
 
         return $this;

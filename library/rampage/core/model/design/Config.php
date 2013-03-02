@@ -23,39 +23,37 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core;
-
-use Zend\ServiceManager\ServiceLocatorInterface;
+namespace rampage\core\model\design;
 
 /**
- * Object manager interface
+ * Design config
  */
-interface ObjectManagerInterface extends ServiceLocatorInterface
+class Config
 {
     /**
-     * Add aliases
+     * Config
      *
-     * @param array|\Traversable $config
-     * @throws \rampage\core\exception\InvalidArgumentException
+     * @var array
      */
-    public function addAliases($config);
+    private $data = array();
 
     /**
-     * Extended service locator interface to allow parameters and disable initializers
+     * Construct
      *
-     * @param string $name
-     * @param array $params
-     * @param bool $callInitializers
-     * @return object
+     * @param array $data
      */
-    public function get($name, array $params = array(), $callInitializers = true);
+    public function __config($data)
+    {
+        // TODO
+    }
 
     /**
-     * Create a new instance for the requested class
+     * Retrieve the fallback theme
      *
      * @param string $name
-     * @param string $params
-     * @return string
      */
-    public function newInstance($name, array $params = array());
+    public function getFallbackTheme($name)
+    {
+        // TODO
+    }
 }

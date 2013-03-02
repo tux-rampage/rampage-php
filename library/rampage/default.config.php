@@ -48,11 +48,12 @@ return array(
                     'rampage.resource.UrlLocator' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.core.resource.UrlLocator' : 'rampage.core.resource.url.locator.CachingProxy',
                     'rampage.resource.BootstapListener' => 'rampage.core.resource.BootstrapListener',
 
-                    // core
+                    // Core
                     'om' => 'ObjectManager',
                     'rampage.ObjectManager' => 'ObjectManager',
                     'repositorymanager' => 'rampage.orm.RepositoryManager',
                     'DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
+                    'rampage.event.Config' => 'rampage.core.event.Config',
                     'rampage.core.view.http.Renderer' => 'rampage\core\view\renderer\PhpRenderer',
 
                     // ORM

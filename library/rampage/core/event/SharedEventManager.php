@@ -25,8 +25,6 @@
 
 namespace rampage\core\event;
 
-use Zend\EventManager\EventManager;
-
 use Zend\EventManager\SharedEventManager as DefaultSharedEventManager;
 
 /**
@@ -39,27 +37,29 @@ class SharedEventManager extends DefaultSharedEventManager
      *
      * @var array
      */
-    protected $_configuredEvents = array();
+    protected $configuredEvents = array();
 
     /**
      * Flag if configs can be added
      *
      * @var bool
      */
-    private $_canAddConfig = true;
+    private $canAddConfig = true;
 
     /**
-     * Get event manager
+     * Config instance
      *
-     * @return \Zend\EventManager\EventManager
+     * @var ConfigInterface
      */
-    protected function getIdentifierEventManager($id)
-    {
-        if (!array_key_exists($id, $this->identifiers)) {
-            $this->identifiers[$id] = new EventManager();
-        }
+    private $config = null;
 
-        return $this->identifiers[$id];
+    /**
+     * @param \rampage\core\event\ConfigInterface $config
+     */
+    public function setConfig(ConfigInterface $config)
+    {
+        $this->config = $config;
+        return $this;
     }
 
     /**
@@ -70,22 +70,23 @@ class SharedEventManager extends DefaultSharedEventManager
      */
     protected function addConfigListeners($id, $event)
     {
-        if (isset($this->_configuredEvents[$id][$event]) || !$this->_canAddConfig) {
+        if (isset($this->configuredEvents[$id][$event]) || !$this->canAddConfig || !$this->config) {
             return $this;
         }
 
-        // FIXME: implement config event loading
-        return $this;
-
         // Disable config load now to avoid being triggerd recursively by inner events
-        $this->_canAddConfig = false;
-        $listeners = array();
+        $this->canAddConfig = false;
 
-        foreach ($listeners as $listener) {
-            $this->getIdentifierEventManager($id)->attach($event, $listener->getCallback(), $listener->getPriority());
+        $this->config->configureEventManager($this, $id, $event);
+        $this->configuredEvents[$id][$event] = true;
+
+        // Add wildcard events if not done, yet
+        if (!isset($this->configuredEvents[$id]['*'])) {
+            $this->config->configureEventManager($this, $id, '*');
+            $this->configuredEvents[$id]['*'] = true;
         }
 
-        $this->_canAddConfig = true;
+        $this->canAddConfig = true;
         return $this;
     }
 

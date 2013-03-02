@@ -327,7 +327,7 @@ class SimpleXmlElement extends \SimpleXMLElement
      */
     public function toPhpValue($type = null, $serviceLocator = null)
     {
-        /* @var $serviceLocator \Zend\ServiceManager\ServiceManager */
+        /* @var $serviceLocator \rampage\core\ObjectManagerInterface */
         if (!$type) {
             $type = $this->getName();
         }
@@ -346,7 +346,7 @@ class SimpleXmlElement extends \SimpleXMLElement
 
                     $current = null;
                     if ($item->$type) {
-                        $current = $item->{$type}->toPhpValue($type);
+                        $current = $item->{$type}->toPhpValue($type, $serviceLocator);
                     }
 
                     if (!isset($item['key']) && !isset($item['index'])) {
@@ -365,15 +365,22 @@ class SimpleXmlElement extends \SimpleXMLElement
                 break;
 
             case 'instance':
-                if (!is_callable(array($serviceLocator, 'get'))) {
+                if (!is_callable(array($serviceLocator, 'get'))
+                  || !is_callable(array($serviceLocator, 'has'))) {
                     return null;
                 }
 
                 $class = (string)$this['class'];
-                $value = $serviceLocator->get($class);
-
-                if (!$value) {
+                if (!$class || !$serviceLocator->has($class)) {
                     return null;
+                }
+
+                // DI/Object manager?
+                if (isset($this->options) && is_callable(array($serviceLocator, 'newInstance'))) {
+                    $options = $this->options->toPhpValue('array', $serviceLocator);
+                    $value = $serviceLocator->newInstance($class, $options);
+                } else {
+                    $value = $serviceLocator->get($class);
                 }
 
                 break;

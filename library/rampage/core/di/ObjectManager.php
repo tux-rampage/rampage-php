@@ -104,6 +104,11 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
      */
     public function setEventManager(EventManagerInterface $eventManager)
     {
+        $eventManager->setIdentifiers(array(
+            'ObjectManager',
+            strtr(get_class($this), '\\', '.')
+        ));
+
         $this->eventManager = $eventManager;
         return $this;
     }
@@ -322,7 +327,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
      * (non-PHPdoc)
      * @see \rampage\core\ObjectManagerInterface::newInstance()
      */
-    public function newInstance($name, $params)
+    public function newInstance($name, array $params = array())
     {
         $class = $this->resolveClassName($name);
         return $this->getDi()->newInstance($name, $params, false);
