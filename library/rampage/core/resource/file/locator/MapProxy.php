@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\resource\file;
+namespace rampage\core\resource\file\locator;
 
 use rampage\core\PathManager;
 use rampage\core\resource\FileLocatorInterface;
@@ -188,7 +188,7 @@ class MapProxy implements FileLocatorInterface
             return $this->map[$map][$theme][$type][$scope][$file];
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -241,7 +241,10 @@ class MapProxy implements FileLocatorInterface
         }
 
         $relative = $this->getParent()->publish($file, $scope);
-        $this->addToMap($relative, 'publish', $file, $scope);
+        if ($relative !== false) {
+            $this->addToMap($relative, 'publish', $file, $scope);
+        }
+
         return $relative;
     }
 

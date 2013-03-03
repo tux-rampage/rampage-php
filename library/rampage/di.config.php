@@ -14,7 +14,7 @@ return array(
             'rampage\core\PathManager' => 'rampage.PathManager',
             'rampage\core\ModuleManager' => 'rampage.ModuleManager',
             'rampage\core\resource\Theme' => 'rampage.Theme',
-            'rampage\core\resource\FileLocatorInterface' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.Theme' : 'rampage.resource.locator.MapProxy',
+            'rampage\core\resource\FileLocatorInterface' => 'rampage.resource.locator.MapProxy',
             'rampage\core\model\design\Config' => 'rampage.theme.Config',
             'rampage\core\view\Layout' => 'rampage.Layout',
             'rampage\core\view\helper\PluginManager' => 'ViewHelperManager',
