@@ -58,8 +58,9 @@ return array(
 
                     // Resources
                     'rampage.resource.FileLocator' => 'rampage\core\resource\FileLocator',
-                    // change to rampage.core.resource.UrlLocator to disable caching proxy
-                    'rampage.resource.UrlLocator' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.core.resource.UrlLocator' : 'rampage.core.resource.url.locator.CachingProxy',
+                    'rampage.resource.locator.MapProxy' => 'rampage.core.resource.file.locator.MapProxy',
+                // change to rampage.core.resource.UrlLocator to disable caching proxy
+                    'rampage.resource.UrlLocator' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.core.resource.UrlLocator' : 'rampage.core.resource.url.locator.MapProxy',
                     'rampage.resource.BootstapListener' => 'rampage.core.resource.BootstrapListener',
 
                     // Core

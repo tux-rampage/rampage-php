@@ -26,6 +26,7 @@
 namespace rampage\core\resource;
 
 use SplFileInfo;
+use rampage\core\PathManager;
 
 /**
  * Theme implementation
@@ -51,8 +52,9 @@ class Theme extends FileLocator
      *
      * @service rampage.resource.FileLocator $fallback force
      */
-    public function __construct(FileLocatorInterface $fallback = null)
+    public function __construct(PathManager $pathManager, FileLocatorInterface $fallback = null)
     {
+        parent::__construct($pathManager);
         $this->setFallback($fallback);
     }
 
@@ -111,6 +113,74 @@ class Theme extends FileLocator
     }
 
     /**
+     * @inheritdoc
+     * @see \rampage\core\resource\FileLocatorInterface::publish()
+     */
+    public function publish($file, $scope = null)
+    {
+        if (!$scope && (strpos($file, '::') !== false)) {
+            @list($scope, $file) = explode('::', $file, 2);
+        }
+
+        $parts = array('themes', $this->getCurrentTheme(), $scope, $file);
+        $relative = implode('/', array_filter($parts));
+
+        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
+        $source = $this->resolveThemeFile('public', $file, $scope, true);
+
+        if ($target->isFile() && (($source !== false) && ($source->getMTime() <= $target->getMTime()))) {
+            return $relative;
+        }
+
+        if (($source === false) || !$source->isFile() || !$source->isReadable()) {
+            if ($this->fallback) {
+                return $this->fallback->publish($file, $scope);
+            }
+
+            return false;
+        }
+
+        $dir = $target->getPathInfo();
+        if (!$dir->isDir() && !@mkdir($dir->getPathname(), 0777, true)) {
+            return false;
+        }
+
+        if (!@copy($source->getPathname(), $target->getPathname())) {
+            return false;
+        }
+
+        return $relative;
+    }
+
+    /**
+     * Internal resolve theme file
+     *
+     * @param string $type
+     * @param string $file
+     * @param string $scope
+     * @param string $asFileInfo
+     */
+    protected function resolveThemeFile($type, $file, $scope, $asFileInfo = false)
+    {
+        if (!isset($this->locations[$this->current])) {
+            return false;
+        }
+
+        $themePath = $scope . '/' . ltrim($file, '/');
+        $path = parent::resolve($type, $themePath, $this->current, true);
+
+        if (!$path->isFile()) {
+            return false;
+        }
+
+        if (!$asFileInfo) {
+            $path = $path->getPathname();
+        }
+
+        return $path;
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\resource\FileLocatorInterface::resolve()
      */
@@ -120,21 +190,12 @@ class Theme extends FileLocator
             list($scope, $file) = explode('::', $file, 2);
         }
 
-        if (!isset($this->locations[$this->current]) && $this->fallback) {
-            return $this->fallback->resolve($type, $file, $scope, $asFileInfo);
+        $result = $this->resolveThemeFile($type, $file, $scope, $asFileInfo);
+
+        if (($result === false) && $this->fallback) {
+            $result = $this->fallback->resolve($type, $file, $scope, $asFileInfo);
         }
 
-        $themePath = $scope . '/' . ltrim($file, '/');
-        $path = parent::resolve($type, $themePath, $this->current, false);
-
-        if (!file_exists($path) && $this->fallback) {
-            return $this->fallback->resolve($type, $file, $scope, $asFileInfo);
-        }
-
-        if ($asFileInfo) {
-            $path = new SplFileInfo($path);
-        }
-
-        return $path;
+        return $result;
     }
 }

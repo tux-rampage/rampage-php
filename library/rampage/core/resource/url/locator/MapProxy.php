@@ -33,7 +33,7 @@ use SplFileInfo;
 /**
  * caching proxy for url locators
  */
-class CachingProxy implements UrlLocatorInterface
+class MapProxy implements UrlLocatorInterface
 {
     /**
      * Mapping file name
@@ -67,13 +67,6 @@ class CachingProxy implements UrlLocatorInterface
      * @var UrlLocatorInterface
      */
     private $parent = null;
-
-    /**
-     * Current theme
-     *
-     * @var string
-     */
-    protected $theme = null;
 
     /**
      * Map file
@@ -147,26 +140,18 @@ class CachingProxy implements UrlLocatorInterface
      */
     public function getCurrentTheme()
     {
-        if ($this->theme) {
-            return (is_callable($this->theme))? call_user_func($this->theme) : $this->theme;
-        }
-
+        $parent = $this->getParent();
         if (is_callable(array($this->getParent(), 'getCurrentTheme'))) {
-            $parent = $this->getParent();
-            $this->theme = function() use ($parent) {
-                return $parent->getCurrentTheme();
-            };
-        } else {
-            $this->theme = '__default__';
+            return $parent->getCurrentTheme();
         }
 
-        return (is_callable($this->theme))? call_user_func($this->theme) : $this->theme;
+        return '__default__';
     }
 
     /**
      * Load map from file
      *
-     * @return \rampage\core\resource\url\locator\CachingProxy
+     * @return \rampage\core\resource\url\locator\MapProxy
      */
     private function loadMap()
     {
@@ -189,7 +174,7 @@ class CachingProxy implements UrlLocatorInterface
     /**
      * Save mapping to file
      *
-     * @return \rampage\core\resource\url\locator\CachingProxy
+     * @return \rampage\core\resource\url\locator\MapProxy
      */
     private function saveMap()
     {
@@ -235,7 +220,7 @@ class CachingProxy implements UrlLocatorInterface
      * @param string $scope
      * @param string $theme
      * @param string $info
-     * @return \rampage\core\resource\url\locator\CachingProxy
+     * @return \rampage\core\resource\url\locator\MapProxy
      */
     protected function addToMap($file, $scope, $theme, $info)
     {

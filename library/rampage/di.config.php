@@ -14,7 +14,7 @@ return array(
             'rampage\core\PathManager' => 'rampage.PathManager',
             'rampage\core\ModuleManager' => 'rampage.ModuleManager',
             'rampage\core\resource\Theme' => 'rampage.Theme',
-            'rampage\core\resource\FileLocatorInterface' => 'rampage.Theme',
+            'rampage\core\resource\FileLocatorInterface' => (isset($_SERVER['RAMPAGE_DEVELOPMENT']) && $_SERVER['RAMPAGE_DEVELOPMENT'])? 'rampage.Theme' : 'rampage.resource.locator.MapProxy',
             'rampage\core\model\design\Config' => 'rampage.theme.Config',
             'rampage\core\view\Layout' => 'rampage.Layout',
             'rampage\core\view\helper\PluginManager' => 'ViewHelperManager',
@@ -49,11 +49,18 @@ return array(
             )
         ),
 
-        // Caching proxy - Parent should not be the type preference which could lead to cycle dependency
-        // to the caching proxy itself
-        'rampage\core\resource\url\locator\CachingProxy' => array(
+        // Map proxy - Parent should not be the type preference which could lead to cycle dependency
+        // to the map proxy itself
+        'rampage\core\resource\url\locator\MapProxy' => array(
             'parameters' => array(
                 'parent' => 'rampage.core.resource.UrlLocator'
+            ),
+        ),
+
+        // Same as for url map proxy
+        'rampage\core\resource\file\locator\MapProxy' => array(
+            'parameters' => array(
+                'parent' => 'rampage.Theme',
             ),
         ),
 

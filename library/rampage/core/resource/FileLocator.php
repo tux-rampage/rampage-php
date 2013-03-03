@@ -27,6 +27,7 @@ namespace rampage\core\resource;
 
 use SplFileInfo;
 use rampage\core\exception\InvalidArgumentException;
+use rampage\core\PathManager;
 
 /**
  * File locator
@@ -52,6 +53,31 @@ class FileLocator implements FileLocatorInterface
     );
 
     /**
+     * Pathmanager
+     *
+     * @var \rampage\core\PathManager
+     */
+    private $pathManager = null;
+
+    /**
+     * Construct
+     *
+     * @param PathManager $pathManager
+     */
+    public function __construct(PathManager $pathManager)
+    {
+        $this->pathManager = $pathManager;
+    }
+
+    /**
+     * @return \rampage\core\PathManager
+     */
+    protected function getPathManager()
+    {
+        return $this->pathManager;
+    }
+
+	/**
      * Add a location
      *
      * @param string $scope
@@ -99,6 +125,42 @@ class FileLocator implements FileLocatorInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @see \rampage\core\resource\FileLocatorInterface::publish()
+     */
+    public function publish($file, $scope = null)
+    {
+        if (strpos($file, '::') !== false) {
+            @list($scope, $file) = explode('::', $file, 2);
+        }
+
+        $parts = array('resources', $scope, $file);
+        $relative = implode('/', array_filter($parts));
+
+        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
+        $source = $this->resolve('public', $file, $scope, true);
+
+        if ($target->isFile() && (($source !== false) && ($source->getMTime() <= $target->getMTime()))) {
+            return $relative;
+        }
+
+        if (($source === false) || !$source->isFile() || !$source->isReadable()) {
+            return false;
+        }
+
+        $dir = $target->getPathInfo();
+        if (!$dir->isDir() && !@mkdir($dir->getPathname(), 0777, true)) {
+            return false;
+        }
+
+        if (!@copy($source->getPathname(), $target->getPathname())) {
+            return false;
+        }
+
+        return $relative;
     }
 
     /**

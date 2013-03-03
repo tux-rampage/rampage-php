@@ -121,35 +121,6 @@ class UrlLocator implements UrlLocatorInterface
     }
 
     /**
-     * Publish the given file
-     *
-     * @param string $type
-     * @param string $file
-     * @param string $scope
-     * @param SplFileInfo $target
-     */
-    protected function publish($file, $scope, SplFileInfo $target)
-    {
-        if ($file instanceof SplFileInfo) {
-            $source = $file;
-        } else {
-            $source = $this->getFileLocator()->resolve('public', $file, $scope, true);
-        }
-
-        if (($source === false) || !$source->isReadable() || !$source->isFile()) {
-            return false;
-        }
-
-        $dir = $target->getPathInfo();
-        if (!$dir->isDir() && !@mkdir($dir->getPathname(), 0777, true)) {
-            $path = $dir->getPathname();
-            return false;
-        }
-
-        return copy($source->getPathname(), $target->getPathname());
-    }
-
-    /**
      * Resolve relative path
      *
      * @param string $type
@@ -174,20 +145,13 @@ class UrlLocator implements UrlLocatorInterface
         }
 
         $urlType = 'media';
-        $file = new SplFileInfo($this->getPathManager()->get('media', $relative));
-        $source = $this->getFileLocator()->resolve('public', $filename, $scope, true);
+        $relative = $this->getFileLocator()->publish($filename, $scope);
 
-        $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
-
-        if ($file->isReadable() && $file->isFile()
-          && (($source === false) || ($source->getMTime() <= $file->getMTime()))) {
-            return $relative;
-        }
-
-        if (!$this->publish(($source)?: $file, $scope, $file)) {
+        if ($relative === false) {
             throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $filename, $theme));
         }
 
+        $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
         return $relative;
     }
 
