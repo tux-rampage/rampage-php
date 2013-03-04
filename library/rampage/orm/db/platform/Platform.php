@@ -26,8 +26,11 @@
 namespace rampage\orm\db\platform;
 
 use rampage\orm\exception\DependencyException;
-use Zend\Stdlib\Hydrator\HydratorInterface;
 use rampage\core\ObjectManagerInterface;
+
+use Zend\Stdlib\Hydrator\HydratorInterface;
+use Zend\Db\Adapter\Platform\PlatformInterface as AdapterPlatformInterface;
+
 /**
  * Default Platform
  */
@@ -76,6 +79,13 @@ class Platform implements PlatformInterface
     private $hydrators = array();
 
     /**
+     * Adapter platform
+     *
+     * @var \Zend\Db\Adapter\Platform\PlatformInterface
+     */
+    private $adapterPlatform = null;
+
+    /**
      * Entity table name replacements
      *
      * @var string
@@ -92,10 +102,11 @@ class Platform implements PlatformInterface
      *
      * @param ConfigInterface $config
      */
-    public function __construct(ObjectManagerInterface $objectmanager, ConfigInterface $config)
+    public function __construct(ObjectManagerInterface $objectmanager, ConfigInterface $config, AdapterPlatformInterface $adapterPlatform)
     {
         $this->config = $config;
         $this->objectManager = $objectmanager;
+        $this->adapterPlatform = $adapterPlatform;
     }
 
     /**
@@ -117,6 +128,16 @@ class Platform implements PlatformInterface
     {
         $this->name = (string)$name;
         return $this;
+    }
+
+    /**
+     * Returns the adapter platform
+     *
+     * @return \Zend\Db\Adapter\Platform\PlatformInterface
+     */
+    public function getAdapterPlatform()
+    {
+        return $this->adapterPlatform;
     }
 
 	/**
@@ -181,6 +202,15 @@ class Platform implements PlatformInterface
     }
 
     /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\PlatformInterface::formatIdentifier()
+     */
+    public function formatIdentifier($identifier)
+    {
+        return strtolower($identifier);
+    }
+
+    /**
      * Returns the table name
      *
      * @param string $entity
@@ -188,14 +218,13 @@ class Platform implements PlatformInterface
     public function getTable($entity)
     {
         $entitiy = $this->canonicalizeEntityName($entity);
-
-
         $table = $this->getConfig()->getTable($entity);
+
         if (!$table) {
             $table = $this->formatEntityToTableName($entity);
         }
 
-        return $table;
+        return $this->formatIdentifier($table);
     }
 
     /**

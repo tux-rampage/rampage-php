@@ -52,6 +52,13 @@ interface PlatformInterface
     public function getTable($entity);
 
     /**
+     * Format the identifier
+     *
+     * @param string $identifier
+     */
+    public function formatIdentifier($identifier);
+
+    /**
      * Get the field mapper for the given entity
      *
      * @param string $entity
@@ -74,4 +81,11 @@ interface PlatformInterface
      * @return \rampage\orm\db\platform\ConstraintMapperInterface|null
      */
     public function getConstraintMapper($constraint);
+
+    /**
+     * Returns the adapter platform
+     *
+     * @return \Zend\Db\Adapter\Platform\PlatformInterface
+     */
+    public function getAdapterPlatform();
 }

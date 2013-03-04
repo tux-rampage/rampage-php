@@ -49,6 +49,8 @@ use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Stdlib\Hydrator\HydratorInterface;
+use rampage\orm\exception\DomainException;
+use rampage\core\data\RestrictableCollectionInterface;
 
 /**
  * Abstract DB repository
@@ -135,9 +137,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Construct
      */
-    public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config)
+    public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config, $name = null)
     {
         $this->objectManager = $objectManager;
+        $this->setName($name);
 
         if ($config) {
             $this->setConfig($config);
@@ -145,11 +148,38 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
+     * Entity class name for the given entity type
+     *
+     * @param string $entityType
+     * @return string|null
+     */
+    protected function getEntityClass($entityType)
+    {
+        return $this->getEntityType($entityType)->getClass();
+    }
+
+    /**
      * New entity instance
      *
      * @return \rampage\orm\entity\EntityInterfaces
      */
-    abstract protected function newEntity($type);
+    protected function newEntity($type)
+    {
+        $class = $this->getEntityClass($type);
+        if (!$class) {
+            throw new DomainException(sprintf('Could not find implementation for entity type "%s".', $type));
+        }
+
+        $entity = $this->getObjectManager()->newInstance($class);
+        if (!$entity instanceof EntityInterface) {
+            throw new RuntimeException(sprintf(
+                'Invalid entity implementation for "%s": Must implement rampage\orm\entity\EntityInterface, %s given.',
+                $type, (is_object($entity))? get_class($entity) : gettype($entity)
+            ));
+        }
+
+        return $entity;
+    }
 
     /**
      * Hydrate the given entity with the given data
@@ -328,10 +358,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
         $config = $this->getConfig();
         if (!$config instanceof EntityTypeConfigInterface) {
-            throw new RuntimeException('Config does not implement rampage\orm\entity\type\ConfigInterface');
+            throw new RuntimeException('The current repository config does not implement rampage\orm\entity\type\ConfigInterface');
         }
 
-        $type = new EntityType($name, $this, $this->getConfig());
+        $type = new EntityType($name, $this, $config);
         $this->entityTypes[$name] = $type;
 
         return $type;
@@ -481,11 +511,22 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
+     * Must return the default repository name which is used if this repo is not configured
+     *
+     * @return string
+     */
+    abstract protected function getDefaultRepositoryName();
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\RepositoryInterface::getName()
      */
     public function getName()
     {
+        if (!$this->name) {
+            $this->name = $this->getDefaultRepositoryName();
+        }
+
         return $this->name;
     }
 
@@ -495,7 +536,8 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     public function setName($name)
     {
-        return $this->name;
+        $this->name = ($name === null)? null : (string)$name;
+        return $this;
     }
 
     /**
@@ -548,7 +590,14 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     protected function newCollection(QueryInterface $query)
     {
-        return $this->getObjectManager()->newInstance('rampage.orm.entity.LazyLoadableCollection');
+        $collection = $this->getObjectManager()->newInstance('rampage.orm.entity.LazyLoadableCollection');
+        $itemType = $this->getEntityClass($query->getEntityType());
+
+        if ($itemType && ($collection instanceof RestrictableCollectionInterface)) {
+            $collection->restrictItemType($itemType);
+        }
+
+        return $collection;
     }
 
     /**

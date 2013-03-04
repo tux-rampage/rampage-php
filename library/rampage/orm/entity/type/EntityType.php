@@ -82,6 +82,13 @@ class EntityType
     private $repository = null;
 
     /**
+     * Entity class name
+     *
+     * @var string
+     */
+    private $class = null;
+
+    /**
      * Construct
      *
      * @param string $name
@@ -134,6 +141,27 @@ class EntityType
     }
 
     /**
+     * Default implementation class name
+     *
+     * @return string
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+	/**
+     * Default implementing class name
+     *
+     * @param string $class
+     */
+    public function setClass($class)
+    {
+        $this->class = (string)$class;
+        return $this;
+    }
+
+	/**
      * Add an attribute
      *
      * @param Attribute $attribute

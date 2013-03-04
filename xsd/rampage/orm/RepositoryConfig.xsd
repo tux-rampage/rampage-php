@@ -219,7 +219,7 @@ If two attributes have the same position, they'll be added in the order they're 
             <element name="attribute" maxOccurs="unbounded"
                 minOccurs="1">
                 <complexType>
-                    <attribute name="local" type="string"
+                    <attribute name="name" type="string"
                         use="required">
                     </attribute>
                     <attribute name="foreign" type="string"

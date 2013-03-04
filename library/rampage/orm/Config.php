@@ -25,16 +25,21 @@
 
 namespace rampage\orm;
 
-use rampage\core\xml\Config as XmlConfig;
+use rampage\core\modules\AggregatedXmlConfig;
 use rampage\core\ObjectManagerInterface;
+use rampage\core\ModuleRegistry;
+use rampage\core\PathManager;
+
 use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\Attribute;
+use rampage\orm\exception\InvalidConfigException;
+use rampage\core\xml\mergerule\UniqueAttributeRule;
 
 /**
  * Config
  */
-class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInterface
+class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeConfigInterface
 {
     /**
      * Object manager instance
@@ -44,15 +49,55 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
     private $objectManager = null;
 
     /**
+     * All repository names
+     *
+     * @var array
+     */
+    private $repositoryNames = null;
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
+     */
+    protected function getGlobalFilename()
+    {
+        return 'repository.xml';
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\core\modules\AggregatedXmlConfig::getModuleFilename()
+     */
+    protected function getModuleFilename()
+    {
+        return 'etc/repository.xml';
+    }
+
+	/**
      * (non-PHPdoc)
      * @see \rampage\core\xml\Config::__construct()
      */
-    public function __construct(ObjectManagerInterface $objectManager)
+    public function __construct(ModuleRegistry $registry, PathManager $pathManager, ObjectManagerInterface $objectManager)
     {
         $this->objectManager = $objectManager;
+        parent::__construct($registry, $pathManager);
     }
 
     /**
+     * (non-PHPdoc)
+     * @see \rampage\core\xml\Config::getDefaultMergeRulechain()
+     */
+    protected function getDefaultMergeRulechain()
+    {
+        $rules = parent::getDefaultMergeRulechain();
+        $rules->add(new UniqueAttributeRule('~/reference/attribute$', 'local'))
+            ->add(new UniqueAttributeRule('~/(repository|entity|attribute|index|reference)$~', 'name'))
+            ->add(new UniqueAttributeRule('~/constraint$', 'type'));
+
+        return $rules;
+    }
+
+	/**
      * Object Manager instance
      *
      * @return \rampage\core\ObjectManagerInterface
@@ -90,18 +135,55 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
     }
 
     /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\ConfigInterface::getRepositoryNames()
+     */
+    public function getRepositoryNames()
+    {
+        if ($this->repositoryNames !== null) {
+            return $this->repositoryNames;
+        }
+
+        foreach ($this->getXml()->xpath('./repository[@name != ""]') as $node) {
+            $this->repositoryNames[] = (string)$node['name'];
+        }
+
+        return $this->repositoryNames;
+    }
+
+	/**
      * Returns the adapter name for the given repository name
      *
      * @return string|null
      */
     protected function getRepositoryAdapterName($repositoryName)
     {
+        $repositoryName = $this->xpathQuote($repositoryName);
         $node = $this->getNode("repository[@name='$repositoryName']/adapter");
         if (!$node || !isset($node['service'])) {
             return null;
         }
 
         return trim((string)$node['service']);
+    }
+
+    /**
+     * Returns the config class for the given repository or null if there is none defined
+     *
+     * @param string $repositoryName
+     * @return string|null
+     */
+    protected function getRepositoryConfigClass($repositoryName)
+    {
+        $repositoryName = $this->xpathQuote($repositoryName);
+        $node = $this->getNode("repository[@name = '$repositoryName' and @config != '']");
+        $class = ($node !== null)? (string)$node['class'] : null;
+
+        if (!$class) {
+            return null;
+        }
+
+        return $class;
     }
 
     /**
@@ -113,6 +195,20 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
         $name = $this->getRepositoryAdapterName($repository->getName());
         if ($name) {
             $repository->setAdapterName($name);
+        }
+
+        $configClass = $this->getRepositoryConfigClass($repository->getName());
+        if ($configClass) {
+            $config = $this->getObjectManager()->get($configClass, array('ormConfig' => $this));
+
+            if (!$config instanceof ConfigInterface) {
+                throw new InvalidConfigException(sprintf(
+                    'Invalid repository config for "%s": Expected implementation of rampage\orm\ConfigInterface, but %s doesn\'t implement it.',
+                    $repository->getName(), is_object($config)? get_class($config) : gettype($config)
+                ));
+            }
+
+            $config->configureRepository($repository);
         }
 
         return $this;
@@ -128,9 +224,17 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
         $repoName = $this->xpathQuote($repoName);
         $typeName = $this->xpathQuote($typeName);
         $xpath = "./repository[@name = $repoName]/entity[@name = $typeName]";
-        $xml = $this->getXml();
+        $xml = $this->getNode($xpath);
 
-        foreach ($xml->xpath($xpath . '/attribute[@name != ""]') as $node) {
+        if ($xml === null) {
+            return $this;
+        }
+
+        if (isset($xml['class'])) {
+            $type->setClass((string)$xml['class']);
+        }
+
+        foreach ($xml->xpath('./attribute[@name != ""]') as $node) {
             $attribute = new Attribute(
                 (string)$node['name'],
                 (string)$node['type'],
@@ -142,7 +246,7 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
             $type->addAttribute($attribute);
         }
 
-        foreach ($xml->xpath($xpath . '/index[@name != ""]') as $node) {
+        foreach ($xml->xpath('./index[@name != ""]') as $node) {
             $index = array();
             foreach ($node->xpath('./attribute[@name != ""]') as $attributeNode) {
                 $name = (string)$attributeNode['name'];
@@ -154,6 +258,6 @@ class Config extends XmlConfig implements ConfigInterface, EntityTypeConfigInter
             }
         }
 
-        // TODO: reference
+        // TODO: references
     }
 }

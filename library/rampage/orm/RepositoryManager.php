@@ -128,11 +128,9 @@ class RepositoryManager implements ServiceLocatorInterface
 
         $class = $this->getConfig()->getRepositoryClass($name);
         $instance = $this->getObjectManager()->get($class, array(
-            'config' => $this->getConfig()
+            'config' => $this->getConfig(),
+            'name' => $name
         ));
-
-        $instance->setName($name);
-        $instance->setConfig($this->getConfig());
 
         $this->setRepositoryInstance($name, $instance);
 

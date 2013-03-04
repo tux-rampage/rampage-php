@@ -33,7 +33,7 @@ use rampage\core\exception\InvalidArgumentException;
 /**
  * Class for data collections
  */
-class Collection implements IteratorAggregate, Countable
+class Collection implements RestrictableCollectionInterface, IteratorAggregate, Countable
 {
     /**
      * All items in this collection

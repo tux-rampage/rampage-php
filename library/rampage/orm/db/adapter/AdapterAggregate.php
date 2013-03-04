@@ -161,9 +161,12 @@ class AdapterAggregate
             return $this->platform;
         }
 
-        $platform = $this->getPlatformLocator()->get($this->getAdapter()->getPlatform()->getName());
-        $this->setPlatform($platform);
+        $adapterPlatform = $this->getAdapter()->getPlatform();
+        $platform = $this->getPlatformLocator()->get($adapterPlatform->getName(), array(
+            'adapterPlatform' => $adapterPlatform
+        ));
 
+        $this->setPlatform($platform);
         return $platform;
     }
 

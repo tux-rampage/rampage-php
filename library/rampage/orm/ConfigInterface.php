@@ -29,4 +29,11 @@ interface ConfigInterface
      * @return bool
      */
     public function hasRepositoryConfig($name);
+
+    /**
+     * Should return all defined repository names
+     *
+     * @return array
+     */
+    public function getRepositoryNames();
 }
