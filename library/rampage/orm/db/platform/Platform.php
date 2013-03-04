@@ -30,6 +30,7 @@ use rampage\core\ObjectManagerInterface;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
 use Zend\Db\Adapter\Platform\PlatformInterface as AdapterPlatformInterface;
+use rampage\orm\exception\RuntimeException;
 
 /**
  * Default Platform
@@ -84,6 +85,13 @@ class Platform implements PlatformInterface
      * @var \Zend\Db\Adapter\Platform\PlatformInterface
      */
     private $adapterPlatform = null;
+
+    /**
+     * DDL Renderer
+     *
+     * @var DDLRenderer
+     */
+    private $ddlRenderer = null;
 
     /**
      * Entity table name replacements
@@ -322,7 +330,35 @@ class Platform implements PlatformInterface
      */
     public function getConstraintMapper($constraint)
     {
-
         return null;
+    }
+
+    /**
+     * @return \rampage\orm\db\platform\DDLRendererInterface
+     */
+    protected function createDDLRenderer()
+    {
+        return new DDLRenderer($this);
+    }
+
+    /**
+     * @see \rampage\orm\db\platform\PlatformInterface::getDDLRenderer()
+     */
+    public function getDDLRenderer()
+    {
+        if ($this->ddlRenderer) {
+            return $this->ddlRenderer;
+        }
+
+        $renderer = $this->createDDLRenderer();
+        if (!$renderer instanceof DDLRendererInterface) {
+            throw new RuntimeException(sprintf(
+                'Invalid DDL renderer: Should implement rampage\orm\platform\DDLRendererInterface, %s given.',
+                is_object($renderer)? get_class($renderer) : gettype($renderer)
+            ));
+        }
+
+        $this->ddlRenderer = $renderer;
+        return $renderer;
     }
 }

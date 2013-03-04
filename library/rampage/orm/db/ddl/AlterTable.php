@@ -117,8 +117,18 @@ class AlterTable extends AbstractTableDefinition
      */
     public function dropIndex($name)
     {
-        $this->drop(self::DROP_TYPE_INDEX, (string)$name);
+        $this->drop(self::DROP_TYPE_INDEX, $name);
         return $this;
+    }
+
+    /**
+     * Get drop elements
+     *
+     * @return array
+     */
+    public function getDropElements()
+    {
+        return $this->drop;
     }
 
     /**

@@ -30,6 +30,14 @@ namespace rampage\orm\db\ddl;
  */
 class ReferenceDefinition extends NamedDefintion
 {
+    const ON_UPDATE = 'update';
+    const ON_DELETE = 'delete';
+
+    const ACTION_CASCADE = 'cascade';
+    const ACTION_RESTRICT = 'restrict';
+    const ACTION_SETNULL = 'setnull';
+    const ACTION_NOACTION = 'noaction';
+
     /**
      * Local fields
      *
@@ -57,6 +65,11 @@ class ReferenceDefinition extends NamedDefintion
      * @var bool
      */
     private $referencesPrimary = true;
+
+    private $actions = array(
+        self::ON_UPDATE => null,
+        self::ON_DELETE => null
+    );
 
     /**
      * Construct
@@ -117,5 +130,32 @@ class ReferenceDefinition extends NamedDefintion
     public function isReferenceToPrimary()
     {
         return $this->referencesPrimary;
+    }
+
+    /**
+     * Returns on definition
+     *
+     * @return array
+     */
+    public function getActions()
+    {
+        return $this->actions;
+    }
+
+    /**
+     * On constraints
+     *
+     * @param string $constraint
+     * @param string $action
+     */
+    public function on($constraint, $action)
+    {
+        $constraint = strtolower($constraint);
+        if (!array_key_exists($constraint, $this->actions)) {
+            return $this;
+        }
+
+        $this->actions[$constraint] = strtolower($action);
+        return $this;
     }
 }

@@ -88,4 +88,11 @@ interface PlatformInterface
      * @return \Zend\Db\Adapter\Platform\PlatformInterface
      */
     public function getAdapterPlatform();
+
+    /**
+     * Returns the platform specific ddl renderer
+     *
+     * @return \rampage\orm\db\platform\DDLRendererInterface
+     */
+    public function getDDLRenderer();
 }

@@ -31,7 +31,12 @@ use rampage\orm\db\ddl\CreateTable;
 use rampage\orm\db\ddl\NamedDefintion;
 use rampage\orm\db\ddl\ColumnDefinition;
 use rampage\orm\db\ddl\AbstractTableDefinition;
-use Zend\Text\Table\Column;
+use rampage\orm\exception\InvalidArgumentException;
+use rampage\orm\db\ddl\IndexDefinition;
+use rampage\orm\db\ddl\ReferenceDefinition;
+use rampage\orm\db\ddl\AlterTable;
+use rampage\orm\db\ddl\ChangeColumn;
+use rampage\orm\db\ddl\DropTable;
 
 /**
  * DDL Renderer
@@ -59,6 +64,16 @@ class DDLRenderer implements DdlRendererInterface
         ColumnDefinition::TYPE_INT => 'INT',
         ColumnDefinition::TYPE_TEXT => 'TEXT',
         ColumnDefinition::TYPE_VARCHAR => 'VARCHAR'
+    );
+
+    /**
+     * Action type map
+     *
+     * @var string
+     */
+    protected $fkActionTypeMap = array(
+        ReferenceDefinition::ON_UPDATE => 'ON UPDATE',
+        ReferenceDefinition::ON_DELETE => 'ON DELETE'
     );
 
     /**
@@ -125,12 +140,16 @@ class DDLRenderer implements DdlRendererInterface
     /**
      * Render table name
      *
-     * @param NamedDefintion $ddl
+     * @param NamedDefintion $ddlOrName
      * @return string
      */
-    protected function renderTableName(NamedDefintion $ddl)
+    protected function renderTableName(NamedDefintion $ddlOrName)
     {
-        return $this->quoteIdentifier($this->getTable($ddl->getName()));
+        if ($ddlOrName instanceof NamedDefintion) {
+            $ddlOrName = $ddlOrName->getName();
+        }
+
+        return $this->quoteIdentifier($this->getTable($ddlOrName));
     }
 
     /**
@@ -146,7 +165,33 @@ class DDLRenderer implements DdlRendererInterface
             $attribute = $attribute->getName();
         }
 
+        if ($entity instanceof AbstractTableDefinition) {
+            $entity = $entity->getName();
+        }
+
         return $this->quoteIdentifier($this->getFieldName($entity, $attribute));
+    }
+
+    /**
+     * Render identifier
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function renderIdentifier($name)
+    {
+        return $this->quoteIdentifier($this->formatIdentifier($name));
+    }
+
+    /**
+     * Render the key name
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function renderKeyName($name)
+    {
+        return strtoupper($name);
     }
 
     /**
@@ -156,36 +201,34 @@ class DDLRenderer implements DdlRendererInterface
      */
     protected function getColumnSpec(ColumnDefinition $column, AbstractTableDefinition $ddl)
     {
+        if (!isset($this->columnTypeMap[$column->getType()])) {
+            throw new InvalidArgumentException('Unsupported column type: ' . $column->getType());
+        }
+
+        $type = $this->columnTypeMap[$column->getType()];
         switch ($column->getType()) {
             case ColumnDefinition::TYPE_VARCHAR:
                 $size = ($column->getSize())?: 255;
-                $type = 'VARCHAR(' . $column->getSize() . ')';
-                break;
-
-            case ColumnDefinition::TYPE_BLOB:
-                $type = 'BLOB';
+                $type .= '(' . $column->getSize() . ')';
                 break;
 
             case ColumnDefinition::TYPE_BOOL:
-                $type = 'INT(1)';
-                break;
-
-            case ColumnDefinition::TYPE_CLOB:
-                $type = 'TEXT';
+                $type .= '(1)';
                 break;
 
             case ColumnDefinition::TYPE_ENUM:
-                $type = 'ENUM(' . $this->getPlatform()->getAdapterPlatform()->quoteValueList($column->getValues()) . ')';
+                $type .= '(' . $this->getPlatform()->getAdapterPlatform()->quoteValueList($column->getValues()) . ')';
                 break;
 
             case ColumnDefinition::TYPE_FLOAT:
-                $type = 'DECIMAL(' . $column->getSize(true) . ', ' . $column->getPrecision(true) . ')';
+                $type .= '(' . $column->getSize(true) . ', ' . $column->getPrecision(true) . ')';
                 break;
         }
 
         $extra = '';
-        $nullable = ($column->isNullable())? 'NULL' : 'NOT NULL';
+        $default = 'DEFAULT ' . $this->getPlatform()->getAdapterPlatform()->quoteValue($column->getDefault());
 
+        $nullable = ($column->isNullable())? 'NULL' : 'NOT NULL';
         if (in_array($column->getName(), $ddl->getPrimaryKey())) {
             $nullable = 'NOT NULL';
         }
@@ -208,6 +251,132 @@ class DDLRenderer implements DdlRendererInterface
     }
 
     /**
+     * Map field list
+     *
+     * @param string $entity
+     * @param array $attributes
+     * @return string[]
+     */
+    protected function mapFieldList($entity, array $attributes)
+    {
+        $fields = array();
+
+        foreach ($attributes as $attribute) {
+            $fields[] = $this->renderFieldName($entity, $attribute);
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Render the primary key part
+     *
+     * @param AbstractTableDefinition $ddl
+     * @return string
+     */
+    protected function renderPrimaryKey(AbstractTableDefinition $ddl)
+    {
+        $primary = $this->mapFieldList($ddl, $ddl->getPrimaryKey());
+
+        if (empty($primary)) {
+            return '';
+        }
+
+        return 'PRIMARY KEY (' . implode(', ', $primary) . ')';
+    }
+
+    /**
+     * Render index
+     *
+     * @param IndexDefinition $index
+     * @return string
+     */
+    protected function renderIndex(IndexDefinition $index, AbstractTableDefinition $ddl)
+    {
+        $name = $this->renderKeyName($index->getName());
+        $fields = $this->mapFieldList($ddl, $index->getFields());
+
+        if (empty($fields)) {
+            return '';
+        }
+
+        $fields = implode(', ', $fields);
+        if ($index->isUnique()) {
+            $sql = "CONSTRAINT $name UNIQUE ($fields)";
+        } else {
+            $sql = "INDEX $name ($fields)";
+        }
+
+        return $index;
+    }
+
+    /**
+     * Render foreign key action
+     *
+     * @param string $type
+     * @param string $action
+     */
+    protected function renderForeignKeyAction($type, $action)
+    {
+        if (!array_key_exists($type, $this->fkActionTypeMap)) {
+            return '';
+        }
+
+        $sql = $this->fkActionTypeMap[$type];
+
+        switch ($type) {
+            case ReferenceDefinition::ACTION_CASCADE:
+            case ReferenceDefinition::ACTION_RESTRICT:
+                $sql .= ' ' . strtoupper($type);
+                break;
+
+            case ReferenceDefinition::ACTION_NOACTION:
+                $sql .= ' NO ACTION';
+                break;
+
+            case ReferenceDefinition::ACTION_SETNULL:
+                $sql .= ' SET NULL';
+                break;
+
+            default:
+                $sql = '';
+                break;
+        }
+
+        return $sql;
+    }
+
+    /**
+     * Render foreign key
+     *
+     * @param ReferenceDefinition $reference
+     * @param AbstractTableDefinition $ddl
+     * @return string
+     */
+    protected function renderForeignKey(ReferenceDefinition $reference, AbstractTableDefinition $ddl)
+    {
+        $name = $this->renderKeyName($reference->getName());
+        $table = $this->renderTableName($reference->getReferenceEntity());
+        $fields = $this->mapFieldList($ddl, $reference->getFields());
+        $referenceFields = $this->mapFieldList($reference->getReferenceEntity(), $reference->getReferenceFields());
+
+        $fields = implode(', ', $fields);
+        $referenceFields = implode(', ', $referenceFields);
+
+        $sql = "CONSTRAINT $name FOREIGN KEY ($fields) "
+             . "REFERENCES $table ($referenceFields)";
+
+        foreach ($reference->getActions() as $type => $action) {
+            $actionSql = $this->renderForeignKeyAction($type, $action);
+
+            if ($actionSql) {
+                $sql .= ' ' . $actionSql;
+            }
+        }
+
+        return $sql;
+    }
+    /**
      * Render create table ddl
      *
      * @param CreateTable $ddl
@@ -218,7 +387,18 @@ class DDLRenderer implements DdlRendererInterface
         $parts = array();
 
         foreach ($ddl->getColumns() as $column) {
-            $parts[] = '';
+            $parts[] = $this->renderFieldName($ddl->getName(), $column->getName())
+                     . ' ' . $this->renderColumnDefintion($column, $ddl);
+        }
+
+        $primary[] = $ddl->getPrimaryKey();
+
+        foreach ($ddl->getIndexes() as $index) {
+            $parts[] = $this->renderIndex($index, $ddl);
+        }
+
+        foreach ($ddl->getReferences() as $reference) {
+
         }
 
         $parts = implode("\n,", $parts);
@@ -231,7 +411,215 @@ class DDLRenderer implements DdlRendererInterface
         return $sql;
     }
 
-	/**
+    /**
+     * Render add column
+     *
+     * @param AlterTable $ddl
+     * @param ChangeColumn $column
+     * @return string
+     */
+    protected function renderAddColumn(AlterTable $ddl, ChangeColumn $column)
+    {
+        return 'ADD COLUMN ' . $this->renderFieldName($ddl, $column) .
+               $this->renderColumnDefintion($column, $ddl);
+    }
+
+    /**
+     * Change column renderer
+     *
+     * @param AlterTable $ddl
+     * @param ChangeColumn $column
+     * @return string
+     */
+    protected function renderAlterColumn(AlterTable $ddl, ChangeColumn $column)
+    {
+        $colName = $this->renderFieldName($ddl, $column->getName());
+        $sql = "ALTER COLUMN $colName {$this->renderColumnDefintion($column, $ddl)}";
+
+        if ($column->getNewName()) {
+            $newColName = $this->renderFieldName($ddl, $column->getNewName());
+            $sql = "$newColName,\nRENAME COLUMN $colName TO $newColName";
+        }
+
+        return $sql;
+    }
+
+    /**
+     * Render drop column
+     *
+     * @param AlterTable $ddl
+     * @param ChangeColumn $column
+     * @return string
+     */
+    protected function renderDropColumn(AlterTable $ddl, ChangeColumn $column)
+    {
+        $sql = "DROP COLUMN {$this->renderFieldName($ddl, $column)}";
+        return $sql;
+    }
+
+    /**
+     * Render drop constraint
+     *
+     * @param AlterTable $ddl
+     * @param unknown $name
+     * @return string
+     */
+    protected function renderDropForeignKey(AlterTable $ddl, $name)
+    {
+        return "DROP CONSTRAINT {$this->renderKeyName($name)}";
+    }
+
+    /**
+     * Render drop constraint
+     *
+     * @param AlterTable $ddl
+     * @return string
+     */
+    protected function renderDropPrimaryKey(AlterTable $ddl)
+    {
+        return "DROP PRIMARY KEY";
+    }
+
+    /**
+     * Render drop index
+     *
+     * @param AlterTable $ddl
+     * @param string $name
+     * @return string
+     */
+    protected function renderDropIndex(AlterTable $ddl, $name)
+    {
+        if ($name instanceof IndexDefinition) {
+            if ($name->isUnique()) {
+                $name = $name->getName();
+                return "DROP CONSTRAINT {$this->renderKeyName($name)}";
+            }
+
+            $name = $name->getName();
+        }
+
+        return "DROP INDEX {$this->renderKeyName($name)}";
+    }
+
+    /**
+     * Render add index
+     *
+     * @param AlterTable $ddl
+     * @param IndexDefinition $index
+     * @return string
+     */
+    protected function renderAddIndex(AlterTable $ddl, IndexDefinition $index)
+    {
+        return "ADD {$this->renderIndex($index, $ddl)}";
+    }
+
+    /**
+     * Add foreign key
+     *
+     * @param AlterTable $ddl
+     * @param ReferenceDefinition $reference
+     * @return string
+     */
+    protected function renderAddForeignKey(AlterTable $ddl, ReferenceDefinition $reference)
+    {
+        return "ADD {$this->renderForeignKey($reference, $ddl)}";
+    }
+
+    /**
+     * Render add primary key
+     *
+     * @param AlterTable $ddl
+     * @return string
+     */
+    protected function renderAddPrimaryKey(AlterTable $ddl)
+    {
+        $def = $this->renderPrimaryKey($ddl);
+        if (!$def) {
+            return '';
+        }
+
+        return "ADD $def";
+    }
+
+    /**
+     * Render alter table
+     *
+     * @param AlterTable $ddl
+     * @return string
+     */
+    public function renderAlterTable(AlterTable $ddl)
+    {
+        $parts = array();
+
+        foreach ($ddl->getColumns() as $column) {
+            if (!$column instanceof ChangeColumn) {
+                continue;
+            }
+
+            switch ($column->getChangeType()) {
+                case ChangeColumn::CHANGETYPE_ADD:
+                    $parts[] = $this->renderAddColumn($ddl, $column);
+                    break;
+
+                case ChangeColumn::CHANGETYPE_DROP:
+                    $parts[] = $this->renderAlterColumn($ddl, $column);
+                    break;
+
+                case ChangeColumn::CHANGETYPE_DROP:
+                    $parts[] = $this->renderDropColumn($ddl, $column);
+                    break;
+            }
+        }
+
+        foreach ($ddl->getDropElements() as $type => $drop) {
+            switch ($type) {
+                case AlterTable::DROP_TYPE_INDEX:
+                    foreach ($drop as $dropIndex) {
+                        $parts[] = $this->renderDropIndex($ddl, $dropIndex);
+                    }
+
+                    break;
+
+                case AlterTable::DROP_TYPE_REFERENCE:
+                    foreach ($drop as $dropReference) {
+                        $parts[] = $this->renderDropForeignKey($ddl, $dropReference);
+                    }
+
+                    break;
+
+                case AlterTable::DROP_TYPE_PRIMARY:
+                    $parts[] = $this->renderDropPrimaryKey($ddl);
+            }
+        }
+
+        $parts[] = $this->renderAddPrimaryKey($ddl);
+
+        foreach ($ddl->getIndexes() as $index) {
+            $parts[] = $this->renderAddIndex($ddl, $index);
+        }
+
+        foreach ($ddl->getReferences() as $reference) {
+            $parts[] = $this->renderAddForeignKey($ddl, $reference);
+        }
+
+        $parts = implode(",\n", $parts);
+        $sql = "ALTER TABLE {$this->renderTableName($ddl)}\n$parts";
+
+        return $sql;
+    }
+
+    /**
+     * Render drop table
+     *
+     * @param DropTable $ddl
+     * @return string
+     */
+    public function renderDropTable(DropTable $ddl)
+    {
+        return "DROP TABLE {$this->renderTableName($ddl)}";
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\DDLRendererInterface::renderDdl()
      */
@@ -240,6 +628,12 @@ class DDLRenderer implements DdlRendererInterface
         switch ($ddl->getDdlDefintionName()) {
             case CreateTable::DDL_NAME:
                 return $this->renderCreateTable($ddl);
+
+            case AlterTable::DDL_NAME:
+                return $this->renderAlterTable($ddl);
+
+            case DropTable::DDL_NAME:
+                return $this->renderDropTable($ddl);
         }
 
         throw new RuntimeException('Unsupported DDL statement: ' . $ddl->getDdlDefintionName());
