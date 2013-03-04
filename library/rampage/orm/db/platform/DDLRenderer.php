@@ -195,6 +195,17 @@ class DDLRenderer implements DdlRendererInterface
     }
 
     /**
+     * Column extra definition
+     *
+     * @param ColumnDefinition $column
+     * @param AbstractTableDefinition $ddl
+     */
+    protected function getColumnExtra(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        return '';
+    }
+
+    /**
      * Render column definition
      *
      * @param ColumnDefinition $column
@@ -225,7 +236,7 @@ class DDLRenderer implements DdlRendererInterface
                 break;
         }
 
-        $extra = '';
+        $extra = $this->getColumnExtra($column, $ddl);
         $default = 'DEFAULT ' . $this->getPlatform()->getAdapterPlatform()->quoteValue($column->getDefault());
 
         $nullable = ($column->isNullable())? 'NULL' : 'NOT NULL';
@@ -266,6 +277,18 @@ class DDLRenderer implements DdlRendererInterface
         }
 
         return $fields;
+    }
+
+    /**
+     * Render field list
+     *
+     * @param string $entity
+     * @param array $attributes
+     * @return string
+     */
+    protected function renderFieldList($entity, array $attributes)
+    {
+        return implode(', ', $this->mapFieldList($entity, $attributes));
     }
 
     /**

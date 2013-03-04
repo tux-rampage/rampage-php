@@ -116,6 +116,19 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     }
 
     /**
+     * Create a new reference defintion instance
+     *
+     * @param string $name
+     * @param array $fields
+     * @param string $table
+     * @param array $referencedFields
+     */
+    public function reference($name, array $fields, $table, array $referencedFields)
+    {
+        new ReferenceDefinition($name, $fields, $table, $referencedFields);
+    }
+
+    /**
      * Returns the column definitions
      *
      * @return array

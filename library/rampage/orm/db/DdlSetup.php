@@ -29,7 +29,9 @@ use rampage\core\model\Config as UserConfig;
 use rampage\orm\db\adapter\AdapterAggregate;
 use rampage\orm\db\ddl\CreateTable;
 use rampage\orm\db\ddl\ColumnDefinition;
-use rampage\orm\db\ddl\IndexDefinition;
+use DirectoryIterator;
+use Zend\Db\Sql\Where;
+use rampage\core\exception\RuntimeException;
 
 class DdlSetup
 {
@@ -48,6 +50,27 @@ class DdlSetup
     private $infoTable = null;
 
     /**
+     * Location containing the files
+     *
+     * @var string
+     */
+    private $location = null;
+
+    /**
+     * script Files
+     *
+     * @var string[]
+     */
+    private $files = null;
+
+    /**
+     * resource name
+     *
+     * @var string
+     */
+    private $name = null;
+
+    /**
      * Construct
      *
      * @param UserConfig $config
@@ -55,8 +78,67 @@ class DdlSetup
      */
     public function __construct(AdapterAggregate $adapterAggregate, UserConfig $userConfig)
     {
-        $this->infoTable = (string)$userConfig->getConfigValue('orm.db.schemainfo', 'repositries', false);
+        $this->infoTable = (string)$userConfig->getConfigValue('orm.db.schemainfo', 'repository_schema', false);
         $this->adapterAggregate = $adapterAggregate;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getName()
+    {
+        if (!$this->getName()) {
+            throw new RuntimeException('Missing ddl setup name');
+        }
+
+        return $this->name;
+    }
+
+	/**
+     * @param string $name
+     */
+    protected function setName($name)
+    {
+        $this->name = (string)$name;
+        return $this;
+    }
+
+	/**
+     * Set the scripts directory
+     *
+     * @param string $dir
+     */
+    public function setScriptLocation($dir)
+    {
+        $this->location = $dir;
+    }
+
+    /**
+     * Script files
+     */
+    public function getScriptFiles()
+    {
+        if ($this->files !== null) {
+            return $this->files;
+        }
+
+        $iterator = new DirectoryIterator($this->location);
+        $files = array();
+
+        /* @var $file \SplFileInfo */
+        foreach ($iterator as $file) {
+            if ($file->isDir() || !preg_match('ddl-setup-(\d+).php', $file->getBasename(), $match)) {
+                continue;
+            }
+
+            $revision = $match[1];
+            $files[$revision] = $file->getPathname();
+        }
+
+        ksort($files);
+        $this->files = $files;
+
+        return $files;
     }
 
     /**
@@ -67,6 +149,22 @@ class DdlSetup
     public function getAdapterAggregate()
     {
         return $this->adapterAggregate;
+    }
+
+    /**
+     * @return \Zend\Db\Adapter\Adapter
+     */
+    public function getAdapter()
+    {
+        return $this->getAdapterAggregate()->getAdapter();
+    }
+
+    /**
+     * @return \rampage\orm\db\platform\PlatformInterface
+     */
+    public function getPlatform()
+    {
+        return $this->getAdapterAggregate()->getPlatform();
     }
 
     /**
@@ -84,9 +182,9 @@ class DdlSetup
      *
      * @return string
      */
-    public function getSchemaInfoTable()
+    protected function getSchemaInfoTable()
     {
-        return $this->getAdapterAggregate()->getPlatform()->formatIdentifier($this->infoTable);
+        return $this->infoTable;
     }
 
     /**
@@ -95,7 +193,7 @@ class DdlSetup
      * @param string $table
      * @return \rampage\orm\db\DdlSetup
      */
-    public function setInfoTable($table)
+    public function setSchemaInfoTable($table)
     {
         $this->infoTable = $table;
         return $this;
@@ -106,7 +204,7 @@ class DdlSetup
      *
      * @return bool
      */
-    public function hasSchemaInfoTable()
+    protected function hasSchemaInfoTable()
     {
         $tables = $this->getAdapterAggregate()->metadata()->getTableNames();
         return in_array($this->getSchemaInfoTable(), $tables);
@@ -117,10 +215,40 @@ class DdlSetup
      */
     public function createSchemaInfoTable()
     {
+        if ($this->hasSchemaInfoTable()) {
+            return $this;
+        }
+
         $ddl = new CreateTable($this->getSchemaInfoTable());
         $ddl->addColumn($ddl->column('repository', ColumnDefinition::TYPE_VARCHAR, 128)->setIsNullable(false))
-            ->addColumn($ddl->column('version', ColumnDefinition::TYPE_INT)->setIsNullable(false))
+            ->addColumn($ddl->column('version', ColumnDefinition::TYPE_INT)->setIsNullable(true))
             ->setPrimaryKey(array('repository'));
 
+        $sql = $this->getPlatform()->getDDLRenderer()->renderDdl($ddl);
+        $this->getAdapter()->query($sql);
+
+        return $this;
+    }
+
+    public function getCurrentRevision()
+    {
+        $this->createSchemaInfoTable();
+        $field = $this->getPlatform()->formatIdentifier('version');
+
+        $sql = $this->getAdapterAggregate()->sql();
+        $select = $sql->select()
+            ->from($this->getSchemaInfoTable())
+            ->where(array($field => $this->getName()));
+
+        $result = $sql->prepareStatementForSqlObject($select)
+            ->execute()
+            ->current();
+
+        if (!$result) {
+            return null;
+        }
+
+        $revision = (isset($result['revision']))? $result['revision'] : $result['REVISION'];
+        return (int)$revision;
     }
 }

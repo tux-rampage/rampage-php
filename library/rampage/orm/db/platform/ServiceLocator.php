@@ -40,6 +40,16 @@ class ServiceLocator extends AbstractObjectLocator
     protected $strict = true;
 
     /**
+     * Service definition
+     *
+     * @var array
+     */
+    protected $invokables = array(
+        'mysql' => 'rampage.orm.db.platform.mysql.Platform',
+        'oracle' => 'rampage.orm.db.platform.oracle.Platform',
+    );
+
+    /**
      * Service locator
      *
      * @param string $config
