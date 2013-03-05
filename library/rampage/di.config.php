@@ -12,7 +12,7 @@ return array(
         'preferences' => array(
             'rampage\core\ObjectManagerInterface' => 'ObjectManager',
             'rampage\core\PathManager' => 'rampage.PathManager',
-            'rampage\core\ModuleManager' => 'rampage.ModuleManager',
+            'rampage\core\ModuleRegistry' => 'rampage.ModuleRegistry',
             'rampage\core\resource\Theme' => 'rampage.Theme',
             'rampage\core\resource\FileLocatorInterface' => 'rampage.resource.locator.MapProxy',
             'rampage\core\model\design\Config' => 'rampage.theme.Config',
@@ -23,9 +23,11 @@ return array(
 
             // Zend
             'Zend\View\HelperPluginManager' => 'ViewHelperManager',
+            'Zend\Db\Adapter\Profiler\ProfilerInterface' => 'db.profiler',
 
             // ORM
             'rampage\orm\ConfigInterface' => 'rampage.orm.Config',
+            'rampage\orm\RepositoryManager' => 'RepositoryManager',
             'rampage\orm\entity\type\ConfigInterface' => 'rampage.orm.Config',
             'rampage\orm\db\adapter\ConfigInterface' => 'rampage.orm.db.Config',
             'rampage\orm\db\platform\ConfigInterface' => 'rampage.orm.db.Config',

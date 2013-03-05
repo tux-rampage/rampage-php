@@ -409,10 +409,10 @@ class Module implements ModuleInterface,
     public function getConsoleBanner(AdapterInterface $console)
     {
         if (isset($this->_manifest['console']['banner'])) {
-            return false;
+            return $this->_manifest['console']['banner'];
         }
 
-        return '';
+        return false;
     }
 
 	/**

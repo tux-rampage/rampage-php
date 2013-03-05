@@ -143,8 +143,12 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
      *
      * @param array $primaryKey
      */
-    public function setPrimaryKey(array $primaryKey)
+    public function setPrimaryKey($primaryKey)
     {
+        if (!is_array($primaryKey)) {
+            $primaryKey = array($primaryKey);
+        }
+
         $this->primaryKey = $primaryKey;
         return $this;
     }

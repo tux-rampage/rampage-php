@@ -40,6 +40,8 @@ class ColumnDefinition extends NamedDefintion
     const TYPE_CLOB = 'CLOB';
     const TYPE_BOOL = 'BOOL';
     const TYPE_ENUM = 'ENUM';
+    const TYPE_DATE = 'DATE';
+    const TYPE_DATETIME = 'DATETIME';
 
     /**
      * The column type

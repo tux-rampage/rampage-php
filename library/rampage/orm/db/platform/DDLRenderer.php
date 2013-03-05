@@ -63,7 +63,9 @@ class DDLRenderer implements DdlRendererInterface
         ColumnDefinition::TYPE_FLOAT => 'DECIMAL',
         ColumnDefinition::TYPE_INT => 'INT',
         ColumnDefinition::TYPE_TEXT => 'TEXT',
-        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR'
+        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR',
+        ColumnDefinition::TYPE_DATE => 'DATE',
+        ColumnDefinition::TYPE_DATETIME => 'DATETIME',
     );
 
     /**

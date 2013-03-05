@@ -48,7 +48,9 @@ class DDLRenderer extends DefaultDDLRenderer
         ColumnDefinition::TYPE_FLOAT => 'NUMBER',
         ColumnDefinition::TYPE_INT => 'NUMBER',
         ColumnDefinition::TYPE_TEXT => 'VARCHAR',
-        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR'
+        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR',
+        ColumnDefinition::TYPE_DATE => 'DATE',
+        ColumnDefinition::TYPE_DATETIME => 'DATE',
     );
 
     /**

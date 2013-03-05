@@ -17,36 +17,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\service;
+namespace rampage\orm\db\adapter;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Console\Console;
+use Zend\Db\Adapter\Adapter as DefaultAdapter;
+use rampage\orm\db\adapter\oracle\PDODriver as OraclePDODriver;
 
 /**
- * Initializer factory
+ * Adapter implementation
  */
-class ViewInitializerFactory
+class Adapter extends DefaultAdapter
 {
-    /**
-     * Canonical view initializer
-     *
-     * @param ServiceLocatorInterface $services
-     * @param string $canonicalName
-     * @param string $requestedName
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\Db\Adapter\Adapter::createDriver()
      */
-    public function __invoke(ServiceLocatorInterface $services, $canonicalName, $requestedName)
+    protected function createDriver($parameters)
     {
-        if (Console::isConsole()) {
-            return $services->get('rampage.core.view.console.ViewInitializer');
+        if (!is_string($parameters['driver']) || (strtolower($parameters['driver']) != 'pdo_oci')) {
+            return parent::createDriver($parameters);
         }
 
-        $initializer = $services->get('rampage.core.view.http.ViewInitializer');
-        return $initializer;
+        $options = array();
+        if (isset($parameters['options'])) {
+            $options = (array) $parameters['options'];
+            unset($parameters['options']);
+        }
+
+        $driver = new OraclePDODriver($parameters);
+        return $driver;
     }
 }

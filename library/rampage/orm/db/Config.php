@@ -140,7 +140,7 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
     public function getAdapterOptions($name)
     {
         $name = $this->xpathQuote($name);
-        $node = $this->getNode("./adapters/adapter[@name='$name']");
+        $node = $this->getNode("./adapters/adapter[@name = $name]");
         $options = array(
             'driver' => 'Pdo_Mysql',
             'hostname' => 'localhost'
@@ -169,6 +169,9 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
             if ($platformOptions) {
                 $options['platform_options'];
             }
+        } else if (strtolower($options['driver']) == 'pdo_oci') {
+            // ZF" does not recognize oracle platform for PDO_OCI
+            $options['platform'] = 'Oracle';
         }
 
         return $options;
@@ -180,7 +183,8 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
      */
     public function hasAdapterConfig($name)
     {
-        $node = $this->getNode("./adapters/adapter[@name='$name']");
+        $name = $this->xpathQuote($name);
+        $node = $this->getNode("./adapters/adapter[@name = $name]");
         return ($node instanceof SimpleXmlElement);
     }
 

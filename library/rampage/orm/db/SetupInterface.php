@@ -17,36 +17,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\service;
-
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Console\Console;
+namespace rampage\orm\db;
 
 /**
- * Initializer factory
+ * Repository setup interface
  */
-class ViewInitializerFactory
+interface SetupInterface
 {
     /**
-     * Canonical view initializer
+     * resource name to setup
      *
-     * @param ServiceLocatorInterface $services
-     * @param string $canonicalName
-     * @param string $requestedName
+     * @param string $name
      */
-    public function __invoke(ServiceLocatorInterface $services, $canonicalName, $requestedName)
-    {
-        if (Console::isConsole()) {
-            return $services->get('rampage.core.view.console.ViewInitializer');
-        }
+    public function setName($name);
 
-        $initializer = $services->get('rampage.core.view.http.ViewInitializer');
-        return $initializer;
-    }
+    /**
+     * Scripts location
+     *
+     * @param string $dir
+     */
+    public function setScriptLocation($dir);
+
+    /**
+     * Check for required updates
+     *
+     * @return boolean
+     */
+    public function isUpdateRequired();
+
+    /**
+     * Install upgrades
+     */
+    public function install();
 }

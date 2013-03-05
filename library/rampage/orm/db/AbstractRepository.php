@@ -26,11 +26,15 @@
 namespace rampage\orm\db;
 
 use rampage\core\ObjectManagerInterface;
+use rampage\core\data\RestrictableCollectionInterface;
+
 use rampage\orm\RepositoryInterface;
-use rampage\orm\repository\PersistenceFeatureInterface;
 use rampage\orm\ConfigInterface;
+use rampage\orm\repository\PersistenceFeatureInterface;
+use rampage\orm\repository\InstallableRepositoryInterface;
 use rampage\orm\exception\RuntimeException;
 use rampage\orm\exception\InvalidArgumentException;
+use rampage\orm\exception\DomainException;
 use rampage\orm\query\Query;
 use rampage\orm\query\QueryInterface;
 
@@ -49,8 +53,6 @@ use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Stdlib\Hydrator\HydratorInterface;
-use rampage\orm\exception\DomainException;
-use rampage\core\data\RestrictableCollectionInterface;
 
 /**
  * Abstract DB repository

@@ -30,6 +30,7 @@ use rampage\orm\db\ddl\ColumnDefinition;
 use rampage\orm\db\ddl\ChangeColumn;
 use rampage\orm\db\ddl\IndexDefinition;
 use rampage\orm\db\ddl\AbstractTableDefinition;
+use rampage\orm\db\platform\PlatformInterface;
 
 /**
  * DDL renderer
@@ -37,22 +38,18 @@ use rampage\orm\db\ddl\AbstractTableDefinition;
 class DDLRenderer extends DefaultDDLRenderer
 {
     /**
-     * Column type map
-     *
-     * @var array
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::__construct()
      */
-    protected $columnTypeMap = array(
-        ColumnDefinition::TYPE_BLOB => 'BLOB',
-        ColumnDefinition::TYPE_BOOL => 'TINYINT',
-        ColumnDefinition::TYPE_CLOB => 'TEXT',
-        ColumnDefinition::TYPE_ENUM => 'ENUM',
-        ColumnDefinition::TYPE_FLOAT => 'DECIMAL',
-        ColumnDefinition::TYPE_INT => 'INT',
-        ColumnDefinition::TYPE_TEXT => 'TEXT',
-        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR'
-    );
+    public function __construct(PlatformInterface $platform)
+    {
+        $this->columnTypeMap[ColumnDefinition::TYPE_BOOL] = 'TINYINT';
+        $this->columnTypeMap[ColumnDefinition::TYPE_CLOB] = 'LONGTEXT';
 
-    /**
+        parent::__construct($platform);
+    }
+
+	/**
      * @see \rampage\orm\db\platform\DDLRenderer::renderAlterColumn()
      */
     protected function renderAlterColumn(AlterTable $ddl, ChangeColumn $column)

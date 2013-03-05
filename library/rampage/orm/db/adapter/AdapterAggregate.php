@@ -27,10 +27,10 @@ namespace rampage\orm\db\adapter;
 
 use rampage\orm\db\platform\ServiceLocator as PlatformLocator;
 use rampage\orm\db\platform\PlatformInterface;
+use rampage\orm\db\metadata\Metadata;
 
 use Zend\Db\Sql\Sql;
 use Zend\Db\Adapter\Adapter;
-use Zend\Db\Metadata\Metadata;
 
 /**
  * Adapter
@@ -216,7 +216,7 @@ class AdapterAggregate
     /**
      * Metadata
      *
-     * @return \Zend\Db\Metadata\Metadata
+     * @return \rampage\orm\db\metadata\Metadata
      */
     public function metadata()
     {

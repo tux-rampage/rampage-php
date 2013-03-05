@@ -17,36 +17,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\service;
+namespace rampage\orm\db\adapter;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Console\Console;
+use Zend\Db\Adapter\Profiler\ProfilerInterface;
 
 /**
- * Initializer factory
+ * Null DB Profiler
  */
-class ViewInitializerFactory
+class NullProfiler implements ProfilerInterface
 {
-    /**
-     * Canonical view initializer
-     *
-     * @param ServiceLocatorInterface $services
-     * @param string $canonicalName
-     * @param string $requestedName
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\Db\Adapter\Profiler\ProfilerInterface::profilerFinish()
      */
-    public function __invoke(ServiceLocatorInterface $services, $canonicalName, $requestedName)
+    public function profilerFinish()
     {
-        if (Console::isConsole()) {
-            return $services->get('rampage.core.view.console.ViewInitializer');
-        }
+    }
 
-        $initializer = $services->get('rampage.core.view.http.ViewInitializer');
-        return $initializer;
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\Db\Adapter\Profiler\ProfilerInterface::profilerStart()
+     */
+    public function profilerStart($target)
+    {
     }
 }

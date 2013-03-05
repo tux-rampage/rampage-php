@@ -77,19 +77,24 @@ class RuntimeDefinition extends DefaultRuntimeDefinition
     {
         $doc = $method->getDocComment();
         $name = $parameter->getName();
-        $pattern = '~@service\s+([a-zA-Z][a-zA-Z0-9.\\\\]*)\s+\$' . $name . '(\s+force)?~';
+        $pattern = '~@service\s+(([a-zA-Z][a-zA-Z0-9.\\\\]*)\s+)?\$' . $name . '(\s+force)?~';
         $m = null;
 
         if (preg_match($pattern, $doc, $m)) {
-            if (isset($m[2]) && !empty($m[2])) {
+            if (isset($m[3]) && !empty($m[3])) {
                 $required = true;
             }
 
-            return $m[1];
+            if (!isset($m[2]) && !$parameter->getClass()) {
+                return null;
+            } else if (isset($m[2])) {
+                return $m[2];
+            }
         }
 
         if (!$parameter->getClass()) {
-            return null;
+            $type = ($parameter->isArray())? null : false;
+            return $type;
         }
 
         return $parameter->getClass()->getName();

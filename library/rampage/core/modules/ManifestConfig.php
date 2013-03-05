@@ -368,6 +368,48 @@ class ManifestConfig extends Config
     }
 
     /**
+     * Console config
+     */
+    protected function loadConsoleConfig()
+    {
+        $xml = $this->getXml();
+
+        $banner = (string)$this->getNode('./console/banner');
+        if ($banner) {
+            $this->manifest['console']['banner'] = $banner;
+        }
+
+        foreach ($xml->xpath('./console/command[@name != "" and @route != "" and @controller != ""]') as $node) {
+            $name = (string)$node['name'];
+            $config = array(
+                'route' => (string)$node['route'],
+                'defaults' => (isset($node->defaults))? $node->defaults->toPhpValue('array') : array(),
+            );
+
+            $config['defaults']['controller'] = (string)$node['controller'];
+            if (isset($node['action'])) {
+                $config['defaults']['action'] = (string)$node['action'];
+            }
+
+            $this->manifest['application_config']['console']['router']['routes'][$name]['options'] = $config;
+
+            if (isset($node->usage) && isset($node->usage->command) && isset($node->usage->command['command'])) {
+                $command = (string)$node->usage->command['command'];
+                $this->manifest['console']['usage'][$command] = (string)$node->usage->command;
+
+                foreach ($node->usage->xpath('./parameter[@parameter != ""]') as $param) {
+                    $this->manifest['console']['usage'][] = array(
+                        (string)$param['parameter'],
+                        (string)$param
+                    );
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Load route config from manifest
      */
     protected function loadRouteConfig()
@@ -553,6 +595,9 @@ class ManifestConfig extends Config
         $this->manifest = array(
             'application_config' => array(),
             'autoloader_config' => array(),
+            'console' => array(
+                'usage' => array(),
+            ),
         );
 
         $this->loadPackagesConfig()
@@ -562,7 +607,8 @@ class ManifestConfig extends Config
              ->loadServiceConfig()
              ->loadLocaleConfig()
              ->loadControllersConfig()
-             ->loadRouteConfig();
+             ->loadRouteConfig()
+             ->loadConsoleConfig();
 
         return $this->manifest;
     }

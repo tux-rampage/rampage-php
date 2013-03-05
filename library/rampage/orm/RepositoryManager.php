@@ -76,7 +76,17 @@ class RepositoryManager implements ServiceLocatorInterface
             throw new exception\DependencyException('Missing config instance');
         }
 
-        return $this->_config;
+        return $this->config;
+    }
+
+    /**
+     * Returns all configured repo names
+     *
+     * @return string[]
+     */
+    public function getRepositoryNames()
+    {
+        return $this->getConfig()->getRepositoryNames();
     }
 
     /**

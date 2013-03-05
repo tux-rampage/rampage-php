@@ -90,9 +90,9 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
     protected function getDefaultMergeRulechain()
     {
         $rules = parent::getDefaultMergeRulechain();
-        $rules->add(new UniqueAttributeRule('~/reference/attribute$', 'local'))
+        $rules->add(new UniqueAttributeRule('~/reference/attribute$~', 'local'))
             ->add(new UniqueAttributeRule('~/(repository|entity|attribute|index|reference)$~', 'name'))
-            ->add(new UniqueAttributeRule('~/constraint$', 'type'));
+            ->add(new UniqueAttributeRule('~/constraint$~', 'type'));
 
         return $rules;
     }
@@ -113,7 +113,7 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
      * @param string $name
      * @return string|null
      */
-    protected function getRepositoryClass($name)
+    public function getRepositoryClass($name)
     {
         $node = $this->getNode("repository[@name='$name']");
         if (!$node) {

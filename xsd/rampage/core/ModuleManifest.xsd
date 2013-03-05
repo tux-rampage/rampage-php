@@ -351,6 +351,7 @@
 	        </element>
 	        <element minOccurs="0" maxOccurs="1" name="services" type="rampage:ServicesType"></element>
 	        <element minOccurs="0" maxOccurs="1" name="router" type="rampage:RoutersConfig"></element>
+	        <element name="console" type="rampage:ConsoleConfig" maxOccurs="1" minOccurs="0"></element>
 	        <element minOccurs="0" maxOccurs="unbounded" name="controllers">
 	            <complexType>
 	                <all>
@@ -387,4 +388,45 @@
 	</complexType>
 
 	<element name="manifest" type="rampage:RampageManifestComplexType"></element>
+
+	<complexType name="ConsoleConfig">
+	    <all>
+            <element name="banner" type="string" maxOccurs="1" minOccurs="0"></element>
+            <element name="command" maxOccurs="unbounded" minOccurs="0">
+	            <complexType>
+	                <all>
+	                    <element name="defaults" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
+	                    <element name="usage" type="rampage:ConsoleUsageConfig" maxOccurs="1" minOccurs="0"></element>
+	                </all>
+                    <attribute name="name" type="string" use="required"></attribute>
+                    <attribute name="route" type="string" use="required"></attribute>
+	                <attribute name="controller" type="string" use="required"></attribute>
+	                <attribute name="action" type="string" use="optional"></attribute>
+	            </complexType>
+            </element>
+	    </all>
+	</complexType>
+
+	<complexType name="ConsoleUsageConfig">
+	    <all>
+	        <element name="command" maxOccurs="1" minOccurs="1">
+	            <complexType>
+	                <simpleContent>
+	                    <extension base="string">
+	                        <attribute name="command" type="string" use="required"></attribute>
+	                    </extension>
+	                </simpleContent>
+	            </complexType>
+	        </element>
+	        <element name="parameter" maxOccurs="unbounded" minOccurs="0">
+	            <complexType>
+	                <simpleContent>
+	                    <extension base="string">
+	                        <attribute name="parameter" type="string" use="required"></attribute>
+	                    </extension>
+	                </simpleContent>
+	            </complexType>
+	        </element>
+	    </all>
+	</complexType>
 </schema>

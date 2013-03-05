@@ -43,6 +43,7 @@ class Config
     /**
      * Construct
      *
+     * @service $data
      * @param array $data
      */
     public function __construct($data = array())

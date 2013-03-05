@@ -23,30 +23,29 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\service;
+namespace rampage\core\view\console;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Console\Console;
+use Zend\EventManager\ListenerAggregateInterface;
+use Zend\EventManager\EventManagerInterface;
 
 /**
- * Initializer factory
+ * Console view initializer
  */
-class ViewInitializerFactory
+class ViewInitializer implements ListenerAggregateInterface
 {
-    /**
-     * Canonical view initializer
-     *
-     * @param ServiceLocatorInterface $services
-     * @param string $canonicalName
-     * @param string $requestedName
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\EventManager\ListenerAggregateInterface::attach()
      */
-    public function __invoke(ServiceLocatorInterface $services, $canonicalName, $requestedName)
+    public function attach(EventManagerInterface $events)
     {
-        if (Console::isConsole()) {
-            return $services->get('rampage.core.view.console.ViewInitializer');
-        }
+    }
 
-        $initializer = $services->get('rampage.core.view.http.ViewInitializer');
-        return $initializer;
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\EventManager\ListenerAggregateInterface::detach()
+     */
+    public function detach(EventManagerInterface $events)
+    {
     }
 }

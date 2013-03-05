@@ -7,6 +7,7 @@ return array(
             'controllers' => array(
                 'invokables' => array(
                     'rampage.core.layoutonly' => 'rampage\core\controller\LayoutOnlyController',
+                    'rampage.orm.db.setup' => 'rampage\orm\db\controllers\SetupController',
                 )
             ),
 
@@ -20,7 +21,7 @@ return array(
             'packages' => array(
                 'aliases' => array(
                     'rampage.auth.AuthService' => 'rampage.auth.models.AuthenticationService',
-                    'rampage.orm.db.Adapter' => 'Zend\Db\Adapter\Adapter'
+                    'rampage.orm.db.Adapter' => 'rampage.orm.db.adapter.Adapter',
                 )
             ),
 
@@ -40,6 +41,7 @@ return array(
             'service_manager' => array(
                 'invokables' => array(
                     'rampage.core.service.DiAbstractServiceFactory' => 'rampage\core\service\DiAbstractServiceFactory',
+                    'db.profiler' => '\rampage\orm\db\adapter\NullProfiler'
                 ),
                 'factories' => array(
                     'Application' => 'rampage\core\service\ApplicationFactory',
@@ -66,15 +68,15 @@ return array(
                     'rampage.resource.BootstapListener' => 'rampage.core.resource.BootstrapListener',
 
                     // Core
-                    'om' => 'ObjectManager',
                     'rampage.ObjectManager' => 'ObjectManager',
-                    'repositorymanager' => 'rampage.orm.RepositoryManager',
+                    'RepositoryManager' => 'rampage.orm.RepositoryManager',
                     'DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
                     'rampage.event.Config' => 'rampage.core.event.Config',
                     'rampage.UserConfig' => 'rampage.core.model.Config',
                     'rampage.core.view.http.Renderer' => 'rampage\core\view\renderer\PhpRenderer',
 
                     // ORM
+                    'rampage.orm.Config' => 'rampage.orm.Config',
                     'rampage.orm.db.AdapterManager' => 'rampage.orm.db.adapter.AdapterManager',
                     'rampage.orm.db.PlatformManager' => 'rampage.orm.db.platform.ServiceLocator',
 
