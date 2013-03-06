@@ -21,7 +21,7 @@ return array(
             'packages' => array(
                 'aliases' => array(
                     'rampage.auth.AuthService' => 'rampage.auth.models.AuthenticationService',
-                    'rampage.orm.db.Adapter' => 'rampage.orm.db.adapter.Adapter',
+                    'rampage.orm.db.Adapter' => 'rampage.db.Adapter',
                 )
             ),
 

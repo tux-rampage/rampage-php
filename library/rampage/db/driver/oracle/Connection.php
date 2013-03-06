@@ -23,33 +23,32 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\adapter;
+namespace rampage\db\driver\oracle;
 
-use Zend\Db\Adapter\Adapter as DefaultAdapter;
-use rampage\orm\db\adapter\oracle\PDODriver as OraclePDODriver;
+use Zend\Db\Adapter\Driver\Pdo\Connection as PdoConnection;
 
 /**
- * Adapter implementation
+ * PDO Connection
  */
-class Adapter extends DefaultAdapter
+class Connection extends PdoConnection
 {
 	/**
      * (non-PHPdoc)
-     * @see \Zend\Db\Adapter\Adapter::createDriver()
+     * @see \Zend\Db\Adapter\Driver\Pdo\Connection::getCurrentSchema()
      */
-    protected function createDriver($parameters)
+    public function getCurrentSchema()
     {
-        if (!is_string($parameters['driver']) || (strtolower($parameters['driver']) != 'pdo_oci')) {
-            return parent::createDriver($parameters);
+        if (!$this->isConnected()) {
+            $this->connect();
         }
 
-        $options = array();
-        if (isset($parameters['options'])) {
-            $options = (array) $parameters['options'];
-            unset($parameters['options']);
+        /* @var $result \PDOStatement */
+        $sql = "select sys_context('userenv', 'current_schema') from dual";
+        $result = $this->resource->query($sql);
+        if ($result instanceof \PDOStatement) {
+            return $result->fetchColumn();
         }
 
-        $driver = new OraclePDODriver($parameters);
-        return $driver;
+        return false;
     }
 }

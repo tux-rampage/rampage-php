@@ -226,7 +226,7 @@ class Platform implements PlatformInterface
     public function getTable($entity)
     {
         $entitiy = $this->canonicalizeEntityName($entity);
-        $table = $this->getConfig()->getTable($entity);
+        $table = $this->getConfig()->getTable($this, $entity);
 
         if (!$table) {
             $table = $this->formatEntityToTableName($entity);
@@ -264,7 +264,7 @@ class Platform implements PlatformInterface
         }
 
         $mapper = $this->createFieldMapper($entity);
-        $this->getConfig()->configureFieldMapper($mapper, $entity);
+        $this->getConfig()->configureFieldMapper($mapper, $this, $entity);
 
         $this->setFieldMapper($entity, $mapper);
         return $mapper;
@@ -307,7 +307,7 @@ class Platform implements PlatformInterface
             return $this->hydrators[$entity];
         }
 
-        $class = $this->getConfig()->getHydratorClass($entity);
+        $class = $this->getConfig()->getHydratorClass($this, $entity);
         if (!$class) {
             $class = $this->getDefaultHydratorClass();
         }
@@ -318,7 +318,7 @@ class Platform implements PlatformInterface
             $instance->setFieldMapper($this->getFieldMapper($entity));
         }
 
-        $this->getConfig()->configureHydrator($instance, $entity);
+        $this->getConfig()->configureHydrator($instance, $this, $entity);
         $this->setHydrator($entity, $instance);
 
         return $instance;

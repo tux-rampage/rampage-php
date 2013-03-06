@@ -23,12 +23,11 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\adapter\oracle;
+namespace rampage\db\driver\oracle;
 
 use Zend\Db\Adapter\Driver\Pdo\Pdo;
 use Zend\Db\Adapter\Driver\Pdo\Statement;
 use Zend\Db\Adapter\Driver\Pdo\Result;
-
 
 /**
  * Oracle PDO driver for ZF DB Adapter
@@ -84,4 +83,12 @@ class PDODriver extends Pdo
 
         parent::__construct($connection, $statementPrototype, $resultPrototype, $features);
     }
-}
+
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\Db\Adapter\Driver\Pdo\Pdo::getDatabasePlatformName()
+     */
+    public function getDatabasePlatformName($nameFormat = self::NAME_FORMAT_CAMELCASE)
+    {
+        return 'Oracle';
+    }}

@@ -17,29 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.orm
+ * @package   rampage.db
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform;
+namespace rampage\db\platform;
 
-use rampage\orm\db\ddl\DefinitionInterface;
+use Zend\Db\Adapter\Driver\DriverInterface;
 
 /**
- * DDL Renderer interface
+ * Driver aware platforms
  */
-interface DDLRendererInterface
+interface DriverAwareInterface
 {
     /**
-     * Render ddl statement
-     *
-     * This method might return an array when the ddl requires
-     * multiple sql statements to be executed
-     *
-     * @param DefinitionInterface $ddl
-     * @return string|array
+     * Set the driver instance
      */
-    public function renderDdl(DefinitionInterface $ddl);
+    public function setDriver(DriverInterface $driver = null);
 }

@@ -23,32 +23,14 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\adapter\oracle;
-
-use Zend\Db\Adapter\Driver\Pdo\Connection as PdoConnection;
+namespace rampage\core\exception;
 
 /**
- * PDO Connection
+ * Exception for invalid Service types
+ *
+ * Thrown whenever a service instance was created which does
+ * not fulfill the service locators requirements
  */
-class Connection extends PdoConnection
+class InvalidServiceTypeException extends RuntimeException
 {
-	/**
-     * (non-PHPdoc)
-     * @see \Zend\Db\Adapter\Driver\Pdo\Connection::getCurrentSchema()
-     */
-    public function getCurrentSchema()
-    {
-        if (!$this->isConnected()) {
-            $this->connect();
-        }
-
-        /* @var $result \PDOStatement */
-        $sql = "select sys_context('userenv', 'current_schema') from dual";
-        $result = $this->resource->query($sql);
-        if ($result instanceof \PDOStatement) {
-            return $result->fetchColumn();
-        }
-
-        return false;
-    }
 }

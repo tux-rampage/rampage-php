@@ -25,6 +25,7 @@
 
 namespace rampage\orm\db\ddl;
 
+use rampage\orm\exception\InvalidArgumentException;
 /**
  * Abstract table definition
  */
@@ -57,6 +58,13 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
      * @var array
      */
     private $references = array();
+
+    /**
+     * Table Options
+     *
+     * @var array
+     */
+    private $options = array();
 
     /**
      * Construction
@@ -181,5 +189,56 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     public function getReferences()
     {
         return $this->references;
+    }
+
+    /**
+     * Add a table option
+     *
+     * @param string $name
+     * @param string $value
+     */
+    public function addOption($name, $value)
+    {
+        $this->options[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * Set table options
+     *
+     * @param array|Traversable $options
+     */
+    public function setOptions($options)
+    {
+        if (!is_array($options) && !($options instanceof \Traversable)) {
+            throw new InvalidArgumentException('Table options must be an array or implement the Traversable interface');
+        }
+
+        $this->clearOptions();
+
+        foreach ($options as $name => $value) {
+            $this->addOption($name, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove all option definitions
+     */
+    public function clearOptions()
+    {
+        $this->options = array();
+        return $this;
+    }
+
+    /**
+     * Returns the defined table options
+     *
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 }

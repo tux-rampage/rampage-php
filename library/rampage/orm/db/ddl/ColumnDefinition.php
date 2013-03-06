@@ -142,7 +142,7 @@ class ColumnDefinition extends NamedDefintion
      *
      * @return number
      */
-    public function getSize($required)
+    public function getSize($required = false)
     {
         if ($required && !$this->size) {
             throw new RuntimeException('Missing size for column type ' . $this->getType());
@@ -156,7 +156,7 @@ class ColumnDefinition extends NamedDefintion
      *
      * @return int
      */
-    public function getPrecision($required)
+    public function getPrecision($required = false)
     {
         if ($required && !$this->precision) {
             throw new RuntimeException('Missing precision for column type ' . $this->getType());

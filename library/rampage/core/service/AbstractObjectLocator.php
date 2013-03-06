@@ -26,8 +26,9 @@
 namespace rampage\core\service;
 
 use Zend\ServiceManager\ServiceLocatorInterface;
-use rampage\core\exception\RuntimeException;
 use rampage\core\ObjectManagerInterface;
+use rampage\core\exception\RuntimeException;
+use rampage\core\exception\InvalidServiceTypeException;
 
 /**
  * Abstract object locator
@@ -54,6 +55,17 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
      * @var bool
      */
     protected $strict = false;
+
+    /**
+     * The required instance type
+     *
+     * Specify a class or inteface name.
+     * If this property is not null, all instances must implement
+     * or inherit from this type.
+     *
+     * @var string
+     */
+    protected $requiredInstanceType = null;
 
     /**
      * @var array map of characters to be replaced through strtr
@@ -94,9 +106,34 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
     protected function canonicalizeName($name)
     {
         $canonical = strtr(strtolower($name), $this->canonicalNamesReplacements);
-        $canonical = trim($name, '.');
+        $canonical = trim($canonical, '.');
 
         return $canonical;
+    }
+
+    /**
+     * Ensure a valid instance
+     *
+     * @param object $instance The instance to validate
+     * @param string $name The requested service name
+     * @throws \rampage\core\exception\InvalidServiceTypeException When the given instance doesn't pass validation
+     * @return \rampage\core\service\AbstractObjectLocator $this (Fluent Interface)
+     */
+    protected function ensureValidInstance($instance, $name)
+    {
+        if ($this->requiredInstanceType === null) {
+            return $this;
+        }
+
+        if (!$instance instanceof $this->requiredInstanceType) {
+            throw new InvalidServiceTypeException(sprintf(
+                'The requested service "%s" must implement "%s", but its type "%s" doesn\'t',
+                $name, $this->requiredInstanceType,
+                (is_object($instance))? get_class($instance) : gettype($instance)
+            ));
+        }
+
+        return $this;
     }
 
     /**
@@ -109,6 +146,18 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
     {
         $name = $this->canonicalizeName($name);
         $this->invokables[$name] = $class;
+    }
+
+    /**
+     * Create the requested service instance
+     *
+     * @param string $name
+     * @param array $options
+     * @return object
+     */
+    protected function create($name, array $options = array())
+    {
+        return $this->getObjectManager()->get($name, $options);
     }
 
     /**
@@ -126,7 +175,10 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
             $name = $this->invokables[$name];
         }
 
-        return $this->getObjectManager()->get($name, $options);
+        $instance = $this->create($name, $options);
+        $this->ensureValidInstance($instance, $name);
+
+        return $instance;
     }
 
     /**

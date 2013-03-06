@@ -26,15 +26,21 @@
 namespace rampage\orm\db;
 
 use DirectoryIterator;
+use Zend\Db\Adapter\Adapter;
+
 use rampage\core\model\Config as UserConfig;
+use rampage\core\exception\RuntimeException;
 use rampage\orm\db\adapter\AdapterAggregate;
+
 use rampage\orm\db\ddl\CreateTable;
 use rampage\orm\db\ddl\ColumnDefinition;
-use rampage\core\exception\RuntimeException;
 use rampage\orm\db\ddl\DefinitionInterface;
 use rampage\orm\db\ddl\AlterTable;
 use rampage\orm\db\ddl\DropTable;
 
+/**
+ * Orm DB setup
+ */
 class Setup implements SetupInterface
 {
     /**
@@ -96,7 +102,7 @@ class Setup implements SetupInterface
      */
     protected function getName()
     {
-        if (!$this->getName()) {
+        if (!$this->name) {
             throw new RuntimeException('Missing ddl setup name');
         }
 
@@ -244,8 +250,11 @@ class Setup implements SetupInterface
             return true;
         }
 
-        $tables = $this->getAdapterAggregate()->metadata()->getTableNames();
-        return in_array($this->getSchemaInfoTable(), $tables);
+        $aggregate = $this->getAdapterAggregate();
+        $tables = $aggregate->metadata()->getTableNames();
+        $table = $aggregate->getPlatform()->getTable($this->getSchemaInfoTable());
+
+        return in_array($table, $tables);
     }
 
     /**
@@ -309,8 +318,15 @@ class Setup implements SetupInterface
      */
     public function run(DefinitionInterface $ddl)
     {
-        $sql = $this->getPlatform()->getDDLRenderer()->renderDdl($ddl);
-        $this->getAdapter()->query($sql);
+        $ddlSql = $this->getPlatform()->getDDLRenderer()->renderDdl($ddl);
+
+        if (!is_array($ddlSql)) {
+            $ddlSql = array($ddlSql);
+        }
+
+        foreach ($ddlSql as $sql) {
+            $this->getAdapter()->query($sql, Adapter::QUERY_MODE_EXECUTE);
+        }
 
         return $this;
     }
@@ -364,7 +380,7 @@ class Setup implements SetupInterface
 
         $sql = $this->getAdapterAggregate()->sql();
         $select = $sql->select()
-            ->from($this->getSchemaInfoTable())
+            ->from($table)
             ->where(array($field => $this->getName()));
 
         $result = $sql->prepareStatementForSqlObject($select)
@@ -387,6 +403,8 @@ class Setup implements SetupInterface
     protected function updateCurrentRevision($version, $installed)
     {
         $this->createSchemaInfoTable();
+
+        $table = $this->getPlatform()->getTable($this->getSchemaInfoTable());
         $idField = $this->getPlatform()->formatIdentifier('repository');
         $versionField = $this->getPlatform()->formatIdentifier('revision');
         $data = array($versionField => $version);
@@ -399,7 +417,7 @@ class Setup implements SetupInterface
         } else {
             $where = array($idField => $this->getName());
             $action = $this->sql()
-                ->update()
+                ->update($table)
                 ->set($data)
                 ->where($where);
         }

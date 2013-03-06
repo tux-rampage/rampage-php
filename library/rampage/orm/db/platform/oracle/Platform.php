@@ -41,6 +41,15 @@ class Platform extends DefaultPlatform
         return strtoupper($identifier);
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\Platform::createDDLRenderer()
+     */
+    protected function createDDLRenderer()
+    {
+        return new DDLRenderer($this);
+    }
+
 	/**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\Platform::createFieldMapper()

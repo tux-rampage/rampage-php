@@ -26,9 +26,12 @@
 namespace rampage\orm\db\platform\oracle;
 
 use rampage\orm\db\platform\DDLRenderer as DefaultDDLRenderer;
+
 use rampage\orm\db\ddl\AlterTable;
 use rampage\orm\db\ddl\ChangeColumn;
 use rampage\orm\db\ddl\ColumnDefinition;
+use rampage\orm\db\ddl\CreateTable;
+use rampage\orm\db\ddl\AbstractTableDefinition;
 
 /**
  * Oracle ddl renderer
@@ -47,8 +50,8 @@ class DDLRenderer extends DefaultDDLRenderer
         ColumnDefinition::TYPE_ENUM => 'ENUM',
         ColumnDefinition::TYPE_FLOAT => 'NUMBER',
         ColumnDefinition::TYPE_INT => 'NUMBER',
-        ColumnDefinition::TYPE_TEXT => 'VARCHAR',
-        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR',
+        ColumnDefinition::TYPE_TEXT => 'VARCHAR2',
+        ColumnDefinition::TYPE_VARCHAR => 'VARCHAR2',
         ColumnDefinition::TYPE_DATE => 'DATE',
         ColumnDefinition::TYPE_DATETIME => 'DATE',
     );
@@ -78,10 +81,28 @@ class DDLRenderer extends DefaultDDLRenderer
     }
 
     /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::getColumnSpec()
+     */
+    protected function getColumnSpec(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        $spec = parent::getColumnSpec($column, $ddl);
+
+        // NULL keyword for allowing null values must not be provided in CREATE TABLE statements
+        if ($ddl->getDdlDefintionName() == CreateTable::DDL_NAME) {
+            if ($spec['nullable'] == 'NULL') {
+                $spec['nullable'] = '';
+            }
+        }
+
+        return $spec;
+    }
+
+	/**
      * @see \rampage\orm\db\platform\DDLRenderer::renderAddColumn()
      */
     protected function renderAddColumn(AlterTable $ddl, ChangeColumn $column)
     {
-        return "ADD ({$this->renderColumnDefintion($column, $ddl)})";
+        return "ADD ({$this->renderFieldName($ddl, $column)} {$this->renderColumnDefintion($column, $ddl)})";
     }
 }

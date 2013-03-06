@@ -26,6 +26,7 @@
 namespace rampage\orm\db\platform;
 
 use rampage\core\service\AbstractObjectLocator;
+use rampage\core\ObjectManagerInterface;
 
 /**
  * Service locator for DB Platform instances
@@ -38,6 +39,13 @@ class ServiceLocator extends AbstractObjectLocator
      * @var bool
      */
     protected $strict = true;
+
+    /**
+     * Required instance type
+     *
+     * @var string
+     */
+    protected $requiredInstanceType = 'rampage\orm\db\platform\PlatformInterface';
 
     /**
      * Service definition
@@ -54,16 +62,18 @@ class ServiceLocator extends AbstractObjectLocator
      *
      * @param string $config
      */
-    public function __construct(ConfigInterface $config)
+    public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config)
     {
         $this->setServiceClass('default', 'rampage.orm.db.platform.Platform');
         $config->configurePlatformServiceLocator($this);
+
+        parent::__construct($objectManager);
     }
 
     /**
      * Returns the db platform
      *
-     * @return object
+     * @return \rampage\orm\db\platform\PlatformInterface
      */
     public function get($name, array $options = array())
     {
@@ -71,6 +81,9 @@ class ServiceLocator extends AbstractObjectLocator
             $name = 'default';
         }
 
-        return parent::get($name, $options);
+        $platform = parent::get($name, $options);
+        $platform->setName($this->canonicalizeName($name));
+
+        return $platform;
     }
 }

@@ -25,13 +25,16 @@
 
 namespace rampage\orm\db\platform;
 
+// Exceptions
 use rampage\orm\exception\RuntimeException;
+use rampage\orm\exception\InvalidArgumentException;
+
+// DDL Classes
 use rampage\orm\db\ddl\DefinitionInterface;
 use rampage\orm\db\ddl\CreateTable;
 use rampage\orm\db\ddl\NamedDefintion;
 use rampage\orm\db\ddl\ColumnDefinition;
 use rampage\orm\db\ddl\AbstractTableDefinition;
-use rampage\orm\exception\InvalidArgumentException;
 use rampage\orm\db\ddl\IndexDefinition;
 use rampage\orm\db\ddl\ReferenceDefinition;
 use rampage\orm\db\ddl\AlterTable;
@@ -41,7 +44,7 @@ use rampage\orm\db\ddl\DropTable;
 /**
  * DDL Renderer
  */
-class DDLRenderer implements DdlRendererInterface
+class DDLRenderer implements DDLRendererInterface
 {
     /**
      * Adapter platform
@@ -155,6 +158,28 @@ class DDLRenderer implements DdlRendererInterface
     }
 
     /**
+     * Create table options
+     *
+     * @param AbstractTableDefinition $ddl
+     * @return string
+     */
+    protected function renderCreateTableOptions(AbstractTableDefinition $ddl)
+    {
+        return '';
+    }
+
+    /**
+     * Alter table options
+     *
+     * @param AbstractTableDefinition $ddl
+     * @return string
+     */
+    protected function renderAlterTableOptions(AbstractTableDefinition $ddl)
+    {
+        return '';
+    }
+
+    /**
      * Render field name
      *
      * @param string $entity
@@ -208,6 +233,24 @@ class DDLRenderer implements DdlRendererInterface
     }
 
     /**
+     * Check if null is allowed for the given column
+     *
+     * @param ColumnDefinition $column
+     * @param AbstractTableDefinition $table
+     */
+    protected function isColumnNullable(ColumnDefinition $column, AbstractTableDefinition $table)
+    {
+        if (!$column->isNullable()) {
+            return false;
+        }
+
+        $primary = $table->getPrimaryKey();
+        $nullable = ((count($primary) > 1) || !in_array($column->getName(), $primary));
+
+        return $nullable;
+    }
+
+    /**
      * Render column definition
      *
      * @param ColumnDefinition $column
@@ -222,7 +265,7 @@ class DDLRenderer implements DdlRendererInterface
         switch ($column->getType()) {
             case ColumnDefinition::TYPE_VARCHAR:
                 $size = ($column->getSize())?: 255;
-                $type .= '(' . $column->getSize() . ')';
+                $type .= '(' . $size . ')';
                 break;
 
             case ColumnDefinition::TYPE_BOOL:
@@ -239,14 +282,15 @@ class DDLRenderer implements DdlRendererInterface
         }
 
         $extra = $this->getColumnExtra($column, $ddl);
-        $default = 'DEFAULT ' . $this->getPlatform()->getAdapterPlatform()->quoteValue($column->getDefault());
+        $isNullable = $this->isColumnNullable($column, $ddl);
+        $nullable = ($isNullable)? 'NULL' : 'NOT NULL';
+        $default = '';
 
-        $nullable = ($column->isNullable())? 'NULL' : 'NOT NULL';
-        if (in_array($column->getName(), $ddl->getPrimaryKey())) {
-            $nullable = 'NOT NULL';
+        if ($isNullable || ($column->getDefault() !== null)) {
+            $default = 'DEFAULT ' . $this->getPlatform()->getAdapterPlatform()->quoteValue($column->getDefault());
         }
 
-        return array($type, $extra, $nullable, $default);
+        return compact('type', 'extra', 'nullable', 'default');
     }
 
     /**
@@ -257,7 +301,7 @@ class DDLRenderer implements DdlRendererInterface
      */
     protected function renderColumnDefintion(ColumnDefinition $column, AbstractTableDefinition $ddl)
     {
-        $spec = $this->getColumnSpec($column);
+        $spec = $this->getColumnSpec($column, $ddl);
         $spec = array_filter($spec);
 
         return implode(' ', $spec);
@@ -416,22 +460,23 @@ class DDLRenderer implements DdlRendererInterface
                      . ' ' . $this->renderColumnDefintion($column, $ddl);
         }
 
-        $primary[] = $ddl->getPrimaryKey();
+        $parts[] = $this->renderPrimaryKey($ddl);
 
         foreach ($ddl->getIndexes() as $index) {
             $parts[] = $this->renderIndex($index, $ddl);
         }
 
         foreach ($ddl->getReferences() as $reference) {
-
+            $parts[] = $this->renderForeignKey($reference, $ddl);
         }
 
-        $parts = implode("\n,", $parts);
-        $sql = "
-            CREATE TABLE {$this->renderTableName($ddl)} (
-                $parts
-            )
-        ";
+        // Ensure there are no empty parts
+        $parts = array_map('trim', $parts);
+        $parts = array_filter($parts);
+
+        $sql = "CREATE TABLE {$this->renderTableName($ddl)} (\n\t"
+             . implode(",\n\t", $parts)
+             . "\n) {$this->renderCreateTableOptions($ddl)}";
 
         return $sql;
     }
@@ -627,9 +672,14 @@ class DDLRenderer implements DdlRendererInterface
             $parts[] = $this->renderAddForeignKey($ddl, $reference);
         }
 
-        $parts = implode(",\n", $parts);
-        $sql = "ALTER TABLE {$this->renderTableName($ddl)}\n$parts";
+        $parts[] = $this->renderAlterTableOptions($ddl);
 
+        // Do not allow empty parts to prevent "... , , ..."
+        $parts = array_map('trim', $parts);
+        $parts = array_filter($parts);
+        $parts = implode(",\n", $parts);
+
+        $sql = "ALTER TABLE {$this->renderTableName($ddl)}\n$parts";
         return $sql;
     }
 

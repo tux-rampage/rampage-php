@@ -42,6 +42,13 @@ class AdapterManager extends AbstractObjectLocator
     private $config = null;
 
     /**
+     * Required service types
+     *
+     * @var string
+     */
+    protected $requiredInstanceType = 'Zend\Db\Adapter\Adapter';
+
+    /**
      * Adapter instances
      *
      * @var array
@@ -100,7 +107,9 @@ class AdapterManager extends AbstractObjectLocator
         if (isset($this->instances[$name])) {
             $instance = $this->instances[$name];
         } else {
-            $instance = $this->getObjectManager()->get('rampage.orm.db.Adapter', array('driver' => $config->getAdapterOptions($name)));
+            $instance = $this->create('rampage.orm.db.Adapter', array('driver' => $config->getAdapterOptions($name)));
+
+            $this->ensureValidInstance($instance, $name);
             $this->instances[$name] = $instance;
         }
 
