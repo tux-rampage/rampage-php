@@ -26,6 +26,7 @@
 namespace rampage\orm\db\platform\oracle;
 
 use rampage\orm\db\platform\Platform as DefaultPlatform;
+use rampage\orm\db\platform\PlatformCapabilities;
 
 /**
  * Oracle specific platform implementation
@@ -33,6 +34,15 @@ use rampage\orm\db\platform\Platform as DefaultPlatform;
 class Platform extends DefaultPlatform
 {
     /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\Platform::initCapabilities()
+     */
+    protected function createCapabilities()
+    {
+        return new PlatformCapabilities();
+    }
+
+	/**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\Platform::formatIdentifier()
      */

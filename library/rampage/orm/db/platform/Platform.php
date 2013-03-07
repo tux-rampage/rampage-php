@@ -26,11 +26,11 @@
 namespace rampage\orm\db\platform;
 
 use rampage\orm\exception\DependencyException;
+use rampage\orm\exception\RuntimeException;
 use rampage\core\ObjectManagerInterface;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
 use Zend\Db\Adapter\Platform\PlatformInterface as AdapterPlatformInterface;
-use rampage\orm\exception\RuntimeException;
 
 /**
  * Default Platform
@@ -104,6 +104,13 @@ class Platform implements PlatformInterface
         '-' => '_',
         ' ' => '',
     );
+
+    /**
+     * Platform capabilities
+     *
+     * @var PlatformCapabilities
+     */
+    private $capabilities = null;
 
     /**
      * Create platform
@@ -331,6 +338,46 @@ class Platform implements PlatformInterface
     public function getConstraintMapper($constraint)
     {
         return null;
+    }
+
+    /**
+     * Set platform capabilities
+     *
+     * @param PlatformCapabilities $capabilities
+     */
+    protected function setCapabilities(PlatformCapabilities $capabilities)
+    {
+        $this->capabilities = $capabilities;
+        return $this;
+    }
+
+    /**
+     * Initialize capabilities
+     *
+     * @return \rampage\orm\db\platform\PlatformCapabilities
+     */
+    protected function createCapabilities()
+    {
+        return new PlatformCapabilities(array(
+            PlatformCapabilities::AUTO_IDENTITY
+        ));
+    }
+
+    /**
+     * Returns capabilities
+     *
+     * @return \rampage\orm\db\platform\PlatformCapabilities
+     */
+    public function getCapabilities()
+    {
+        if ($this->capabilities) {
+            return $this->capabilities;
+        }
+
+        $capabilities = $this->createCapabilities();
+        $this->setCapabilities($capabilities);
+
+        return $capabilities;
     }
 
     /**

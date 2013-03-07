@@ -90,6 +90,13 @@ interface PlatformInterface
     public function getAdapterPlatform();
 
     /**
+     * Returns the platform's capabilities
+     *
+     * @return \rampage\orm\db\platform\PlatformCapabilities
+     */
+    public function getCapabilities();
+
+    /**
      * Returns the platform specific ddl renderer
      *
      * @return \rampage\orm\db\platform\DDLRendererInterface

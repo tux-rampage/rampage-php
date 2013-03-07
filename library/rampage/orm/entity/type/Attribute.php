@@ -63,7 +63,7 @@ class Attribute
      *
      * @var bool
      */
-    protected $identity = false;
+    protected $generated = false;
 
     /**
      * Construct
@@ -71,14 +71,14 @@ class Attribute
      * @param string $name
      * @param string $type
      * @param bool $primary
-     * @param bool $identity
+     * @param bool $generated
      * @param bool $nullable
      */
-    public function __construct($name, $type = null, $primary = false, $identity = false, $nullable = false)
+    public function __construct($name, $type = null, $primary = false, $generated = false, $nullable = false)
     {
         $this->name = (string)$name;
         $this->identifier = (bool)$primary;
-        $this->identity = (bool)$identity;
+        $this->generated = (bool)$generated;
         $this->nullable = (bool)$nullable;
 
         if ($type) {
@@ -131,8 +131,8 @@ class Attribute
      *
      * @return the $isIdentity
      */
-    public function isIdentity()
+    public function isGenerated()
     {
-        return $this->identity;
+        return $this->generated;
     }
 }

@@ -89,6 +89,13 @@ class EntityType
     private $class = null;
 
     /**
+     * Flag is generated ids are used
+     *
+     * @var bool
+     */
+    protected $hasGeneratedId = null;
+
+    /**
      * Construct
      *
      * @param string $name
@@ -216,6 +223,21 @@ class EntityType
     }
 
     /**
+     * Returns a specific attribute
+     *
+     * @param string $name
+     * @return \rampage\orm\entity\type\Attribute|null
+     */
+    public function getAttribute($name)
+    {
+        if (!isset($this->attributes[$name])) {
+            return null;
+        }
+
+        return $this->attributes[$name];
+    }
+
+    /**
      * @return the $references
      */
     public function getReferences()
@@ -249,6 +271,28 @@ class EntityType
 
         $this->identifier = $identifier;
         return $identifier;
+    }
+
+    /**
+     * Check for generated ids
+     *
+     * @return bool
+     */
+    public function usesGeneratedId()
+    {
+        if ($this->hasGeneratedId !== null) {
+            return $this->hasGeneratedId;
+        }
+
+        $attribute = $this->getIdentifier();
+        if (!$attribute || is_array($attribute)) {
+            return false;
+        }
+
+        $flag = $this->getAttribute($attribute)->isGenerated();
+        $this->hasGeneratedId = $flag;
+
+        return $flag;
     }
 
     /**

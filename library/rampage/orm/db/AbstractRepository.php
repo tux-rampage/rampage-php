@@ -31,7 +31,6 @@ use rampage\core\data\RestrictableCollectionInterface;
 use rampage\orm\RepositoryInterface;
 use rampage\orm\ConfigInterface;
 use rampage\orm\repository\PersistenceFeatureInterface;
-use rampage\orm\repository\InstallableRepositoryInterface;
 use rampage\orm\exception\RuntimeException;
 use rampage\orm\exception\InvalidArgumentException;
 use rampage\orm\exception\DomainException;
@@ -52,6 +51,7 @@ use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 
 use Zend\Db\Sql\Predicate\PredicateSet;
+use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
@@ -727,7 +727,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     {
         $hydrator = $this->getEntityHydrator($entityType, $this->getWriteAggregate());
 
-        if ($hydrator instanceof FieldHydratorInterface) {
+        if (($hydrator instanceof FieldHydratorInterface)) {
             $hydrator->setAllowedFields($this->getEntityColumns($entityType, $excludeIdentifiers));
         }
 
@@ -747,7 +747,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $entityType = $this->getEntityType($entity);
         $where = $this->prepareIdForDatabase($entity, $id);
 
-        if (!$where === null) {
+        if ($where === null) {
             return null;
         }
 
@@ -772,7 +772,8 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     protected function createInsertSqlObject(EntityInterface $entity)
     {
         $entityType = $this->getEntityType($entity->getEntityType());
-        $hydrator = $this->getEntityWriteHydrator($entityType);
+        $platform = $this->getWriteAggregate()->getPlatform();
+        $hydrator = $this->getEntityWriteHydrator($entityType, $platform->getCapabilities()->supportsAutomaticIdentities());
         $data = $hydrator->extract($entity);
 
         if (!is_array($data) || empty($data)) {
@@ -839,13 +840,39 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
+     * Prepare a generated result
+     *
+     * @param unknown $entityType
+     */
+    protected function prepareGeneratedValue($entityType)
+    {
+        // TODO
+    }
+
+    /**
+     * Fetch the generated value
+     *
+     * @param ResultInterface $result
+     * @param EntityInterface|string $entity
+     * @param string $preparedValue
+     */
+    protected function fetchGeneratedValue(ResultInterface $result, $entityType, $preparedValue)
+    {
+        // TODO
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::save()
      */
     public function save(EntityInterface $entity)
     {
+        $updateId = false;
+        $preparedValue = null;
+
         if (!$entity->getId()) {
-            $action = $this->createInsertSqlObject($entity);
+            $action = $this->createInsertSqlObject($entity, $preparedValue);
+            $updateId = $this->getEntityType($entity)->usesGeneratedId();
         } else {
             $action = $this->createUpdateSqlObject($entity);
         }
@@ -854,10 +881,14 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             return $this;
         }
 
-        $this->getWriteAggregate()
+        $result = $this->getWriteAggregate()
             ->sql()
             ->prepareStatementForSqlObject($action)
             ->execute();
+
+        if ($updateId) {
+            $entity->setId($this->fetchGeneratedValue($result, $entity, $preparedValue));
+        }
 
         return $this;
     }
