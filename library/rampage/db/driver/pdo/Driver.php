@@ -17,35 +17,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.orm
+ * @package   rampage.db
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform;
+namespace rampage\db\driver\pdo;
 
-use Zend\Db\Adapter\Adapter;
+use Zend\Db\Adapter\Driver\Pdo\Pdo as DefaultPdoDriver;
 
 /**
- * Sequence feature
+ * PDO driver
  */
-interface SequenceSupportInterface
+class Driver extends DefaultPdoDriver
 {
-    /**
-     * Returns the sequence name for the given entity type
-     *
-     * @param string $entityType
-     * @return string
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\Db\Adapter\Driver\Pdo\Pdo::setupDefaultFeatures()
      */
-    public function getSequenceName($entityType);
-
-    /**
-     * Fetch the next sequence id
-     *
-     * @param \Zend\Db\Adapter\Adapter
-     * @param string $entityType
-     * @return int|string
-     */
-    public function fetchNextSequenceId(Adapter $adapter, $entityType);
+    public function setupDefaultFeatures()
+    {
+        parent::setupDefaultFeatures();
+        $this->addFeature('transaction', new feature\TransactionFeature($this));
+    }
 }

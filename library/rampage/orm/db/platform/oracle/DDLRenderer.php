@@ -32,6 +32,7 @@ use rampage\orm\db\ddl\ChangeColumn;
 use rampage\orm\db\ddl\ColumnDefinition;
 use rampage\orm\db\ddl\CreateTable;
 use rampage\orm\db\ddl\AbstractTableDefinition;
+use rampage\orm\db\platform\SequenceSupportInterface;
 
 /**
  * Oracle ddl renderer
@@ -54,6 +55,17 @@ class DDLRenderer extends DefaultDDLRenderer
         ColumnDefinition::TYPE_VARCHAR => 'VARCHAR2',
         ColumnDefinition::TYPE_DATE => 'DATE',
         ColumnDefinition::TYPE_DATETIME => 'DATE',
+    );
+
+    /**
+     * Text types
+     *
+     * @var array
+     */
+    protected $textTypes = array(
+        ColumnDefinition::TYPE_CLOB,
+        ColumnDefinition::TYPE_TEXT,
+        ColumnDefinition::TYPE_VARCHAR,
     );
 
     /**
@@ -105,4 +117,40 @@ class DDLRenderer extends DefaultDDLRenderer
     {
         return "ADD ({$this->renderFieldName($ddl, $column)} {$this->renderColumnDefintion($column, $ddl)})";
     }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::renderCreateTable()
+     */
+    public function renderCreateTable(CreateTable $ddl)
+    {
+        $sql = parent::renderCreateTable($ddl);
+        $platform = $this->getPlatform();
+        $primary = $ddl->getPrimaryKey();
+
+        if (!$platform instanceof SequenceSupportInterface) {
+            return $sql;
+        }
+
+        /* @var $column ColumnDefinition */
+        foreach ($ddl->getColumns() as $column) {
+            $isPrimary = in_array($column->getName(), $primary);
+
+            if ($column->isIdentity() && $isPrimary) {
+                $sequence = $platform->getSequenceName($ddl->getName());
+
+                $sql = array(
+                    $sql,
+                    'CREATE SEQUENCE ' . $this->quoteIdentifier($sequence) . ' NOMAXVALUE'
+                );
+
+                break;
+            }
+        }
+
+        return $sql;
+    }
+
+
+
 }

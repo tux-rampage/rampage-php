@@ -17,35 +17,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.orm
+ * @package   rampage.db
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform;
-
-use Zend\Db\Adapter\Adapter;
+namespace rampage\db\driver\feature;
 
 /**
- * Sequence feature
+ * Dummy transaction feature
  */
-interface SequenceSupportInterface
+class DummyTransactionFeature implements TransactionFeatureInterface
 {
-    /**
-     * Returns the sequence name for the given entity type
-     *
-     * @param string $entityType
-     * @return string
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\db\driver\feature\TransactionFeatureInterface::commit()
      */
-    public function getSequenceName($entityType);
+    public function commit()
+    {
+        return $this;
+    }
 
-    /**
-     * Fetch the next sequence id
-     *
-     * @param \Zend\Db\Adapter\Adapter
-     * @param string $entityType
-     * @return int|string
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\db\driver\feature\TransactionFeatureInterface::rollback()
      */
-    public function fetchNextSequenceId(Adapter $adapter, $entityType);
+    public function rollback()
+    {
+        return $this;
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\db\driver\feature\TransactionFeatureInterface::start()
+     */
+    public function start()
+    {
+        return $this;
+    }
 }

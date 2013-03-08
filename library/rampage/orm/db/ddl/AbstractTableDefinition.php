@@ -67,6 +67,13 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     private $options = array();
 
     /**
+     * Charset
+     *
+     * @var string
+     */
+    private $charset = 'utf8';
+
+    /**
      * Construction
      *
      * @param string $name The entity name
@@ -131,9 +138,9 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
      * @param string $table
      * @param array $referencedFields
      */
-    public function reference($name, array $fields, $table, array $referencedFields)
+    public function reference($name, $fields, $table, $referencedFields)
     {
-        new ReferenceDefinition($name, $fields, $table, $referencedFields);
+        return new ReferenceDefinition($name, $fields, $table, $referencedFields);
     }
 
     /**
@@ -144,6 +151,21 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     public function getColumns()
     {
         return $this->columns;
+    }
+
+    /**
+     * Get the column definition for the given name
+     *
+     * @param string $name
+     * @return \rampage\orm\db\ddl\ColumnDefinition
+     */
+    public function getColumn($name)
+    {
+        if (!isset($this->columns[$name])) {
+            return false;
+        }
+
+        return $this->columns[$name];
     }
 
     /**
@@ -192,6 +214,34 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     }
 
     /**
+     * Character set for this table
+     *
+     * @return string
+     */
+    public function getCharset()
+    {
+        return $this->charset;
+    }
+
+	/**
+     * Set the character set for this table.
+     *
+     * The default is UTF8
+     *
+     * @param string $charset
+     */
+    protected function setCharset($charset)
+    {
+        $charset = (string)$charset;
+
+        if ($charset) {
+            $this->charset = $charset;
+        }
+
+        return $this;
+    }
+
+	/**
      * Add a table option
      *
      * @param string $name

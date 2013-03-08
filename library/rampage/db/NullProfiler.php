@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\adapter;
+namespace rampage\db;
 
 use Zend\Db\Adapter\Profiler\ProfilerInterface;
 

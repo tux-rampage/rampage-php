@@ -233,6 +233,17 @@ class DDLRenderer implements DDLRendererInterface
     }
 
     /**
+     * Column extra definition
+     *
+     * @param ColumnDefinition $column
+     * @param AbstractTableDefinition $ddl
+     */
+    protected function getColumnTypeExtra(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        return '';
+    }
+
+    /**
      * Check if null is allowed for the given column
      *
      * @param ColumnDefinition $column
@@ -282,6 +293,7 @@ class DDLRenderer implements DDLRendererInterface
         }
 
         $extra = $this->getColumnExtra($column, $ddl);
+        $typeExtra = $this->getColumnTypeExtra($column, $ddl);
         $isNullable = $this->isColumnNullable($column, $ddl);
         $nullable = ($isNullable)? 'NULL' : 'NOT NULL';
         $default = '';
@@ -290,7 +302,7 @@ class DDLRenderer implements DDLRendererInterface
             $default = 'DEFAULT ' . $this->getPlatform()->getAdapterPlatform()->quoteValue($column->getDefault());
         }
 
-        return compact('type', 'extra', 'nullable', 'default');
+        return compact('type', 'typeExtra', 'nullable', 'default', 'extra');
     }
 
     /**

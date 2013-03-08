@@ -72,6 +72,13 @@ class ColumnDefinition extends NamedDefintion
     private $precision = null;
 
     /**
+     * Check if column is unsigned
+     *
+     * @var bool
+     */
+    private $unsigned = false;
+
+    /**
      * Allow null flag
      *
      * @var bool
@@ -173,6 +180,28 @@ class ColumnDefinition extends NamedDefintion
     public function isNullable()
     {
         return $this->nullable;
+    }
+
+    /**
+     * Unsigned flag
+     *
+     * @return bool
+     */
+    public function isUnsigned()
+    {
+        return $this->unsigned;
+    }
+
+    /**
+     * Set unsigned flag
+     *
+     * @param string $flag
+     * @return \rampage\orm\db\ddl\ColumnDefinition
+     */
+    public function setIsUnsigned($flag)
+    {
+        $this->unsigned = (bool)$flag;
+        return $this;
     }
 
 	/**

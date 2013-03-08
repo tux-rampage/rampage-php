@@ -79,6 +79,16 @@ class ServiceManager extends ZendServiceManager
     }
 
     /**
+     * (non-PHPdoc)
+     * @see \Zend\ServiceManager\ServiceManager::setInvokableClass()
+     */
+    public function setInvokableClass($name, $invokableClass, $shared = null)
+    {
+        $invokableClass = strtr($invokableClass, '.', '\\');
+        return parent::setInvokableClass($name, $invokableClass, $shared);
+    }
+
+    /**
      * Set an alias
      *
      * Do not change the class name, this would cause abstract factories to fail

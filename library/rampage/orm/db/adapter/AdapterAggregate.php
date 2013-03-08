@@ -31,6 +31,9 @@ use rampage\orm\db\metadata\Metadata;
 
 use Zend\Db\Sql\Sql;
 use Zend\Db\Adapter\Adapter;
+use Zend\Db\Adapter\Driver\Feature\DriverFeatureInterface;
+use rampage\db\driver\feature\DummyTransactionFeature;
+use rampage\db\driver\feature\TransactionFeatureInterface;
 
 /**
  * Adapter
@@ -85,6 +88,13 @@ class AdapterAggregate
      * @var \Zend\Db\Metadata\Metadata
      */
     protected $metadata = null;
+
+    /**
+     * Transaction feature
+     *
+     * @var \rampage\db\driver\feature\TransactionFeatureInterface
+     */
+    private $transactionFeature = null;
 
     /**
      * construct
@@ -190,6 +200,28 @@ class AdapterAggregate
     {
         $this->platform = $platform;
         return $this;
+    }
+
+    /**
+     * Returns the transaction feature
+     *
+     * @return \rampage\db\driver\feature\TransactionFeatureInterface
+     */
+    public function getTransactionFeature()
+    {
+        if ($this->transactionFeature) {
+            return $this->transactionFeature;
+        }
+
+        $driver = $this->getAdapter()->getDriver();
+        $feature = ($driver instanceof DriverFeatureInterface)? $driver->getFeature(TransactionFeatureInterface::FEATURE_NAME) : null;
+
+        if (!$feature instanceof TransactionFeatureInterface) {
+            $feature = new DummyTransactionFeature();
+        }
+
+        $this->transactionFeature = $feature;
+        return $feature;
     }
 
     /**

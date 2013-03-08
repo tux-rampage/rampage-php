@@ -246,7 +246,9 @@ class EntityType
     }
 
     /**
-     * @return the $identifier
+     * Get the identifier definition for this entity
+     *
+     * @return \rampage\orm\entity\type\Identitfier
      */
     public function getIdentifier()
     {
@@ -254,22 +256,9 @@ class EntityType
             return $this->identifier;
         }
 
-        $identifier = array();
-        foreach ($this->getAttributes() as $attribute) {
-            if (!$attribute->isIdentifier()) {
-                continue;
-            }
-
-            $identifier[] = $attribute->getName();
-        }
-
-        if (count($identifier) < 1) {
-            $identifier = false;
-        } else if (count($identifier) == 1) {
-            $identifier = array_pop($identifier);
-        }
-
+        $identifier = new Identitfier($this);
         $this->identifier = $identifier;
+
         return $identifier;
     }
 
@@ -280,19 +269,7 @@ class EntityType
      */
     public function usesGeneratedId()
     {
-        if ($this->hasGeneratedId !== null) {
-            return $this->hasGeneratedId;
-        }
-
-        $attribute = $this->getIdentifier();
-        if (!$attribute || is_array($attribute)) {
-            return false;
-        }
-
-        $flag = $this->getAttribute($attribute)->isGenerated();
-        $this->hasGeneratedId = $flag;
-
-        return $flag;
+        return $this->getIdentifier()->isGenerated();
     }
 
     /**

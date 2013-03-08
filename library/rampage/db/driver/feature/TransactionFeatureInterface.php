@@ -17,35 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.orm
+ * @package   rampage.db
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform;
-
-use Zend\Db\Adapter\Adapter;
+namespace rampage\db\driver\feature;
 
 /**
- * Sequence feature
+ * Transaction driver feature
  */
-interface SequenceSupportInterface
+interface TransactionFeatureInterface
 {
     /**
-     * Returns the sequence name for the given entity type
-     *
-     * @param string $entityType
-     * @return string
+     * Feature name
      */
-    public function getSequenceName($entityType);
+    const FEATURE_NAME = 'transaction';
 
     /**
-     * Fetch the next sequence id
-     *
-     * @param \Zend\Db\Adapter\Adapter
-     * @param string $entityType
-     * @return int|string
+     * Start the transaction
      */
-    public function fetchNextSequenceId(Adapter $adapter, $entityType);
+    public function start();
+
+    /**
+     * Commit the transaction
+     */
+    public function commit();
+
+    /**
+     * Rollback transaction
+     */
+    public function rollback();
 }

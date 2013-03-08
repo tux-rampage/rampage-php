@@ -98,4 +98,122 @@ class DDLRenderer extends DefaultDDLRenderer
 
         return "$type {$this->renderKeyName($index->getName())} ($fields)";
     }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::getColumnExtra()
+     */
+    protected function getColumnExtra(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        $extra = '';
+
+        if ($this->isAutoIncrementColumn($column)) {
+            $extra = 'AUTO_INCREMENT';
+        }
+
+        return $extra;
+    }
+
+    /**
+     * Check for auto incrment column
+     *
+     * @param ColumnDefinition $column
+     * @return boolean
+     */
+    protected function isAutoIncrementColumn(ColumnDefinition $column)
+    {
+        $result = ($column->isIdentity() && ($column->getType() == ColumnDefinition::TYPE_INT));
+        return $result;
+    }
+
+    /**
+     * Check if column is numeric
+     *
+     * @param ColumnDefinition $column
+     * @return boolean
+     */
+    protected function isNumericColumn(ColumnDefinition $column)
+    {
+        return in_array($column->getType(), array(
+            ColumnDefinition::TYPE_FLOAT,
+            ColumnDefinition::TYPE_INT
+        ));
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::getColumnTypeExtra()
+     */
+    protected function getColumnTypeExtra(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        $extra = '';
+
+        if ($column->isUnsigned() && $this->isNumericColumn($column)) {
+            $extra = 'UNSIGNED';
+        }
+
+        return $extra;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::getColumnSpec()
+     */
+    protected function getColumnSpec(ColumnDefinition $column, AbstractTableDefinition $ddl)
+    {
+        $spec = parent::getColumnSpec($column, $ddl);
+
+        if ($this->isAutoIncrementColumn($column)) {
+            $spec['default'] = '';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Table options
+     *
+     * @param AbstractTableDefinition $ddl
+     * @return array
+     */
+    protected function getTableOptions(AbstractTableDefinition $ddl)
+    {
+        $options = array();
+
+        foreach ($ddl->getOptions() as $name => $value) {
+            switch (strtolower($name)) {
+                case 'mysql_engine':
+                    $options['engine'] = 'ENGINE = ' . $value;
+                    break;
+
+                case 'comment':
+                    $options['comment'] = 'COMMENT = ' . strtolower($value);
+                    break;
+
+            }
+        }
+
+        $options['charset'] = 'CHARACTER SET = ' . $ddl->getCharset();
+        return $options;
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::renderAlterTableOptions()
+     */
+    protected function renderAlterTableOptions(AbstractTableDefinition $ddl)
+    {
+        $options = $this->getTableOptions($ddl);
+        return implode(' ', $options);
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\DDLRenderer::renderCreateTableOptions()
+     */
+    protected function renderCreateTableOptions(AbstractTableDefinition $ddl)
+    {
+        $options = $this->getTableOptions($ddl);
+        return implode(' ', $options);
+    }
 }

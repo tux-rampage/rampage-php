@@ -66,9 +66,14 @@ class ReferenceDefinition extends NamedDefintion
      */
     private $referencesPrimary = true;
 
+    /**
+     * ON actions
+     *
+     * @var array
+     */
     private $actions = array(
-        self::ON_UPDATE => null,
-        self::ON_DELETE => null
+        self::ON_UPDATE => self::ACTION_CASCADE,
+        self::ON_DELETE => self::ACTION_RESTRICT
     );
 
     /**
@@ -79,9 +84,17 @@ class ReferenceDefinition extends NamedDefintion
      * @param string $referenceEntity
      * @param array $referenceFields
      */
-    public function __construct($name, array $fields, $referenceEntity, array $referenceFields, $referencesPrimary = true)
+    public function __construct($name, $fields, $referenceEntity, $referenceFields, $referencesPrimary = true)
     {
         $this->setName($name);
+
+        if (!is_array($fields)) {
+            $fields = array($fields);
+        }
+
+        if (!is_array($referenceFields)) {
+            $referenceFields = array($referenceFields);
+        }
 
         $this->fields = $fields;
         $this->referenceEntity = (string)$referenceEntity;
@@ -140,6 +153,28 @@ class ReferenceDefinition extends NamedDefintion
     public function getActions()
     {
         return $this->actions;
+    }
+
+    /**
+     * On Delete constraint
+     *
+     * @param string $action
+     * @return \rampage\orm\db\ddl\ReferenceDefinition
+     */
+    public function onDelete($action)
+    {
+        return $this->on(self::ON_DELETE, $action);
+    }
+
+    /**
+     * On Update action
+     *
+     * @param string $action
+     * @return \rampage\orm\db\ddl\ReferenceDefinition
+     */
+    public function onUpdate($action)
+    {
+        return $this->on(self::ON_UPDATE, $action);
     }
 
     /**

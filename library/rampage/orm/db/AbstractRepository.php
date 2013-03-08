@@ -41,6 +41,7 @@ use rampage\orm\db\platform\FieldMapper;
 use rampage\orm\db\adapter\AdapterAggregate;
 use rampage\orm\db\lazy\CollectionLoadDelegate;
 use rampage\orm\db\platform\PlatformInterface;
+use rampage\orm\db\platform\SequenceSupportInterface;
 use rampage\orm\db\platform\hydrator\FieldHydratorInterface;
 
 use rampage\orm\entity\CollectionInterface;
@@ -53,6 +54,7 @@ use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
+
 
 /**
  * Abstract DB repository
@@ -147,6 +149,16 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         if ($config) {
             $this->setConfig($config);
         }
+    }
+
+    /**
+     * Retruns the transaction for writing
+     *
+     * @return \rampage\db\driver\feature\TransactionFeatureInterface
+     */
+    protected function getWriteTransaction()
+    {
+        return $this->getWriteAggregate()->getTransactionFeature();
     }
 
     /**
@@ -372,7 +384,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Get table name
      *
-     * @param EntityType|string $entityType
+     * @param EntityInterface|EntityType|string $entityType
      * @param PlatformInterface $platform
      */
     protected function getEntityTable($entityType, PlatformInterface $platform)
@@ -390,10 +402,15 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * ID Fields for the given entity type
+     * Returns the database id fields for the given entity type
+     *
+     * The result will be a string for single attribute identifiers and an array for
+     * multi attribute identifiers.
+     *
+     * If no identifier is defined, false will be returned.
      *
      * @param string $entityType
-     * @return array
+     * @return string|array|false The fieldname(s) or false if not identifier was defined
      */
     protected function getEntityTypeIdField($entityType, AdapterAggregate $adapterAggregate)
     {
@@ -410,21 +427,21 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
         $identifier = $entityType->getIdentifier();
 
-        if (!$identifier) {
+        if ($identifier->isUndefined()) {
             $this->entityTypeIdFields[$typeName][$platformName] = false;
             return false;
         }
 
         $mapper = $platform->getFieldMapper($entityType->getFullName());
-        if (is_array($identifier)) {
+        if ($identifier->isMultiAttribute()) {
             $fields = array();
 
             foreach ($identifier as $attribute) {
-                $field = $mapper->mapAttribute($attribute);
+                $field = $mapper->mapAttribute($attribute->getName());
                 $fields[$field] = $field;
             }
         } else {
-            $fields = $mapper->mapAttribute($identifier);
+            $fields = $mapper->mapAttribute($identifier->getAttribute()->getName());
         }
 
         $this->entityTypeIdFields[$typeName][$platformName] = $fields;
@@ -434,7 +451,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Get the full entity type name including the repository
      *
-     * @param EntityType|string $entityType
+     * @param EntityInterface|EntityType|string $entityType
      * @return string
      */
     protected function getFullEntityTypeName($entityType)
@@ -449,6 +466,9 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Prepare id for object
      *
+     * This takes the loaded data array or an array that contains the id field(s) and builds the appropriate id value
+     * The id is always a string or an integer so it can be interchanged through different ways (i.e. HTTP GET)
+     *
      * @param EntityInterface|EntityType|string $entityType
      * @param array $data
      * @param FieldMapper $mapper
@@ -456,23 +476,24 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     public function prepareIdForObject($entity, array $data, FieldMapper $mapper)
     {
-        $entityType = $this->getEntityType(($entity instanceof EntityInterface)? $entity->getEntityType() : $entity);
+        $entityType = $this->getEntityType($entity);
         $identifier = $entityType->getIdentifier();
 
-        if (!$identifier) {
+        if (!$identifier->isUndefined()) {
             return null;
         }
 
-        if (!is_array($identifier)) {
-            $key = $mapper->mapAttribute($identifier);
+        if (!$identifier->isMultiAttribute()) {
+            $key = $mapper->mapAttribute($identifier->getAttribute()->getName());
             $id = (isset($data[$key]))? $data[$key] : null;
 
             return $id;
         }
 
         $id = array();
+
         foreach ($identifier as $attribute) {
-            $field = $mapper->mapAttribute($attribute);
+            $field = $mapper->mapAttribute($attribute->getName());
             $id[$field] = isset($data[$field])? $data[$field] : null;
         }
 
@@ -483,11 +504,20 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * Prepare ID for DB
+     * Prepare ID for Database use
+     *
+     * This will consume the string or integer id and return the value(s) ready for DB usage.
+     *
+     * If the entity uses a multiple attribute key the result will be a key value pair array
+     * containing the database fields and their values.
+     *
+     * If the entity uses a single attribute as id, the id value will be returned.
+     *
+     * If the entity has no id attribute at all, or the id evaluates to false, null will be returned.
      *
      * @param EntityInterface|EntityType|string $entity
      * @param string|int $id
-     * @return string|int|array
+     * @return string|int|array|null
      */
     protected function prepareIdForDatabase($entity, $id = null)
     {
@@ -499,11 +529,11 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         }
 
         $identifier = $entityType->getIdentifier();
-        if (!$id || !$identifier) {
+        if (!$id || $identifier->isUndefined()) {
             return null;
         }
 
-        if (!is_array($identifier)) {
+        if (!$identifier->isMultiAttribute()) {
             return $id;
         }
 
@@ -620,15 +650,16 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Returns the load select
      *
-     * @param unknown $id
-     * @param unknown $entityType
+     * @param int|string $id
+     * @param EntityInterface|EntityType|string $entity
      * @return Zend\Db\Sql\Select|false
      */
-    protected function getLoadSelect($id, $entityType)
+    protected function getLoadSelect($id, $entity)
     {
-        $dbId = $this->prepareIdForDatabase($entityType, $id);
+        $entityType = $this->getEntityType($entity);
+        $where = $this->prepareIdForWhere($this->getReadAggregate(), $entityType, $id);
 
-        if (!$dbId) {
+        if (!$where) {
             return false;
         }
 
@@ -636,17 +667,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $sql = $this->getReadAggregate()->sql();
         $select = $sql->select($this->getEntityTable($entityType, $platform));
 
-        if (!is_array($dbId)) {
-            $attribute = $this->getEntityType($entityType)->getIdentifier();
-            if (is_array($dbId)) {
-                throw new InvalidArgumentException('Invalid identifier');
-            }
-
-            $field = $platform->getFieldMapper($entityType)->mapAttribute($attribute);
-            $dbId = array($field => $dbId);
-        }
-
-        return $select->where($dbId)->limit(1);
+        return $select->where($where)->limit(1);
     }
 
     /**
@@ -662,7 +683,6 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             $entity = $this->newEntity($entityType);
         }
 
-        $entityType = $this->getFullEntityTypeName($entityType);
         $select = $this->getLoadSelect($id, $entityType);
         $read = $this->getReadAggregate();
 
@@ -764,22 +784,50 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
+     * Checks if updating the id values is allowed
+     *
+     * The default implementation will always return false.
+     * Overwrite this method allow updating id values for specific entities
+     *
+     * @param EntityInterface|EntityType|string $entityType
+     * @return boolean
+     */
+    protected function isIdUpdateAllowed($entityType)
+    {
+        return false;
+    }
+
+    /**
      * Create sql object for inserting entity data
      *
      * @param EntityInterface $entity
      * @return \Zend\Db\Sql\PreparableSqlInterface
      */
-    protected function createInsertSqlObject(EntityInterface $entity)
+    protected function createInsertSqlObject(EntityInterface $entity, &$preparedIdValue)
     {
         $entityType = $this->getEntityType($entity->getEntityType());
         $platform = $this->getWriteAggregate()->getPlatform();
-        $hydrator = $this->getEntityWriteHydrator($entityType, $platform->getCapabilities()->supportsAutomaticIdentities());
+        $usesGeneratedId = $entityType->usesGeneratedId();
+        $hasAutoIdSupport = $usesGeneratedId && $platform->getCapabilities()->supportsAutomaticIdentities();
+
+        $hydrator = $this->getEntityWriteHydrator($entityType, $hasAutoIdSupport);
         $data = $hydrator->extract($entity);
 
         if (!is_array($data) || empty($data)) {
             return false;
         }
 
+        // Add sequence value ...
+        if (!$hasAutoIdSupport && $usesGeneratedId) {
+            if (!$preparedIdValue) {
+                $preparedIdValue = $this->prepareGeneratedValue($entity);
+            }
+
+            $field = $this->getEntityTypeIdField($entityType, $this->getWriteAggregate());
+            $data[$field] = $preparedIdValue;
+        }
+
+        // Build insert sql object
         $platform = $this->getWriteAggregate()->getPlatform();
         $sql = $this->getWriteAggregate()->sql();
         $insert = $sql->insert($this->getEntityTable($entityType, $platform));
@@ -797,7 +845,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     protected function createUpdateSqlObject(EntityInterface $entity)
     {
         $entityType = $this->getEntityType($entity->getEntityType());
-        $hydrator = $this->getEntityWriteHydrator($entityType, true);
+        $hydrator = $this->getEntityWriteHydrator($entityType, !$this->isIdUpdateAllowed($entityType));
         $data = $hydrator->extract($entity);
 
         if (!is_array($data) || empty($data)) {
@@ -833,32 +881,69 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             return false;
         }
 
-        $sql = $write->sql();
-        $delete = $sql->delete($this->getEntityTable($entity->getEntityType(), $write->getPlatform()));
+        $table = $this->getEntityTable($entity, $write->getPlatform());
+        $delete = $write->sql()->delete($table);
 
         return $delete->where($where);
     }
 
     /**
-     * Prepare a generated result
+     * Prepare a generated id value
      *
-     * @param unknown $entityType
+     * Some DBMS don't support automatically inserting id values (i.e. Oracle).
+     * In this cases the value must be retrieved from a sequence first.
+     *
+     * This method should be used before performing the insert.
+     *
+     * This method will return NULL when the DBMS supports auto increment/identity
+     *
+     * @param EntityInterface|EntityType|string $entityType
+     * @param AdapterAggregate $adapterAggregate The adapter aggregate to use (Defaults to the write aggregate)
+     * @return int|string|null The generated id if required or null if the DBMS supports auto increment/identity
      */
-    protected function prepareGeneratedValue($entityType)
+    protected function prepareGeneratedValue($entityType, AdapterAggregate $adapterAggregate = null)
     {
-        // TODO
+        if (!$adapterAggregate) {
+            $adapterAggregate = $this->getWriteAggregate();
+        }
+
+        $platform = $adapterAggregate->getPlatform();
+        if ($platform->getCapabilities()->supportsAutomaticIdentities()) {
+            return null;
+        }
+
+        if (!$platform instanceof SequenceSupportInterface) {
+            throw new DomainException('The current platform does not support auto identy columns or sequences');
+        }
+
+        return $platform->fetchNextSequenceId($adapterAggregate->getAdapter(), $this->getFullEntityTypeName($entityType));
     }
 
     /**
-     * Fetch the generated value
+     * Fetch the generated id value
      *
-     * @param ResultInterface $result
-     * @param EntityInterface|string $entity
-     * @param string $preparedValue
+     * This will fetch the last auto generated value from result set when the DBMS supports it.
+     * Otherwise $preparedValue will ber returned.
+     *
+     * $preparedValue should be the result from a call of {@link prepareGeneratedValue()}
+     *
+     * @param ResultInterface $result The query result to use for fetching the generated value
+     * @param AdapterAggregate $adapterAggregate The adapter aggregate to use (Defaults to the write aggregate)
+     * @param int|string|null $preparedValue The prepared sequence value if the DBMS doesn't support auto increment
      */
-    protected function fetchGeneratedValue(ResultInterface $result, $entityType, $preparedValue)
+    protected function fetchGeneratedValue(ResultInterface $result, $preparedValue, AdapterAggregate $adapterAggregate = null)
     {
-        // TODO
+        $platform = $adapterAggregate->getPlatform();
+
+        if (!$platform->getCapabilities()->supportsAutomaticIdentities()) {
+            if ($preparedValue === null) {
+                throw new InvalidArgumentException('The current platform does not support auto identity values. The pre-generated value must not be NULL in this case.');
+            }
+
+            return $preparedValue;
+        }
+
+        return $result->getGeneratedValue();
     }
 
     /**
@@ -867,27 +952,38 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     public function save(EntityInterface $entity)
     {
-        $updateId = false;
-        $preparedValue = null;
+        $addGeneratedId = false;
+        $preparedIdValue = null;
+        $transaction = $this->getWriteTransaction();
 
-        if (!$entity->getId()) {
-            $action = $this->createInsertSqlObject($entity, $preparedValue);
-            $updateId = $this->getEntityType($entity)->usesGeneratedId();
-        } else {
-            $action = $this->createUpdateSqlObject($entity);
-        }
+        try {
+            $transaction->start();
 
-        if (!$action) {
-            return $this;
-        }
+            if (!$entity->getId()) {
+                if ($this->getEntityType($entity)->usesGeneratedId()) {
+                    $addGeneratedId = true;
+                }
 
-        $result = $this->getWriteAggregate()
-            ->sql()
-            ->prepareStatementForSqlObject($action)
-            ->execute();
+                $action = $this->createInsertSqlObject($entity, $preparedIdValue);
+            } else {
+                $action = $this->createUpdateSqlObject($entity);
+            }
 
-        if ($updateId) {
-            $entity->setId($this->fetchGeneratedValue($result, $entity, $preparedValue));
+            if ($action) {
+                $result = $this->getWriteAggregate()
+                    ->sql()
+                    ->prepareStatementForSqlObject($action)
+                    ->execute();
+
+                if ($addGeneratedId) {
+                    $entity->setId($this->fetchGeneratedValue($result, $preparedIdValue));
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollback();
+            throw $e;
         }
 
         return $this;
@@ -899,16 +995,24 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     public function delete(EntityInterface $entity)
     {
+        $transaction = $this->getWriteTransaction();
         $delete = $this->createDeleteSqlObject($entity);
-
         if (!$delete) {
             return $this;
         }
 
-        $this->getWriteAggregate()
-            ->sql()
-            ->prepareStatementForSqlObject($delete)
-            ->execute();
+        try {
+            $transaction->start();
+            $this->getWriteAggregate()
+                ->sql()
+                ->prepareStatementForSqlObject($delete)
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollback();
+            throw $e;
+        }
 
         return $this;
     }
@@ -969,11 +1073,12 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
         $mapper->mapToSelect($query, $select);
         $result = $sql->prepareStatementForSqlObject($select)->execute();
+        $hydrator = $this->getEntityHydrator($entityType, $this->getReadAggregate());
 
         foreach ($result as $data) {
             $entity = $this->newEntity($entityType);
 
-            $this->getEntityHydrator($entityType, $this->getReadAggregate())->hydrate($data, $entity);
+            $hydrator->hydrate($data, $entity);
             $collection->addItem($entity);
         }
 

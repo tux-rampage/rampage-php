@@ -47,6 +47,14 @@ interface ConfigInterface
     public function getTable(PlatformInterface $platform, $entity);
 
     /**
+     * Returns the sequence name for the given entity
+     *
+     * @param string $entity
+     * @return string|null
+     */
+    public function getSequenceName(PlatformInterface $platform, $entity);
+
+    /**
      * Returns the hydrator class
      */
     public function getHydratorClass(PlatformInterface $platform, $entity);

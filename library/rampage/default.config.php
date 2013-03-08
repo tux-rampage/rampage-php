@@ -40,8 +40,8 @@ return array(
 
             'service_manager' => array(
                 'invokables' => array(
-                    'rampage.core.service.DiAbstractServiceFactory' => 'rampage\core\service\DiAbstractServiceFactory',
-                    'db.profiler' => '\rampage\orm\db\adapter\NullProfiler'
+                    'rampage.core.service.DiAbstractServiceFactory' => 'rampage.core.service.DiAbstractServiceFactory',
+                    'db.profiler' => 'rampage.db.NullProfiler'
                 ),
                 'factories' => array(
                     'Application' => 'rampage\core\service\ApplicationFactory',

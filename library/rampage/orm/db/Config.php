@@ -332,6 +332,23 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
 
     /**
      * (non-PHPdoc)
+     * @see \rampage\orm\db\platform\ConfigInterface::getSequenceName()
+     */
+    public function getSequenceName(PlatformInterface $platform, $entity)
+    {
+        $platformName = $this->xpathQuote($platform->getName());
+        $entityName = $this->xpathQuote($entity);
+        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @sequence != '']");
+
+        if (!$node instanceof SimpleXmlElement) {
+            return null;
+        }
+
+        return (string)$node['sequence'];
+    }
+
+	/**
+     * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getConstraintMapperClass()
      */
     public function getConstraintMapperClass(PlatformInterface $platform)

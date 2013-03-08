@@ -127,9 +127,9 @@ class Attribute
     }
 
     /**
-     * Check for identity
+     * Retruns if this attribute should be generated automatically
      *
-     * @return the $isIdentity
+     * @return bool
      */
     public function isGenerated()
     {

@@ -25,14 +25,14 @@
 
 namespace rampage\db\driver\oracle;
 
-use Zend\Db\Adapter\Driver\Pdo\Pdo;
+use rampage\db\driver\pdo\Driver as DefaultPdoDriver;
 use Zend\Db\Adapter\Driver\Pdo\Statement;
 use Zend\Db\Adapter\Driver\Pdo\Result;
 
 /**
  * Oracle PDO driver for ZF DB Adapter
  */
-class PDODriver extends Pdo
+class PDODriver extends DefaultPdoDriver
 {
     /**
      * Schema name
@@ -91,4 +91,5 @@ class PDODriver extends Pdo
     public function getDatabasePlatformName($nameFormat = self::NAME_FORMAT_CAMELCASE)
     {
         return 'Oracle';
-    }}
+    }
+}
