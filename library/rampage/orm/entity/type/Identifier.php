@@ -33,7 +33,7 @@ use IteratorAggregate;
  *
  * @author helmert
  */
-class Identitfier implements IteratorAggregate
+class Identifier implements IteratorAggregate
 {
     /**
      * Attributes

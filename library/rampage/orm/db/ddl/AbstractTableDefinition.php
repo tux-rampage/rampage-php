@@ -144,6 +144,22 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     }
 
     /**
+     * Create a new index definition instance
+     *
+     * @param string $name
+     * @param array $fields
+     * @param bool $unique
+     */
+    public function index($name, $fields, $unique = false)
+    {
+        if (!is_array($fields)) {
+            $fields = array_filter(array_map('trim', explode(',', $fields)));
+        }
+
+        return new IndexDefinition($name, $fields, $unique);
+    }
+
+    /**
      * Returns the column definitions
      *
      * @return array

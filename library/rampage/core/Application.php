@@ -154,7 +154,28 @@ class Application extends MvcApplication
             echo $exception; exit(1);
         }
 
-        echo sprintf('<div><strong>Uncaught Exception (%s)</strong>: %s [code: %d]<br /><pre>%s</pre></div>', get_class($exception), $exception->getMessage(), $exception->getCode(), $exception);
+        @header('Status: 500 Internal Error');
+        @header('HTTP/1.1 500 Internal Error');
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $tpl = getcwd() . '/error.php';
+        if (is_readable($tpl) && is_file($tpl)) {
+            include $tpl;
+            exit(1);
+        }
+
+        echo '<html><head><title>Application Error</title></head><body style="background: #000; color: #fff;">';
+
+        if (is_readable(__DIR__ . '/failure.jpg')) {
+            echo '<img style="float: left;" src="data:image/jpeg;base64,' . base64_encode(file_get_contents(__DIR__ . '/failure.jpg')) . '" />';
+        }
+
+        echo '<h1 style="color: #f00;">Application Failure</h1>';
+        echo sprintf('<div style="overflow: auto; margin-top: 40px;"><strong>Uncaught Exception (%s)</strong>: %s [code: %d]<br /><pre>%s</pre></div>', get_class($exception), $exception->getMessage(), $exception->getCode(), $exception);
+        echo '</body></html>';
         exit(1);
     }
 

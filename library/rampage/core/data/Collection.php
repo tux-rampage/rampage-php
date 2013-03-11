@@ -75,7 +75,7 @@ class Collection implements RestrictableCollectionInterface, IteratorAggregate, 
      *
      * @param int $size
      */
-    public function setSize($size)
+    public function setSize($size = null)
     {
         if ($size !== null) {
             $size = (int)$size;

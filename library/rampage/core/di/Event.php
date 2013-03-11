@@ -34,8 +34,6 @@ use rampage\core\ObjectManagerInterface;
  */
 class Event extends DefaultEvent
 {
-    const EVENT_RESOLVE_CLASS = 'resolveClassName';
-
     /**
      * Allowed class names
      */

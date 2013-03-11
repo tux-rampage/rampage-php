@@ -420,7 +420,7 @@ abstract class AbstractMapper implements MapperInterface
      * (non-PHPdoc)
      * @see \rampage\orm\db\query\MapperInterface::mapToSelect()
      */
-    public function mapToSelect(QueryInterface $query, Select $select)
+    public function mapToSelect(Query $query, Select $select)
     {
         $this->setQuery($query);
 

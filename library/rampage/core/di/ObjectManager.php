@@ -283,11 +283,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     protected function resolveClassName($name)
     {
         $class = $this->resolveAlias($name);
-        $event = $this->getEvent();
-        $event->setClassName($class);
-        $this->getEventManager()->trigger(Event::EVENT_RESOLVE_CLASS, $event);
-
-        $class = trim(str_replace('.', '\\', $event->getClassName()), '\\');
+        $class = trim(str_replace('.', '\\', $class), '\\');
 
         return $class;
     }

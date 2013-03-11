@@ -27,6 +27,7 @@ namespace rampage\orm\entity;
 
 use rampage\core\data\Collection as DataCollection;
 use rampage\orm\query\QueryInterface;
+use rampage\orm\entity\feature\QueryableCollectionInterface;
 
 /**
  * Entity collection

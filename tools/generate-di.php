@@ -31,12 +31,9 @@ set_include_path(
 );
 
 require_once __DIR__ . '/../library/rampage.php';
-use Zend\Di\Definition\CompilerDefinition as ZendCompilerDefinition;
+use rampage\core\di\definition\CompilerDefinition;
 use Zend\Code\Scanner\DirectoryScanner as ZendDirectoryScanner;
-use Zend\Di\Definition\IntrospectionStrategy;
 // use Zend\Code\Scanner\FileScanner;
-use Zend\Code\Reflection\MethodReflection;
-use ReflectionParameter as ParameterReflection;
 
 /**
  * Directory scanner
@@ -73,87 +70,10 @@ class DirectoryScanner extends ZendDirectoryScanner
     }
 }
 
-/*
- * Compiler Def
- */
-class CompilerDefinition extends ZendCompilerDefinition
-{
-	/**
-     * (non-PHPdoc)
-     * @see \Zend\Di\Definition\CompilerDefinition::__construct()
-     */
-    public function __construct(IntrospectionStrategy $introspectionStrategy = null)
-    {
-        parent::__construct($introspectionStrategy);
-        $this->directoryScanner = new DirectoryScanner(__DIR__ . '/../library/');
-        //$this->addCodeScannerFile(new FileScanner(__DIR__ . '/../library/rampage/core/resource/Theme.php'));
-    }
-
-    /**
-     * Returns the injection type
-     *
-     * @param MethodReflection $method
-     * @param ParameterReflection $parameter
-     * @return string
-     */
-    protected function getInjectType(MethodReflection $method, ParameterReflection $parameter, &$required)
-    {
-        $doc = $method->getDocComment();
-        $name = $parameter->getName();
-        $pattern = '~@service\s+([a-zA-Z][a-zA-Z0-9.\\\\]*)\s+\$' . $name . '(\s+force)~';
-        $m = null;
-
-        if (preg_match($pattern, $doc, $m)) {
-            if (isset($m[2]) && !empty($m[2])) {
-                $required = true;
-            }
-
-            return $m[1];
-        }
-
-        if (!$parameter->getClass()) {
-            return null;
-        }
-
-        return $parameter->getClass()->getName();
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \Zend\Di\Definition\CompilerDefinition::processParams()
-     */
-    protected function processParams(&$def, \Zend\Code\Reflection\ClassReflection $rClass, \Zend\Code\Reflection\MethodReflection $rMethod)
-    {
-        if (count($rMethod->getParameters()) === 0) {
-            return;
-        }
-
-        $methodName = $rMethod->getName();
-        $def['parameters'][$methodName] = array();
-
-        foreach ($rMethod->getParameters() as $p) {
-
-            /** @var $p \ReflectionParameter  */
-            $actualParamName = $p->getName();
-            $fqName = $rClass->getName() . '::' . $rMethod->getName() . ':' . $p->getPosition();
-            $def['parameters'][$methodName][$fqName] = array();
-            $optional = $p->isOptional();
-            $required = !$optional;
-
-            // set the class name, if it exists
-            $def['parameters'][$methodName][$fqName][] = $actualParamName;
-            $def['parameters'][$methodName][$fqName][] = $this->getInjectType($rMethod, $p, $required); //($p->getClass() !== null) ? $p->getClass()->getName() : null;
-            $def['parameters'][$methodName][$fqName][] = $required;
-            $def['parameters'][$methodName][$fqName][] = ($optional)? $p->getDefaultValue() : null;
-        }
-
-    }
-}
-
 $file = __DIR__ . '/../library/rampage/di.compiled.php';
 $compiler = new CompilerDefinition();
-$compiler->compile();
+$compiler->setDirectoryScanner(new DirectoryScanner(__DIR__ . '/../library'))
+    ->compile();
 
 file_put_contents($file, '<?php return ' . var_export($compiler->toArrayDefinition()->toArray(), true) . ';');
-
 echo 'Definition written to: ', $file, "\n";

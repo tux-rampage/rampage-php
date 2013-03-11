@@ -35,13 +35,6 @@ use Zend\Db\Adapter\Driver\Feature\AbstractFeature;
 class TransactionFeature extends AbstractFeature implements TransactionFeatureInterface
 {
     /**
-     * Driver instance
-     *
-     * @var Driver
-     */
-    private $driver = null;
-
-    /**
      * Transaction level to support multiple calls
      *
      * @var int

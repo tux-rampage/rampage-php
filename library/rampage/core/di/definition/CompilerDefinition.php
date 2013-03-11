@@ -29,6 +29,9 @@ use Zend\Di\Definition\CompilerDefinition as ZendCompilerDefinition;
 use Zend\Code\Reflection\MethodReflection;
 use ReflectionParameter as ParameterReflection;
 use Zend\Code\Reflection\ClassReflection;
+use Zend\Code\Scanner\DirectoryScanner;
+use Zend\Code\Scanner\AggregateDirectoryScanner;
+use Zend\Di\Exception\RuntimeException;
 
 /**
  * Compiler di definition
@@ -38,6 +41,31 @@ use Zend\Code\Reflection\ClassReflection;
 class CompilerDefinition extends ZendCompilerDefinition
 {
     /**
+     * Inject the directory scanner
+     *
+     * @param DirectoryScanner $scanner
+     * @return \rampage\core\di\definition\CompilerDefinition
+     */
+    public function setDirectoryScanner(DirectoryScanner $scanner)
+    {
+        $this->directoryScanner = $scanner;
+        return $this;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \Zend\Di\Definition\CompilerDefinition::addDirectoryScanner()
+     */
+    public function addDirectoryScanner(\Zend\Code\Scanner\DirectoryScanner $directoryScanner)
+    {
+        if (!$this->directoryScanner instanceof AggregateDirectoryScanner) {
+            throw new RuntimeException('Cannot add directory scanner to non-aggregate scanner.');
+        }
+
+        return parent::addDirectoryScanner($directoryScanner);
+    }
+
+	/**
      * Returns the injection type
      *
      * @param MethodReflection $method
@@ -48,19 +76,24 @@ class CompilerDefinition extends ZendCompilerDefinition
     {
         $doc = $method->getDocComment();
         $name = $parameter->getName();
-        $pattern = '~@service\s+([a-zA-Z][a-zA-Z0-9.\\\\]*)\s+\$' . $name . '(\s+force)~';
+        $pattern = '~@service\s+(([a-zA-Z][a-zA-Z0-9.\\\\]*)\s+)?\$' . $name . '(\s+force)?~';
         $m = null;
 
         if (preg_match($pattern, $doc, $m)) {
-            if (isset($m[2]) && !empty($m[2])) {
+            if (isset($m[3]) && !empty($m[3])) {
                 $required = true;
             }
 
-            return $m[1];
+            if (!isset($m[2]) && !$parameter->getClass()) {
+                return null;
+            } else if (isset($m[2])) {
+                return $m[2];
+            }
         }
 
         if (!$parameter->getClass()) {
-            return null;
+            $type = ($parameter->isArray())? null : false;
+            return $type;
         }
 
         return $parameter->getClass()->getName();

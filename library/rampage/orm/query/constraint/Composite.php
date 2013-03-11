@@ -32,7 +32,7 @@ use ArrayIterator;
 /**
  * Composite constraint
  */
-class Composite implements CompositeInterface, IteratorAggregate
+class Composite implements IteratorAggregate, CompositeInterface
 {
     /**
      * Composition type AND

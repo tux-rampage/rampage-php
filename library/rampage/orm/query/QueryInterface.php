@@ -43,7 +43,7 @@ interface QueryInterface
      * @param string $name
      * @return \rampage\orm\query\QueryInterface $this Fluent interface
      */
-    public function setEntityType();
+    public function setEntityType($name);
 
     /**
      * Add a constraint to match
