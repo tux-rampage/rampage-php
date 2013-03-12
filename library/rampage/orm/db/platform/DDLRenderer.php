@@ -148,7 +148,7 @@ class DDLRenderer implements DDLRendererInterface
      * @param NamedDefintion $ddlOrName
      * @return string
      */
-    protected function renderTableName(NamedDefintion $ddlOrName)
+    protected function renderTableName($ddlOrName)
     {
         if ($ddlOrName instanceof NamedDefintion) {
             $ddlOrName = $ddlOrName->getName();
@@ -367,6 +367,35 @@ class DDLRenderer implements DDLRendererInterface
     }
 
     /**
+     * Render index fields
+     *
+     * @param IndexDefinition $index
+     * @param AbstractTableDefinition $ddl
+     */
+    protected function renderIndexFields(IndexDefinition $index, AbstractTableDefinition $ddl)
+    {
+        $fields = array();
+
+        foreach ($index->getFields() as $info) {
+            @list($attribute, $order) = $info;
+            $field = $this->renderFieldName($ddl, $attribute);
+
+            if ($order) {
+                $field .= ' ' . $order;
+            }
+
+            $fields[] = $field;
+        }
+
+        if (empty($fields)) {
+            return '';
+        }
+
+        $fields = implode(', ', $fields);
+        return $fields;
+    }
+
+    /**
      * Render index
      *
      * @param IndexDefinition $index
@@ -375,20 +404,19 @@ class DDLRenderer implements DDLRendererInterface
     protected function renderIndex(IndexDefinition $index, AbstractTableDefinition $ddl)
     {
         $name = $this->renderKeyName($index->getName());
-        $fields = $this->mapFieldList($ddl, $index->getFields());
+        $fields = $this->renderIndexFields($index, $ddl);
 
         if (empty($fields)) {
             return '';
         }
 
-        $fields = implode(', ', $fields);
         if ($index->isUnique()) {
             $sql = "CONSTRAINT $name UNIQUE ($fields)";
         } else {
             $sql = "INDEX $name ($fields)";
         }
 
-        return $index;
+        return $sql;
     }
 
     /**
@@ -405,7 +433,7 @@ class DDLRenderer implements DDLRendererInterface
 
         $sql = $this->fkActionTypeMap[$type];
 
-        switch ($type) {
+        switch ($action) {
             case ReferenceDefinition::ACTION_CASCADE:
             case ReferenceDefinition::ACTION_RESTRICT:
                 $sql .= ' ' . strtoupper($type);

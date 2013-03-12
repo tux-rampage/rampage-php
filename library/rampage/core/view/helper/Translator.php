@@ -39,7 +39,14 @@ class Translator extends TranslateHelper
     public function __invoke($message)
     {
         $args = array_slice(func_get_args(), 1);
-        $message = parent::__invoke($message);
+        $domain = null;
+
+        if (preg_match('~^([a-z0-9_.-]+)::(.+)$~i', $message, $m)) {
+            $domain = $m[1];
+            $message = $m[2];
+        }
+
+        $message = parent::__invoke($message, $domain);
 
         if (is_array($args) && (count($args) > 0)) {
             $message = vsprintf($message, $args);

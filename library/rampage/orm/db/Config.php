@@ -26,12 +26,11 @@
 namespace rampage\orm\db;
 
 // XML dependencies
-use rampage\core\xml\Config as XmlConfig;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\xml\mergerule\UniqueAttributeRule;
 use rampage\core\xml\mergerule\AllowSiblingsRule;
+use rampage\core\modules\AggregatedXmlConfig;
 
-use rampage\core\PathManager;
 use rampage\orm\exception\RuntimeException;
 use rampage\orm\db\platform\ServiceLocator as PlatformServiceLocator;
 use rampage\orm\db\platform\FieldMapper;
@@ -42,7 +41,7 @@ use Zend\Stdlib\Hydrator\HydratorInterface;
 /**
  * Database config implementation
  */
-class Config extends XmlConfig implements adapter\ConfigInterface, platform\ConfigInterface
+class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, platform\ConfigInterface
 {
     /**
      * Adapter option mapping
@@ -59,13 +58,6 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
     );
 
     /**
-     * Path manager instance
-     *
-     * @var \rampage\core\PathManager
-     */
-    private $pathManager = null;
-
-    /**
      * Alias resolver cache
      *
      * @var array
@@ -74,44 +66,33 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\core\xml\Config::__construct()
+     * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
      */
-    public function __construct(PathManager $pathManager)
+    protected function getGlobalFilename()
     {
-        $this->pathManager = $pathManager;
+        return 'database.xml';
     }
 
-    /**
-     * Path manager instance
-     *
-     * @return \rampage\core\PathManager
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\core\modules\AggregatedXmlConfig::getModuleFilename()
      */
-    public function getPathManager()
+    protected function getModuleFilename()
     {
-        return $this->pathManager;
+        return 'etc/database.xml';
     }
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\core\xml\Config::initMergeRules()
+     * @see \rampage\core\xml\Config::getDefaultMergeRulechain()
      */
-    protected function initMergeRules()
+    protected function getDefaultMergeRulechain()
     {
-        $this->getMergeRules()
-            ->add(new UniqueAttributeRule('~/adapter$~', 'name'))
-            ->add(new AllowSiblingsRule('~/item$~'));
+        $rules = parent::getDefaultMergeRulechain();
+        $rules->add(new UniqueAttributeRule('~/(adapter|platform|entity|attribute)$~', 'name'))
+              ->add(new AllowSiblingsRule('~/item$~'));
 
-        return $this;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\core\xml\Config::_init()
-     */
-    protected function _init()
-    {
-        $this->_file = $this->getPathManager()->get('etc', 'database.xml');
-        return parent::_init();
+        return $rules;
     }
 
     /**
@@ -160,6 +141,17 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
             }
 
             $options[$option] = $node->{$option}->toPhpValue($type);
+        }
+
+        if (isset($node->initsql)) {
+            $options['initsql'] = array();
+            foreach ($node->initsql as $sql) {
+                $sql = (string)$sql;
+
+                if ($sql) {
+                    $options['initsql'][] = $sql;
+                }
+            }
         }
 
         if (isset($node['platform'])) {
@@ -278,8 +270,15 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
     {
         $platformName = $this->xpathQuote($platform->getName());
         $entityName = $this->xpathQuote($entity);
-        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
 
+        // Defaults
+        $xpath = "./platforms/defaults/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
+        foreach ($this->getXml()->xpath($xpath) as $node) {
+            $mapper->add((string)$node['name'], (string)$node['field']);
+        }
+
+        // Platform specific
+        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
         foreach ($this->getXml()->xpath($xpath) as $node) {
             $mapper->add((string)$node['name'], (string)$node['field']);
         }
@@ -307,7 +306,10 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
         $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @hydrator != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            return false;
+            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @hydrator != '']");
+            if (!$node instanceof SimpleXmlElement) {
+                return false;
+            }
         }
 
         return (string)$node['hydrator'];
@@ -324,7 +326,10 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
         $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @table != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            return false;
+            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @table != '']");
+            if (!$node instanceof SimpleXmlElement) {
+                return false;
+            }
         }
 
         return (string)$node['table'];
@@ -341,7 +346,10 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
         $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @sequence != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            return null;
+            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @sequence != '']");
+            if (!$node instanceof SimpleXmlElement) {
+                return null;
+            }
         }
 
         return (string)$node['sequence'];
@@ -359,6 +367,11 @@ class Config extends XmlConfig implements adapter\ConfigInterface, platform\Conf
 
         if (!$node instanceof SimpleXmlElement) {
             $node = $this->getNode("./platforms/defaults/constraint[@mapper != '']");
+            if (!$node instanceof SimpleXmlElement) {
+                return null;
+            }
         }
+
+        return (string)$node['mapper'];
     }
 }

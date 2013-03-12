@@ -26,7 +26,6 @@
 namespace rampage\gui\view\html;
 
 use rampage\core\view\Template;
-use rampage\core\resource\FileLocatorInterface;
 use rampage\core\resource\UrlLocatorInterface;
 use rampage\core\exception\RuntimeException;
 
@@ -82,19 +81,6 @@ class Head extends Template
         return $this->urlLocator;
     }
 
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\data\Object::get()
-     */
-    protected function get($key, $default = null)
-    {
-        if ($this->hasLayoutData($key)) {
-            return $this->fetchLayoutData($key);
-        }
-
-        return parent::get($key, $default);
-    }
-
     /**
      * Title prefix
      *
@@ -140,9 +126,11 @@ class Head extends Template
     }
 
     /**
-     * Title
+     * Returns the page title
+     *
+     * @param callable $translateHelper The helper invokable to use for translation.
      */
-    public function title()
+    public function title($translateHelper = null)
     {
         $fragments = $this->titles;
         array_unshift($fragments, $this->getTitlePrefix());
@@ -151,7 +139,11 @@ class Head extends Template
         $fragments[] = $this->getTitleSuffix();
         $fragments = array_filter($fragments);
 
-        return implode($this->getTitleSeparator(), $fragments);
+        if (is_callable($translateHelper)) {
+            $fragments = array_map($translateHelper, $fragments);
+        }
+
+        return implode(' ' . $this->getTitleSeparator() . ' ', $fragments);
     }
 
 	/**

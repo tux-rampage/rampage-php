@@ -97,6 +97,19 @@ class View extends Object implements LayoutViewInterface
 
     /**
      * (non-PHPdoc)
+     * @see \rampage\core\data\Object::get()
+     */
+    protected function get($key, $default = null)
+    {
+        if ($this->hasLayoutData($key)) {
+            return $this->fetchLayoutData($key);
+        }
+
+        return parent::get($key, $default);
+    }
+
+    /**
+     * (non-PHPdoc)
      * @see \rampage\core\view\ViewInteface::addChild()
      */
     public function addChild(LayoutViewInterface $view, $name, $sibling = null, $after = true)

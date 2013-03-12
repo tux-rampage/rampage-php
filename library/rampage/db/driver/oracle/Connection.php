@@ -32,7 +32,7 @@ use Zend\Db\Adapter\Driver\Pdo\Connection as PdoConnection;
  */
 class Connection extends PdoConnection
 {
-	/**
+    /**
      * (non-PHPdoc)
      * @see \Zend\Db\Adapter\Driver\Pdo\Connection::getCurrentSchema()
      */

@@ -28,6 +28,7 @@ namespace rampage\orm\db\adapter;
 use rampage\core\service\AbstractObjectLocator;
 use rampage\core\ObjectManagerInterface;
 use Zend\Db\Adapter\AdapterInterface;
+use Zend\Db\Adapter\Adapter;
 
 /**
  * Database adapter manager
@@ -107,9 +108,16 @@ class AdapterManager extends AbstractObjectLocator
         if (isset($this->instances[$name])) {
             $instance = $this->instances[$name];
         } else {
-            $instance = $this->create('rampage.orm.db.Adapter', array('driver' => $config->getAdapterOptions($name)));
-
+            $options = $config->getAdapterOptions($name);
+            $instance = $this->create('rampage.orm.db.Adapter', array('driver' => $options));
             $this->ensureValidInstance($instance, $name);
+
+            if (isset($options['initsql']) && is_array($options['initsql'])) {
+                foreach ($options['initsql'] as $sql) {
+                    $instance->query($sql, Adapter::QUERY_MODE_EXECUTE);
+                }
+            }
+
             $this->instances[$name] = $instance;
         }
 

@@ -96,7 +96,7 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
             $sequence = $this->getTable($entityType) . '_SEQ';
         }
 
-        $this->sequenceNames[$entityType];
+        $this->sequenceNames[$entityType] = $sequence;
         return $sequence;
     }
 

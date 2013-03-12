@@ -33,7 +33,8 @@ use ArrayObject;
  *
  * @method string url() url()
  * @method string resourceUrl() resourceUrl()
- * @method string translate() translate();
+ * @method string translate() translate()
+ * @method string escapeHtml() escapeHtml()
  */
 class PhtmlTemplate extends Object
 {

@@ -50,7 +50,10 @@ return array(
                     'ObjectManager' => 'rampage\core\service\ObjectManagerFactory',
                     'ControllerLoader' => 'rampage\core\service\ControllerLoaderFactory',
                     'ViewHelperManager' => 'rampage\core\service\ViewHelperManagerFactory',
-                    'Translator' => 'Zend\I18n\Translator\TranslatorServiceFactory',
+
+                    // i18n
+                    'Locale' => 'rampage\core\service\LocaleFactory',
+                    'Translator' => 'rampage\core\service\TranslatorServiceFactory',
                 ),
                 'aliases' => array(
                     // Layout

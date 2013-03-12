@@ -206,9 +206,9 @@ class ManifestConfig extends Config
 
         foreach ($xml->locale->pattern as $node) {
             $dir = isset($node['basedir'])? (string)$node['basedir'] : 'locale';
-            $config['translator']['translation_patterns'][] = array(
+            $config['translator']['translation_file_patterns'][] = array(
                 'type' => isset($node['type'])? (string)$node['type'] : 'gettext',
-                'basedir' => $this->getModulePath($dir),
+                'base_dir' => $this->getModulePath($dir),
                 'pattern' => isset($node['pattern'])? (string)$node['pattern'] : '%s.mo',
             );
         }

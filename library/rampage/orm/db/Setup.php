@@ -325,7 +325,11 @@ class Setup implements SetupInterface
         }
 
         foreach ($ddlSql as $sql) {
-            $this->getAdapter()->query($sql, Adapter::QUERY_MODE_EXECUTE);
+            try {
+                $this->getAdapter()->query($sql, Adapter::QUERY_MODE_EXECUTE);
+            } catch (\Exception $e) {
+                throw new RuntimeException("Failed to execute DDL: $sql", 0, $e);
+            }
         }
 
         return $this;
@@ -412,7 +416,7 @@ class Setup implements SetupInterface
         if ($installed === null) {
             $data[$idField] = $this->getName();
             $action = $this->sql()
-                ->insert()
+                ->insert($table)
                 ->values($data);
         } else {
             $where = array($idField => $this->getName());
