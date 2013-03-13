@@ -1238,8 +1238,22 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
         $mapper->mapToSelect($query, $select);
         $result = $sql->prepareStatementForSqlObject($select)->execute();
-        $hydrator = $this->getEntityHydrator($entityType, $this->getReadAggregate());
 
-        // FIXME: Implement forward cursor
+        // Build the item factory
+        $hydrator = $this->getEntityHydrator($entityType, $this->getReadAggregate());
+        $objectManager = $this->getObjectManager();
+
+        if (!$itemClass) {
+            $itemClass = $this->getEntityClass($entityType);
+        }
+
+        $factory = function(array $data) use ($hydrator, $itemClass, $objectManager) {
+            $item = $objectManager->newInstance($itemClass);
+            $hydrator->hydrate($data, $item);
+            return $item;
+        };
+
+        $cursor = new ForwardCursor($result, $factory);
+        return $cursor;
     }
 }

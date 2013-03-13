@@ -26,11 +26,134 @@
 namespace rampage\orm\db;
 
 use Iterator;
+use Zend\Db\Adapter\Driver\ResultInterface;
+use rampage\orm\exception\InvalidArgumentException;
 
 /**
  * Forward cursor
  */
 class ForwardCursor implements Iterator
 {
-    // FIXME: Implement forward cursor
+    /**
+     * Database result
+     *
+     * @var \Zend\Db\Adapter\Driver\ResultInterface
+     */
+    private $result = null;
+
+    /**
+     * Item Factory
+     *
+     * @var callable
+     */
+    private $factory = null;
+
+    /**
+     * Current item
+     *
+     * @var object
+     */
+    private $current = null;
+
+    /**
+     * Construct
+     *
+     * @param ResultInterface $result
+     * @param callable $factory
+     */
+    public function __construct(ResultInterface $result, $factory)
+    {
+        $this->result = $result;
+        $this->setFactory($factory);
+    }
+
+    /**
+     * Set the item factory
+     *
+     * This factory must be callable and consume the raw data array
+     * as first parameter.
+     *
+     * @param callable $factory
+     * @throws InvalidArgumentException
+     * @return \rampage\orm\db\ForwardCursor
+     */
+    public function setFactory($factory)
+    {
+        if (!is_callable($factory)) {
+            throw new InvalidArgumentException('Expecting a callable as item factory');
+        }
+
+        $this->factory = $factory;
+        return $this;
+    }
+
+    /**
+     * Returns the result set
+     *
+     * @return \Zend\Db\Adapter\Driver\ResultInterface
+     */
+    protected function getResult()
+    {
+        return $this->result;
+    }
+
+    /**
+     * Create the item via factory
+     *
+     * @param array $data
+     * @return object
+     */
+    protected function createItem($data)
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        return call_user_func($this->factory, $data);
+    }
+
+    /**
+     * @see Iterator::current()
+     */
+    public function current()
+    {
+        if ($this->current !== null) {
+            return $this->current;
+        }
+
+        $this->current = $this->createItem($this->getResult()->current());
+        return $this->current;
+    }
+
+    /**
+     * @see Iterator::key()
+     */
+    public function key()
+    {
+        return $this->getResult()->key();
+    }
+
+    /**
+     * @see Iterator::next()
+     */
+    public function next()
+    {
+        $this->current = null;
+        $this->getResult()->next();
+    }
+
+    /**
+     * @see Iterator::rewind()
+     */
+    public function rewind()
+    {
+    }
+
+    /**
+     * @see Iterator::valid()
+     */
+    public function valid()
+    {
+        return $this->getResult()->valid();
+    }
 }
