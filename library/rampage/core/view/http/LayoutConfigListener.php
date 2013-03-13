@@ -27,7 +27,6 @@ namespace rampage\core\view\http;
 
 use Zend\Mvc\MvcEvent;
 use rampage\core\view\Layout;
-use rampage\core\resource\FileLocatorInterface;
 
 /**
  * Application bootstrap listener
@@ -61,11 +60,11 @@ class LayoutConfigListener
         $serviceManager = $event->getApplication()->getServiceManager();
         $config = $serviceManager->get('Config');
         $layout = $serviceManager->get('rampage.Layout');
-        $theme = $serviceManager->get('rampage.Theme');
 
-        if (!($layout instanceof Layout) || !($theme instanceof FileLocatorInterface)) {
+        if (!$layout instanceof Layout) {
             return $this;
         }
+        $theme = $serviceManager->get('rampage.Theme');
 
         if (isset($config['rampage']['layout']['files']) && is_array($config['rampage']['layout']['files'])) {
             $this->addFiles($layout, $config['rampage']['layout']['files']);
