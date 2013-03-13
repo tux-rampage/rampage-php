@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,19 +23,20 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity;
+namespace rampage\orm\repository;
 
-use rampage\orm\ValueObjectInterface;
+use rampage\orm\query\QueryInterface;
 
 /**
- * Entity interface
+ * Interface for repositories that provides a forward cursor
  */
-interface EntityInterface extends ValueObjectInterface
+interface CursorProviderInterface
 {
     /**
-     * Must return the entity type name
+     * Provides the forward qursor for the given query
      *
-     * @return string
+     * @param QueryInterface $query
+     * @return \Traversable
      */
-    public function getEntityType();
+    public function getForwardCursor(QueryInterface $query, $itemClass = null);
 }

@@ -26,8 +26,8 @@
 namespace rampage\orm\repository;
 
 use rampage\orm\entity\EntityInterface;
-use rampage\orm\query\QueryInterface;
 use rampage\orm\entity\CollectionInterface;
+use rampage\orm\query\QueryInterface;
 
 /**
  * Presistence feature
@@ -88,8 +88,9 @@ interface PersistenceFeatureInterface
      *
      * @param Collection $collection
      * @param Query $query
+     * @param string $itemClass Instanciate items using this class
      */
-    public function loadCollection(CollectionInterface $collection, QueryInterface $query);
+    public function loadCollection(CollectionInterface $collection, QueryInterface $query, $itemClass = null);
 
     /**
      * Load the collection size

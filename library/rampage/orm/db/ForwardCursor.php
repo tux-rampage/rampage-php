@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,19 +23,14 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity;
+namespace rampage\orm\db;
 
-use rampage\orm\ValueObjectInterface;
+use Iterator;
 
 /**
- * Entity interface
+ * Forward cursor
  */
-interface EntityInterface extends ValueObjectInterface
+class ForwardCursor implements Iterator
 {
-    /**
-     * Must return the entity type name
-     *
-     * @return string
-     */
-    public function getEntityType();
+    // FIXME: Implement forward cursor
 }

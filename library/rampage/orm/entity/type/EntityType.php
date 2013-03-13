@@ -118,6 +118,21 @@ class EntityType
     }
 
     /**
+     * Unqualified entity name
+     *
+     * @return string
+     */
+    public function getUnqualifiedName()
+    {
+        $name = $this->getName();
+        if (strpos($name, ':') === false) {
+            @list($repo, $name) = explode(':', $name, 2);
+        }
+
+        return $name;
+    }
+
+    /**
      * Returns the full entity name including the repository
      *
      * @return string

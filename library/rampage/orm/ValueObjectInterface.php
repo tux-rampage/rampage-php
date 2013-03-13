@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,25 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.orm
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity;
+namespace rampage\orm;
 
-use rampage\orm\ValueObjectInterface;
+use rampage\core\data\ArrayExchangeInterface;
 
 /**
- * Entity interface
+ * Interface for value objects
  */
-interface EntityInterface extends ValueObjectInterface
+interface ValueObjectInterface extends ArrayExchangeInterface
 {
     /**
-     * Must return the entity type name
+     * Must return the id for this entity
      *
-     * @return string
+     * @return string|int
      */
-    public function getEntityType();
+    public function getId();
+
+    /**
+     * Sets the id for this entity
+     *
+     * @param string|int $id
+    */
+    public function setId($id);
 }
