@@ -35,6 +35,15 @@ use PHPUnit_Framework_MockObject_Generator as MockGenerator;
  */
 class Di extends DependencyInjector
 {
+    const MOCK_TYPE_SELF = 'self';
+    const MOCK_TYPE_VALUE = 'value';
+    const MOCK_TYPE_CALLBACK = 'callback';
+
+    const MOCK_EXPECT_ONCE = 'once';
+    const MOCK_EXPECT_ATLEAST_ONCE = 'atleastonce';
+    const MOCK_EXPECT_NEVER = 'never';
+    const MOCK_EXPECT_ANY = 'any';
+
     /**
      * Mock definitions
      *
@@ -43,11 +52,37 @@ class Di extends DependencyInjector
     private $mockDefinitions = array();
 
     /**
+     * Mock instances
+     *
+     * @var array
+     */
+    private $mockInstances = array();
+
+    /**
      * Construct
      */
     public function __construct(Config $config = null)
     {
         parent::__construct(null, null, $config);
+    }
+
+    /**
+     * Verify asserts in mock objects
+     *
+     * @param int $assertCount Number of current asserts that will be incremented
+     */
+    public function verifyAssertsInMockObjects(&$assertCount)
+    {
+        foreach ($this->mockInstances as $mockObject) {
+            if ($mockObject->__phpunit_hasMatchers()) {
+                $assertCount++;
+            }
+
+            $mockObject->__phpunit_verify();
+            $mockObject->__phpunit_cleanup();
+        }
+
+        $this->mockInstances = array();
     }
 
     /**

@@ -73,6 +73,16 @@ class AbstractTestCase extends TestCase
     }
 
     /**
+     * Check if DI container is initialized
+     *
+     * @return boolean
+     */
+    protected function hasInitializedDiContainer()
+    {
+        return ($this->di !== null);
+    }
+
+    /**
      * Dependency injector
      *
      * @return \rampage\test\di\Di
@@ -182,5 +192,30 @@ class AbstractTestCase extends TestCase
         }
 
         return $mock;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see PHPUnit_Framework_TestCase::verifyMockObjects()
+     */
+    protected function verifyMockObjects()
+    {
+        parent::verifyMockObjects();
+
+        // verify asserts in DI container
+        if ($this->hasInitializedDiContainer()) {
+            // Need to add assertion count via reflection since this property is private for some idiotic reason
+            $reflection = new ReflectionClass('PHPUnit_Framework_TestCase');
+            $property = $reflection->getProperty('numAssertions');
+
+            $property->setAccessible(true);
+            $assertCount = $property->getValue($this);
+
+            $this->di()->verifyAssertsInMockObjects($assertCount);
+            $property->setValue($this, $assertCount);
+
+            $property = null;
+            $reflection = null;
+        }
     }
 }

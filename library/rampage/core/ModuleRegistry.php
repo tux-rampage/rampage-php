@@ -26,6 +26,7 @@
 namespace rampage\core;
 
 use Zend\ModuleManager\ModuleEvent;
+use rampage\core\exception\RuntimeException;
 
 /**
  * Listener for modules initialization
@@ -99,19 +100,35 @@ class ModuleRegistry implements \IteratorAggregate
             return $this;
         }
 
-        // fetch from config and manifests
-        $this->modules = array();
+        // fetch from config
         $file = $this->getPathManager()->get('etc', 'modules.conf');
         if (!file_exists($file)) {
+            $this->modules = array();
             return $this;
         }
 
         $data = parse_ini_file($file, false);
         if (!is_array($data)) {
-            throw new exception\RuntimeException('Invalid configuration data');
+            throw new exception\RuntimeException('Invalid configuration data in ' . $file);
         }
 
-        foreach ($data as $name => $option) {
+        $this->setModuleConfig($data);
+        return $this;
+    }
+
+    /**
+     * Set the module config
+     *
+     * @param array $moduleConfig
+     * @return \rampage\core\ModuleRegistry
+     */
+    public function setModuleConfig(array $moduleConfig)
+    {
+        if ($this->modules !== null) {
+            throw new RuntimeException('Cannot set module configuration on already initialized module registry.');
+        }
+
+        foreach ($moduleConfig as $name => $option) {
             $conf = array();
             if (is_string($option) && !empty($option) && ($option != '1')) {
                 $conf['path'] = $option;

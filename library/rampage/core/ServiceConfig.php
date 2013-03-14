@@ -83,7 +83,9 @@ class ServiceConfig extends ServiceManagerConfig
      */
     public function configureServiceManager(ZendServiceManager $serviceManager)
     {
-        $pathManager = new PathManager($this->getPathManagerConfig());
+        $pathConfig = $this->getPathManagerConfig();
+        $pathManager = ($pathConfig instanceof PathManager)? $pathConfig : new PathManager($this->getPathManagerConfig());
+
         $serviceManager->setService('rampage.PathManager', $pathManager, true);
 
         parent::configureServiceManager($serviceManager);

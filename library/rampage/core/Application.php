@@ -44,11 +44,13 @@ class Application extends MvcApplication
     }
 
     /**
-     * merge configs
+     * Merge config
+     *
+     * Merge the given config with the default config
      *
      * @param array $config
      */
-    protected static function mergeConfig(array $config, array &$result = null)
+    public static function mergeConfig(array $config, array &$result = null)
     {
         if ($result === null) {
             $result = static::getDefaultconfig();
