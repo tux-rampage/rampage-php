@@ -548,16 +548,19 @@ class ManifestConfig extends Config
         foreach ($xml->controllers as $controllers) {
             $namespace = (string)$controllers['namespace'];
             $prefix = (string)$controllers['prefix'];
-            $prefix = ($prefix)?: $namespace;
-
-            if ($namespace) {
-                $namespace = trim(strtr($namespace, array('.' => '\\')), '\\')
-                           . '\\controllers\\';
-            }
+            // $prefix = ($prefix)?: $this->getModuleName();
 
             if ($prefix) {
+                // set the namespace accorting to the convention
+                if (!$namespace) {
+                    $namespace = trim($prefix, '.\\') . '.controllers';
+                }
+
                 $prefix = trim(strtr($prefix, array('\\' => '.')), '.') . '.';
             }
+
+            // Format namespace
+            $namespace = trim(strtr($namespace, array('.' => '\\')), '\\') . '\\';
 
             foreach ($controllers->xpath("./controller[@name != '']") as $node) {
                 $name = strtr((string)$node['name'], array('\\' => '.'));

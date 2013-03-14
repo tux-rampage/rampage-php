@@ -40,6 +40,4 @@ class ControllerManager extends ZendControllerManager
         $invokable = $this->invokableClasses[$canonicalName];
         return $this->getServiceLocator()->get('ObjectManager')->get($invokable, $this->creationOptions);
     }
-
-
 }
