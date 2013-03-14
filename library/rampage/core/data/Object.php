@@ -127,7 +127,7 @@ class Object implements ArrayExchangeInterface
      *
      * @param string $name
      * @param mixed $value
-     * @return Rampage_Data_Object $this
+     * @return \rampage\core\data\Object $this
      */
     protected function set($name, $value)
     {
