@@ -169,7 +169,7 @@ class Theme extends FileLocator
         $themePath = $scope . '/' . ltrim($file, '/');
         $path = parent::resolve($type, $themePath, $this->current, true);
 
-        if (!$path->isFile()) {
+        if (($path === false) || !$path->isFile()) {
             return false;
         }
 
