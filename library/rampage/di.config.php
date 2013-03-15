@@ -24,6 +24,7 @@ return array(
             // Zend
             'Zend\View\HelperPluginManager' => 'ViewHelperManager',
             'Zend\Db\Adapter\Profiler\ProfilerInterface' => 'db.profiler',
+            'Zend\Log\LoggerInterface' => 'Logger',
 
             // ORM
             'rampage\orm\ConfigInterface' => 'rampage.orm.Config',
@@ -36,7 +37,10 @@ return array(
 
             // URLs
             'rampage\core\model\Url' => 'rampage.url.base',
-            'rampage\core\model\url\Media' => 'rampage.url.media'
+            'rampage\core\model\url\Media' => 'rampage.url.media',
+
+            // I18n
+            'Zend\I18n\Translator\Translator' => 'Translator',
         ),
 
         'rampage\core\resource\Theme' => array(

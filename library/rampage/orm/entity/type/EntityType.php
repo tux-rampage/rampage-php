@@ -271,7 +271,7 @@ class EntityType
             return $this->identifier;
         }
 
-        $identifier = new Identitfier($this);
+        $identifier = new Identifier($this);
         $this->identifier = $identifier;
 
         return $identifier;

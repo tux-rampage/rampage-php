@@ -29,6 +29,7 @@ use rampage\core\modules\AggregatedXmlConfig;
 use rampage\core\exception\InvalidArgumentException;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\model\config\PropertyMergeRule;
+use rampage\core\xml\mergerule\AllowSiblingsRule;
 
 /**
  * Application config
@@ -63,7 +64,8 @@ class Config extends AggregatedXmlConfig
     protected function getDefaultMergeRulechain()
     {
         $rules = parent::getDefaultMergeRulechain();
-        $rules->add(new PropertyMergeRule('~/property$~'));
+        $rules->add(new PropertyMergeRule('~/property$~'))
+              ->add(new AllowSiblingsRule('~/item$~'));
 
         return $rules;
     }

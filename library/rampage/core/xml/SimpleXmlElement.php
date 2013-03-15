@@ -269,7 +269,7 @@ class SimpleXmlElement extends \SimpleXMLElement
     public function toValue($type = null, $valueAttribute = null)
     {
         $value = ($valueAttribute)? (string)$this[$valueAttribute] : (string)$this;
-        $type = ($type)? (string)$this['type'] : $type;
+        $type = ($type)?: (string)$this['type'];
 
         switch ($type) {
             case 'int':

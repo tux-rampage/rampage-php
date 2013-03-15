@@ -50,6 +50,7 @@ return array(
                     'ObjectManager' => 'rampage\core\service\ObjectManagerFactory',
                     'ControllerLoader' => 'rampage\core\service\ControllerLoaderFactory',
                     'ViewHelperManager' => 'rampage\core\service\ViewHelperManagerFactory',
+                    'Logger' => 'rampage\core\log\LogServiceFactory',
 
                     // i18n
                     'Locale' => 'rampage\core\service\LocaleFactory',

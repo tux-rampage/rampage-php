@@ -551,7 +551,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             return null;
         }
 
-        if (!$identifier->isMultiAttribute()) {
+        if (!is_array($id) && !$identifier->isMultiAttribute()) {
             return $id;
         }
 

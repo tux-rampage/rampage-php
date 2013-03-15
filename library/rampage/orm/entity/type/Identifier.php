@@ -80,7 +80,7 @@ class Identifier implements IteratorAggregate
      *
      * @return bool
      */
-    protected function isGenerated()
+    public function isGenerated()
     {
         if ($this->isUndefined() || $this->isMultiAttribute()) {
             return false;
