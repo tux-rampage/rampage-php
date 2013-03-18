@@ -67,15 +67,16 @@ class OracleMetadata extends AbstractSource
 
         $this->prepareDataHierarchy('columns', $schema, $table);
         $parameters = array(
-            'owner' => $schema,
-            'table' => $table
+            ':ownername' => $schema,
+            ':tablename' => $table
         );
 
         $sql = 'SELECT ' . implode(', ', $isColumns)
              . ' FROM all_tab_columns'
-             . ' WHERE owner = :owner AND table_name = :table';
+             . ' WHERE owner = :ownername AND table_name = :tablename';
 
         $result = $this->adapter->query($sql)->execute($parameters);
+        $columns = array();
 
         foreach ($result as $row) {
             $columns[$row['COLUMN_NAME']] = array(

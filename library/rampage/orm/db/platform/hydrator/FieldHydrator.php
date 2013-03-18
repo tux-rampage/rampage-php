@@ -133,10 +133,10 @@ class FieldHydrator extends ArraySerializable implements FieldHydratorInterface,
             $mapped[$name] = $this->hydrateValue($name, $value);
         }
 
-        if (is_callable(array($object, 'exchangeArray'))) {
-            $object->exchangeArray($data);
+        if (method_exists($object, 'exchangeArray') && is_callable(array($object, 'exchangeArray'))) {
+            $object->exchangeArray($mapped);
         } elseif (is_callable(array($object, 'populate'))) {
-            $object->populate($data);
+            $object->populate($mapped);
         } else {
             throw new Exception\BadMethodCallException(sprintf(
                 '%s expects the provided object to implement exchangeArray() or populate()', __METHOD__

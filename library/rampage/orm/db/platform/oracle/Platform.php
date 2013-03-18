@@ -112,7 +112,7 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
         $sql = "SELECT {$platform->quoteIdentifier($sequence)}.NEXTVAL AS NEXTVAL FROM DUAL";
         $result = $adapter->query($sql, Adapter::QUERY_MODE_EXECUTE)->current();
 
-        if (!is_array($result) || !isset($result['NEXTVAL'])) {
+        if (!isset($result['NEXTVAL'])) {
             throw new RuntimeException(sprintf('Failed to fetch next value from sequence "%s"', $sequence));
         }
 

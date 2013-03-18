@@ -105,7 +105,7 @@ class ForwardCursor implements Iterator
      */
     protected function createItem($data)
     {
-        if (!is_array($data)) {
+        if (!$data) {
             return false;
         }
 
@@ -147,6 +147,8 @@ class ForwardCursor implements Iterator
      */
     public function rewind()
     {
+        // Just ensure the first item is fetched and valid() will return the correct state
+        $this->current();
     }
 
     /**

@@ -264,7 +264,8 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $hydrator = $this->getObjectManager()->newInstance('rampage.orm.db.hydrator.Repository', array(
             'repository' => $this,
             'platformHydrator' => $platformHydrator,
-            'mapper' => $platform->getFieldMapper($entityType)
+            'mapper' => $platform->getFieldMapper($entityType),
+            'entityType' => $this->getEntityType($entityType)
         ));
 
         return $hydrator;
@@ -496,7 +497,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $entityType = $this->getEntityType($entity);
         $identifier = $entityType->getIdentifier();
 
-        if (!$identifier->isUndefined()) {
+        if ($identifier->isUndefined()) {
             return null;
         }
 
@@ -735,11 +736,17 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             ->execute()
             ->current();
 
-        if (!is_array($data)) {
+        if (!$data) {
             return false;
         }
 
+        $fieldMapper = $this->getReadAggregate()
+            ->getPlatform()
+            ->getFieldMapper($this->getFullEntityTypeName($entityType));
+
         $this->getEntityHydrator($entityType, $read)->hydrate($data, $entity);
+        $entity->setId($this->prepareIdForObject($entity, $data, $fieldMapper));
+
         return $entity;
     }
 
@@ -774,6 +781,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
         $columns = $write->metadata()->getColumnNames($this->getEntityTable($entityType, $platform));
         $columns = array_combine($columns, $columns);
+
+        if (!is_array($columns)) {
+            throw new RuntimeException('Failed to resolve column for ' . $entityType->getFullName());
+        }
 
         if (!$excludeIdentifiers || !$identifiers) {
             return $columns;
@@ -1237,6 +1248,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $entityType = $this->getFullEntityTypeName($query->getEntityType());
 
         $mapper->mapToSelect($query, $select);
+        $selectSql = $sql->getSqlStringForSqlObject($select);
         $result = $sql->prepareStatementForSqlObject($select)->execute();
 
         // Build the item factory

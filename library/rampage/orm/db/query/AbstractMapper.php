@@ -157,7 +157,7 @@ abstract class AbstractMapper implements MapperInterface
             $entityType = $this->getQuery()->getEntityType();
         }
 
-        return $this->getRepository()->getEntityType($entityType);
+        return $this->getRepository()->getEntityType($entityType)->getFullName();
     }
 
     /**
@@ -167,7 +167,7 @@ abstract class AbstractMapper implements MapperInterface
      */
     protected function getTable($entityType = null)
     {
-        $this->getPlatform()->getTable($this->getEntityTypeName($entityType));
+        return $this->getPlatform()->getTable($this->getEntityTypeName($entityType));
     }
 
     /**

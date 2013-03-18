@@ -30,7 +30,8 @@ use rampage\orm\db\platform\hydrator\FieldHydratorInterface;
 use rampage\orm\db\platform\hydrator\MappingHydratorInterface;
 use rampage\orm\db\platform\FieldMapper;
 
-use rampage\orm\entity\EntityInterface;
+use rampage\orm\entity\type\EntityType;
+use rampage\orm\ValueObjectInterface;
 use rampage\orm\exception\InvalidArgumentException;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
@@ -62,19 +63,37 @@ class Repository implements HydratorInterface, FieldHydratorInterface
     private $fieldMapper = null;
 
     /**
+     * Entity type
+     *
+     * @var EntityType
+     */
+    private $entityType = null;
+
+    /**
      * Construct
      *
      * @param AbstractRepository $repository
      * @param HydratorInterface $platformHydrator
      */
-    public function __construct(AbstractRepository $repository, HydratorInterface $platformHydrator, FieldMapper $mapper)
+    public function __construct(AbstractRepository $repository, HydratorInterface $platformHydrator, FieldMapper $mapper, EntityType $entityType)
     {
         $this->repository = $repository;
         $this->platformHydrator = $platformHydrator;
         $this->fieldMapper = $mapper;
+        $this->entityType = $entityType;
     }
 
     /**
+     * Entity type definition
+     *
+     * @return \rampage\orm\entity\type\EntityType
+     */
+    protected function getEntityType()
+    {
+        return $this->entityType;
+    }
+
+	/**
      * Platform hydrator
      *
      * @return \rampage\orm\db\platform\hydrator\FieldHydratorInterface
@@ -146,10 +165,10 @@ class Repository implements HydratorInterface, FieldHydratorInterface
      */
     public function hydrate(array $data, $object)
     {
-        if (!$object instanceof EntityInterface) {
+        if (!$object instanceof ValueObjectInterface) {
             throw new InvalidArgumentException(sprintf(
-                'Invalid entity specified. Instance must implement rampage\orm\entity\EntityInterface, "%s" given.',
-                is_object($object)? get_class($object) : gettype($object)
+                'Invalid entity specified. Instance must implement rampage.orm.ValueObjectInterface, "%s" given.',
+                is_object($object)? strtr(get_class($object), '\\', '.') : gettype($object)
             ));
         }
 
@@ -157,7 +176,7 @@ class Repository implements HydratorInterface, FieldHydratorInterface
         $mapper = ($parent instanceof MappingHydratorInterface)? $parent->getFieldMapper() : $this->getFieldMapper();
         $parent->hydrate($data, $object);
 
-        $id = $this->getRepository()->prepareIdForObject($object, $data, $mapper);
+        $id = $this->getRepository()->prepareIdForObject($this->getEntityType(), $data, $mapper);
         $object->setId($id);
 
         return $object;

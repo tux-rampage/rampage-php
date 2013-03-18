@@ -125,7 +125,7 @@ class EntityType
     public function getUnqualifiedName()
     {
         $name = $this->getName();
-        if (strpos($name, ':') === false) {
+        if (strpos($name, ':') !== false) {
             @list($repo, $name) = explode(':', $name, 2);
         }
 

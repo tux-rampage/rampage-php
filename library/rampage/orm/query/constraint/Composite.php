@@ -85,7 +85,7 @@ class Composite implements IteratorAggregate, CompositeInterface
      */
     public function getIterator()
     {
-        return new ArrayIterator($this->type);
+        return new ArrayIterator($this->constraints);
     }
 
 	/**
@@ -167,6 +167,6 @@ class Composite implements IteratorAggregate, CompositeInterface
      */
     public function isEmpty()
     {
-        return (count($this->constraints) > 0);
+        return (count($this->constraints) == 0);
     }
 }
