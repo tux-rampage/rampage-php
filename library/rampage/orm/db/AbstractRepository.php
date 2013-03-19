@@ -28,10 +28,11 @@ namespace rampage\orm\db;
 use rampage\core\ObjectManagerInterface;
 use rampage\core\data\RestrictableCollectionInterface;
 use rampage\core\Utils;
+use rampage\core\data\ArrayExchangeInterface;
 
 use rampage\orm\RepositoryInterface;
 use rampage\orm\ConfigInterface;
-use rampage\orm\ValueObjectInterface;
+use rampage\orm\hydrator\EntityHydrator;
 
 use rampage\orm\repository\PersistenceFeatureInterface;
 use rampage\orm\repository\CursorProviderInterface;
@@ -43,12 +44,10 @@ use rampage\orm\exception\DomainException;
 use rampage\orm\query\Query;
 use rampage\orm\query\QueryInterface;
 
-use rampage\orm\db\platform\FieldMapper;
 use rampage\orm\db\adapter\AdapterAggregate;
 use rampage\orm\db\lazy\CollectionLoadDelegate;
 use rampage\orm\db\platform\PlatformInterface;
 use rampage\orm\db\platform\SequenceSupportInterface;
-use rampage\orm\db\platform\hydrator\FieldHydratorInterface;
 
 use rampage\orm\entity\CollectionInterface;
 use rampage\orm\entity\EntityInterface;
@@ -56,13 +55,11 @@ use rampage\orm\entity\lazy\CollectionInterface as  LazyCollectionInterface;
 use rampage\orm\entity\feature\QueryableCollectionInterface;
 use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
+use rampage\orm\entity\feature\NewItemInterface;
 
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
-use rampage\orm\hydrator\EntityHydrator;
-use rampage\orm\entity\feature\NewItemInterface;
-use rampage\core\data\ArrayExchangeInterface;
 
 
 /**
@@ -665,7 +662,21 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             $entity = $this->newEntity($entityType);
         }
 
-        $select = $this->getLoadSelect($entity, $id, $entityType);
+        $this->loadObject($entity, $id, $entityType);
+        return $entity;
+    }
+
+    /**
+     * Load object
+     *
+     * @param object $object
+     * @param mixed $id
+     * @param EntityType|string $entityType
+     * @return boolean|object
+     */
+    protected  function loadObject($object, $id, $entityType)
+    {
+        $select = $this->getLoadSelect($object, $id, $entityType);
         if (!$select) {
             return false;
         }
@@ -683,8 +694,8 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $data = $this->mapDataForObject($data, $entityType);
         $hydrator = $this->getEntityHydrator($entityType);
 
-        $hydrator->hydrate($data, $entity);
-        return $entity;
+        $hydrator->hydrate($data, $object);
+        return $this;
     }
 
     /**

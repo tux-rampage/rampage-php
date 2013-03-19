@@ -83,7 +83,7 @@ abstract class AbstractSetupRepository extends AbstractRepository implements Ins
         }
 
         $setup = $this->getObjectManager()->newInstance('rampage.orm.db.Setup', array(
-            'adapterAggregate' => $this->getWriteAggregate()
+            'adapterAggregate' => $this->getAdapterAggregate()
         ));
 
         if ($setup instanceof SetupInterface) {

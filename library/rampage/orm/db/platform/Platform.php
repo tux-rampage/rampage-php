@@ -31,7 +31,6 @@ use rampage\core\ObjectManagerInterface;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
 use Zend\Db\Adapter\Platform\PlatformInterface as AdapterPlatformInterface;
-use rampage\orm\entity\type\EntityType;
 
 /**
  * Default Platform

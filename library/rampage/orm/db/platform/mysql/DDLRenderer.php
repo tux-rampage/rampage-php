@@ -178,7 +178,9 @@ class DDLRenderer extends DefaultDDLRenderer
      */
     protected function getTableOptions(AbstractTableDefinition $ddl)
     {
-        $options = array();
+        $options = array(
+            'engine' => 'ENGINE = InnoDB'
+        );
 
         foreach ($ddl->getOptions() as $name => $value) {
             switch (strtolower($name)) {
