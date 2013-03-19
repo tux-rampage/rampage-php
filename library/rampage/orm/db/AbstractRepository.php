@@ -60,6 +60,9 @@ use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
+use rampage\orm\hydrator\EntityHydrator;
+use rampage\orm\entity\feature\NewItemInterface;
+use rampage\core\data\ArrayExchangeInterface;
 
 
 /**
@@ -96,18 +99,11 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     private $objectManager = null;
 
     /**
-     * Read adapter
-     *
-     * @var \Zend\Db\Adapter\Adapter
-     */
-    private $read = null;
-
-    /**
      * Write adapter
      *
-     * @var \Zend\Db\Adapter\Adapter
+     * @var \rampage\orm\db\adapter\AdapterAggregate
      */
-    private $write = null;
+    private $adapterAggregate = null;
 
     /**
      * Repository Config
@@ -158,13 +154,20 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
+     * Must return the default repository name which is used if this repo is not configured
+     *
+     * @return string
+     */
+    abstract protected function getDefaultRepositoryName();
+
+    /**
      * Retruns the transaction for writing
      *
      * @return \rampage\db\driver\feature\TransactionFeatureInterface
      */
-    protected function getWriteTransaction()
+    protected function getTransaction()
     {
-        return $this->getWriteAggregate()->getTransactionFeature();
+        return $this->getAdapterAggregate()->getTransactionFeature();
     }
 
     /**
@@ -191,39 +194,20 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         }
 
         $entity = $this->getObjectManager()->newInstance($class);
-        if (!$entity instanceof ValueObjectInterface) {
+        if (!$ensureType) {
+            return $entity;
+        }
+
+        $ensureType = strtr($ensureType, '.', '\\');
+        if (!$entity instanceof $ensureType) {
             throw new RuntimeException(sprintf(
-                'Invalid entity implementation for "%s": Must implement rampage.orm.ValueObjectInterface, %s given.',
-                $type, (is_object($entity))? strtr(get_class($entity), '\\', '.') : gettype($entity)
+                'Invalid entity implementation for "%s": Must implement %s, %s given.',
+                $type, strtr($ensureType, '\\', '.'),
+                (is_object($entity))? strtr(get_class($entity), '\\', '.') : gettype($entity)
             ));
         }
 
-        if ($ensureType) {
-            $ensureType = strtr($ensureType, '.', '\\');
-            if (!$entity instanceof $ensureType) {
-                throw new RuntimeException(sprintf(
-                    'Invalid entity implementation for "%s": Must implement %s, %s given.',
-                    $type, strtr($ensureType, '\\', '.'),
-                    (is_object($entity))? strtr(get_class($entity), '\\', '.') : gettype($entity)
-                ));
-            }
-        }
-
         return $entity;
-    }
-
-    /**
-     * Hydrate the given entity with the given data
-     *
-     * @deprecated
-     * @param string $data
-     * @param EntityInterface $entity
-     * @param string $entityType
-     * @return \rampage\orm\db\AbstractRepository
-     */
-    protected function hydrateEntity(array $data, EntityInterface $entity, $entityType = null)
-    {
-        return $this;
     }
 
     /**
@@ -240,15 +224,12 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * Set the entity hydrator
      *
      * @param string $entity
-     * @param string $platform
      * @param HydratorInterface $hydrator
      */
-    protected function setEntityHydrator($entity, $platform, HydratorInterface $hydrator)
+    protected function setEntityHydrator($entity, HydratorInterface $hydrator)
     {
         $entityTypeName = $this->getFullEntityTypeName($entity);
-        $platformName = ($platform instanceof PlatformInterface)? $platform->getName() : $platform;
-
-        $this->entityHydrators[$platformName][$entityTypeName] = $hydrator;
+        $this->entityHydrators[$entityTypeName] = $hydrator;
         return $this;
     }
 
@@ -257,41 +238,44 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      *
      * @param string $entityType
      * @param PlatformInterface $platform
+     * @return \rampage\orm\hydrator\EntityHydrator
      */
-    protected function createHydrator($entityType, PlatformInterface $platform)
+    protected function createHydrator($entityType)
     {
-        $platformHydrator = $platform->getHydrator($entityType);
-        $hydrator = $this->getObjectManager()->newInstance('rampage.orm.db.hydrator.Repository', array(
+        $hydrator = $this->getAdapterAggregate()
+            ->getPlatform()
+            ->getHydrator($entityType);
+
+        $proxy = $this->getObjectManager()->newInstance('rampage.orm.hydrator.EntityHydrator', array(
             'repository' => $this,
-            'platformHydrator' => $platformHydrator,
-            'mapper' => $platform->getFieldMapper($entityType),
             'entityType' => $this->getEntityType($entityType)
         ));
 
-        return $hydrator;
+        if (!$proxy instanceof EntityHydrator) {
+            throw new RuntimeException();
+        }
+
+        $proxy->setHydratorStrategy($hydrator);
+        return $proxy;
     }
 
     /**
      * Returns an entity hydrator
      *
-     * @param EntityInterface|EntityType|string $entity
+     * @param EntityInterface|EntityType|string $entityType
      * @param AdapterAggregate $adapter
-     * @return \rampage\orm\db\platform\hydrator\FieldHydratorInterface
+     * @return \rampage\orm\hydrator\EntityHydrator
      */
-    protected function getEntityHydrator($entity, AdapterAggregate $adapter)
+    protected function getEntityHydrator($entityType)
     {
-        /* @var $platform PlatformInterface */
-        $platform = $adapter->getPlatform();
-        $entityTypeName = $this->getFullEntityTypeName($entity);
-        $platformName = $platform->getName();
+        $entityTypeName = $this->getFullEntityTypeName($entityType);
 
-        if (isset($this->entityHydrators[$platformName][$entityTypeName])) {
-            return $this->entityHydrators[$platformName][$entityTypeName];
+        if (isset($this->entityHydrators[$entityTypeName])) {
+            return $this->entityHydrators[$entityTypeName];
         }
 
-
-        $hydrator = $this->createHydrator($entityTypeName, $platform);
-        $this->setEntityHydrator($entity, $platformName, $hydrator);
+        $hydrator = $this->createHydrator($entityTypeName);
+        $this->setEntityHydrator($entityType, $hydrator);
 
         return $hydrator;
     }
@@ -302,7 +286,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * @param string $name
      * @return \rampage\orm\db\adapter\AdapterAggregate
      */
-    protected function newAdapterAggregate($name)
+    private function createAdapterAggregate($name)
     {
         return $this->getObjectManager()->newInstance('rampage.orm.db.adapter.AdapterAggregate', array(
             'adapterName' => $name
@@ -314,54 +298,26 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      *
      * @return \rampage\orm\db\adapter\AdapterAggregate
      */
-    protected function getReadAggregate()
+    protected function getAdapterAggregate()
     {
-        if ($this->read) {
-            return $this->read;
+        if ($this->adapterAggregate) {
+            return $this->adapterAggregate;
         }
 
-        $read = $this->newAdapterAggregate($this->adapterName . '.read');
-        $this->setReadAggregate($read);
+        $aggregate = $this->createAdapterAggregate($this->adapterName);
+        $this->setAdapterAggregate($aggregate);
 
-        return $read;
+        return $aggregate;
     }
 
 	/**
-     * Returns the read adapter
+     * Set the adapter aggregate
      *
      * @param \rampage\orm\db\adapter\AdapterAggregate $read
      */
-    public function setReadAggregate(AdapterAggregate $read)
+    public function setAdapterAggregate(AdapterAggregate $aggregate)
     {
-        $this->read = $read;
-        return $this;
-    }
-
-	/**
-     * Returns the write adapter
-     *
-     * @return \rampage\orm\db\adapter\AdapterAggregate
-     */
-    protected function getWriteAggregate()
-    {
-        if ($this->write) {
-            return $this->write;
-        }
-
-        $write = $this->newAdapterAggregate($this->adapterName . '.write');
-        $this->setWriteAggregate($write);
-
-        return $write;
-    }
-
-    /**
-     * Set the write adapter
-     *
-     * @param \rampage\orm\db\adapter\AdapterAggregate $write
-     */
-    protected function setWriteAggregate(AdapterAggregate $write)
-    {
-        $this->write = $write;
+        $this->adapterAggregate = $aggregate;
         return $this;
     }
 
@@ -400,70 +356,110 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * Get table name
+     * Get table name for the given entity
      *
      * @param EntityInterface|EntityType|string $entityType
-     * @param PlatformInterface $platform
+     * @return string
      */
-    protected function getEntityTable($entityType, PlatformInterface $platform)
+    protected function getEntityTable($entityType)
     {
         $entityType = $this->getFullEntityTypeName($entityType);
-        $platformName = $platform->getName();
-        if (isset($this->entityTables[$platformName][$entityType])) {
-            return $this->entityTables[$platformName][$entityType];
+        if (isset($this->entityTables[$entityType])) {
+            return $this->entityTables[$entityType];
         }
 
-        $table = $platform->getTable($entityType);
-        $this->entityTables[$platformName][$entityType] = $table;
+        $table = $this->getAdapterAggregate()
+            ->getPlatform()
+            ->getTable($entityType);
 
+        $this->entityTables[$entityType] = $table;
         return $table;
     }
 
     /**
-     * Returns the database id fields for the given entity type
-     *
-     * The result will be a string for single attribute identifiers and an array for
-     * multi attribute identifiers.
-     *
-     * If no identifier is defined, false will be returned.
+     * Returns the field mapper
      *
      * @param string $entityType
-     * @return string|array|false The fieldname(s) or false if not identifier was defined
+     * @return \rampage\orm\db\platform\FieldMapper
      */
-    protected function getEntityTypeIdField($entityType, AdapterAggregate $adapterAggregate)
+    protected function getFieldMapper($entityType)
     {
-        /* @var $platform PlatformInterface */
-        $platform = $adapterAggregate->getPlatform();
-        $entityType = $this->getEntityType($entityType);
+        $entityType = $this->getFullEntityTypeName($entityType);
 
-        $platformName = $platform->getName();
-        $typeName = $entityType->getFullName();
+        return $this->getAdapterAggregate()
+                    ->getPlatform()
+                    ->getFieldMapper($entityType);
+    }
 
-        if (isset($this->entityTypeIdFields[$typeName][$platformName])) {
-            return $this->entityTypeIdFields[$typeName][$platformName];
+    /**
+     * Returns all entity columns
+     *
+     * @param EntityType $entityType
+     * @return array
+     */
+    private function getEntityColumns($entityType)
+    {
+        $table = $this->getEntityTable($entityType);
+        $columns = $this->getAdapterAggregate()
+        ->metadata()
+        ->getColumnNames($table);
+
+        $columns = array_combine($columns, $columns);
+        if (!is_array($columns)) {
+            throw new RuntimeException('Failed to resolve column for ' . $entityType->getFullName());
         }
 
-        $identifier = $entityType->getIdentifier();
+        return $columns;
+    }
 
-        if ($identifier->isUndefined()) {
-            $this->entityTypeIdFields[$typeName][$platformName] = false;
-            return false;
+    /**
+     * Map database data to object data
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function mapDataForObject($data, $entityType)
+    {
+        if (!is_array($data) && !($data instanceof \Traversable)) {
+            throw new InvalidArgumentException('Data must be an array or implement the Traversable interface');
         }
 
-        $mapper = $platform->getFieldMapper($entityType->getFullName());
-        if ($identifier->isMultiAttribute()) {
-            $fields = array();
+        $result = array();
+        $mapper = $this->getFieldMapper($entityType);
 
-            foreach ($identifier as $attribute) {
-                $field = $mapper->mapAttribute($attribute->getName());
-                $fields[$field] = $field;
+        foreach ($data as $field => $value) {
+            $attribute = $mapper->mapField($field);
+            $result[$attribute] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Map object data for database
+     *
+     * @param array $data
+     * @param unknown $entityType
+     */
+    protected function mapDataForDatabase($data, $entityType)
+    {
+        if (!is_array($data) && !($data instanceof \Traversable)) {
+            throw new InvalidArgumentException('Data must be an array or implement the Traversable interface');
+        }
+
+        $result = array();
+        $mapper = $this->getFieldMapper($entityType);
+        $fields = $this->getEntityColumns($entityType);
+
+        foreach ($data as $attribute => $value) {
+            $field = $mapper->mapField($attribute);
+
+            if (in_array($field, $fields)) {
+                $result[$field] = $value;
             }
-        } else {
-            $fields = $mapper->mapAttribute($identifier->getAttribute()->getName());
         }
 
-        $this->entityTypeIdFields[$typeName][$platformName] = $fields;
-        return $fields;
+        return $result;
     }
 
     /**
@@ -482,110 +478,43 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * Prepare id for object
+     * Extract identifiers from data array
      *
-     * This takes the loaded data array or an array that contains the id field(s) and builds the appropriate id value
-     * The id is always a string or an integer so it can be interchanged through different ways (i.e. HTTP GET)
-     *
+     * @param \ArrayAccess|array $data
      * @param EntityInterface|EntityType|string $entityType
-     * @param array $data
-     * @param FieldMapper $mapper
-     * @return string|int
+     * @return array
      */
-    public function prepareIdForObject($entity, array $data, FieldMapper $mapper)
+    protected function extractIdFromData($data, $entityType)
     {
-        $entityType = $this->getEntityType($entity);
+        $entityType = $this->getEntityType($entityType);
         $identifier = $entityType->getIdentifier();
 
         if ($identifier->isUndefined()) {
             return null;
         }
 
-        if (!$identifier->isMultiAttribute()) {
-            $key = $mapper->mapAttribute($identifier->getAttribute()->getName());
-            $id = (isset($data[$key]))? $data[$key] : null;
-
-            return $id;
-        }
-
+        $missing = array();
         $id = array();
 
+        /* @var $attribute \rampage\orm\entity\type\Attribute */
         foreach ($identifier as $attribute) {
-            $field = $mapper->mapAttribute($attribute->getName());
-            $id[$field] = isset($data[$field])? $data[$field] : null;
+            $name = $attribute->getName();
+
+            if (!isset($data[$name])) {
+                $missing[$name] = null;
+                continue;
+            }
+
+            $id[$name] = $data[$name];
         }
 
-        ksort($id);
-        $id = base64_encode(json_encode($id));
+        if (empty($id)) {
+            return null;
+        }
 
+        $id += $missing;
         return $id;
     }
-
-    /**
-     * Prepare ID for Database use
-     *
-     * This will consume the string or integer id and return the value(s) ready for DB usage.
-     *
-     * If the entity uses a multiple attribute key the result will be a key value pair array
-     * containing the database fields and their values.
-     *
-     * If the entity uses a single attribute as id, the id value will be returned.
-     *
-     * If the entity has no id attribute at all, or the id evaluates to false, null will be returned.
-     *
-     * @param EntityInterface|EntityType|string $entity
-     * @param string|int|array $id
-     * @param AdapterAggregate $aggregate
-     * @return string|int|array|null
-     */
-    protected function prepareIdForDatabase($entity, $id = null, AdapterAggregate $aggregate = null)
-    {
-        if ($entity instanceof EntityInterface) {
-            $entityType = $this->getEntityType($entity->getEntityType());
-            $id = $entity->getId();
-        } else {
-            $entityType = $this->getEntityType($entity);
-        }
-
-        $identifier = $entityType->getIdentifier();
-        if (!$id || $identifier->isUndefined()) {
-            return null;
-        }
-
-        if (!is_array($id) && !$identifier->isMultiAttribute()) {
-            return $id;
-        }
-
-        if (!is_array($id)) {
-            return json_decode(base64_decode($id), true);
-        }
-
-        if (!$aggregate) {
-            $aggregate = $this->getReadAggregate();
-        }
-
-        $dbId = array();
-        $fieldmapper = $aggregate->getPlatform()->getFieldMapper($entityType->getFullName());
-
-        foreach ($id as $attribute => $value) {
-            $field = $fieldmapper->mapAttribute($attribute);
-            $dbId[$field] = $value;
-        }
-
-        if (empty($dbId)) {
-            return null;
-        }
-
-        return $dbId;
-
-    }
-
-    /**
-     * Must return the default repository name which is used if this repo is not configured
-     *
-     * @return string
-     */
-    abstract protected function getDefaultRepositoryName();
 
     /**
      * (non-PHPdoc)
@@ -688,24 +617,37 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Returns the load select
      *
-     * @param int|string $id
-     * @param EntityInterface|EntityType|string $entity
+     * @param object $object
+     * @param array|string|int $id
+     * @param EntityInterface|EntityType|string $entityType
      * @return Zend\Db\Sql\Select|false
      */
-    protected function getLoadSelect($id, $entity)
+    protected function getLoadSelect($object, $id, $entityType)
     {
-        $entityType = $this->getEntityType($entity);
-        $where = $this->prepareIdForWhere($this->getReadAggregate(), $entityType, $id);
+        $entityType = $this->getEntityType($entityType);
+        $where = array();
 
+        if (!is_array($id) && !($id instanceof \Traversable)) {
+            if ($entityType->getIdentifier()->isMultiAttribute()) {
+                throw new InvalidArgumentException('Invalid identifier "%s": Multiple attributes required.', $id);
+            }
+
+            $attribute = $entityType->getIdentifier()->getAttribute()->getName();
+            $where = array($attribute => $id);
+        }
+
+        $where = $this->mapDataForDatabase($where, $entityType);
         if (!$where) {
             return false;
         }
 
-        $platform = $this->getReadAggregate()->getPlatform();
-        $sql = $this->getReadAggregate()->sql();
-        $select = $sql->select($this->getEntityTable($entityType, $platform));
+        $select = $this->getAdapterAggregate()
+                       ->sql()
+                       ->select($this->getEntityTable($entityType))
+                       ->where($where)
+                       ->limit(1);
 
-        return $select->where($where)->limit(1);
+        return $select;
     }
 
     /**
@@ -717,21 +659,19 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     protected function loadEntity($id, $entity)
     {
-        if ($entity instanceof EntityInterface) {
-            $entityType = $entity->getEntityType();
-        } else {
-            $entityType = (string)$entity;
+        $entityType = $this->getEntityType($entity);
+
+        if (!$entity instanceof EntityInterface) {
             $entity = $this->newEntity($entityType);
         }
 
-        $select = $this->getLoadSelect($id, $entityType);
-        $read = $this->getReadAggregate();
-
+        $select = $this->getLoadSelect($entity, $id, $entityType);
         if (!$select) {
             return false;
         }
 
-        $data = $read->sql()
+        $data = $this->getAdapterAggregate()
+            ->sql()
             ->prepareStatementForSqlObject($select)
             ->execute()
             ->current();
@@ -740,13 +680,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             return false;
         }
 
-        $fieldMapper = $this->getReadAggregate()
-            ->getPlatform()
-            ->getFieldMapper($this->getFullEntityTypeName($entityType));
+        $data = $this->mapDataForObject($data, $entityType);
+        $hydrator = $this->getEntityHydrator($entityType);
 
-        $this->getEntityHydrator($entityType, $read)->hydrate($data, $entity);
-        $entity->setId($this->prepareIdForObject($entity, $data, $fieldMapper));
-
+        $hydrator->hydrate($data, $entity);
         return $entity;
     }
 
@@ -767,90 +704,6 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * Returns all entity columns
-     *
-     * @param EntityType $entityType
-     * @param bool $excludeIdentifiers
-     */
-    protected function getEntityColumns($entityType, $excludeIdentifiers = false)
-    {
-        $entityType = $this->getEntityType($entityType);
-        $write = $this->getWriteAggregate();
-        $platform = $write->getPlatform();
-        $identifiers = $this->getEntityTypeIdField($entityType, $write);
-
-        $columns = $write->metadata()->getColumnNames($this->getEntityTable($entityType, $platform));
-        $columns = array_combine($columns, $columns);
-
-        if (!is_array($columns)) {
-            throw new RuntimeException('Failed to resolve column for ' . $entityType->getFullName());
-        }
-
-        if (!$excludeIdentifiers || !$identifiers) {
-            return $columns;
-        }
-
-        if (!is_array($identifiers)) {
-            $identifiers = array($identifiers);
-        }
-
-        foreach ($identifiers as $field) {
-            if (isset($columns[$field])) {
-                unset($columns[$field]);
-            }
-        }
-
-        return $columns;
-    }
-
-    /**
-     * Get write hydrator for the given entity
-     *
-     * @param EntityType|string $entityType
-     * @param string $excludeIdentifiers
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
-     */
-    protected function getEntityWriteHydrator($entityType, $excludeIdentifiers = false)
-    {
-        $hydrator = $this->getEntityHydrator($entityType, $this->getWriteAggregate());
-
-        if (($hydrator instanceof FieldHydratorInterface)) {
-            $hydrator->setAllowedFields($this->getEntityColumns($entityType, $excludeIdentifiers));
-        }
-
-        return $hydrator;
-    }
-
-    /**
-     * Prepare id for where in sql objects
-     *
-     * @param AdapterAggregate $adapter
-     * @param EntityInterface|EntityType|string $entity
-     * @param string $id The identifier value. May be omitted whem $entity implements EntityInterface
-     * @throws InvalidArgumentException
-     */
-    protected function prepareIdForWhere(AdapterAggregate $adapter, $entity, $id = null)
-    {
-        $entityType = $this->getEntityType($entity);
-        $where = $this->prepareIdForDatabase($entity, $id);
-
-        if ($where === null) {
-            return null;
-        }
-
-        if (!is_array($where)) {
-            $field = $this->getEntityTypeIdField($entityType, $adapter);
-            if (is_array($field)) {
-                throw new InvalidArgumentException('Invalid identifier');
-            }
-
-            $where = array($field => $id);
-        }
-
-        return $where;
-    }
-
-    /**
      * Checks if updating the id values is allowed
      *
      * The default implementation will always return false.
@@ -867,39 +720,25 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Create sql object for inserting entity data
      *
-     * @param ValueObjectInterface $entity
+     * @param object $object
+     * @package array $data
      * @params EntityInterface|EntityType|string $entityType
      * @return \Zend\Db\Sql\PreparableSqlInterface
      */
-    protected function createInsertSqlObject(ValueObjectInterface $entity, $entityType, &$preparedIdValue)
+    protected function createInsertSqlObject($object, $data, $entityType)
     {
         $entityType = $this->getEntityType($entityType);
-        $platform = $this->getWriteAggregate()->getPlatform();
-        $usesGeneratedId = $entityType->usesGeneratedId();
-        $hasAutoIdSupport = $usesGeneratedId && $platform->getCapabilities()->supportsAutomaticIdentities();
+        $data = $this->mapDataForDatabase($data, $entityType);
 
-        $hydrator = $this->getEntityWriteHydrator($entityType, $hasAutoIdSupport);
-        $data = $hydrator->extract($entity);
-
-        if (!is_array($data) || empty($data)) {
+        if (!$data) {
             return false;
         }
 
-        // Add sequence value ...
-        if (!$hasAutoIdSupport && $usesGeneratedId) {
-            if (!$preparedIdValue) {
-                $preparedIdValue = $this->prepareGeneratedValue($entityType);
-            }
-
-            $field = $this->getEntityTypeIdField($entityType, $this->getWriteAggregate());
-            $data[$field] = $preparedIdValue;
-        }
-
         // Build insert sql object
-        $platform = $this->getWriteAggregate()->getPlatform();
-        $sql = $this->getWriteAggregate()->sql();
-        $insert = $sql->insert($this->getEntityTable($entityType, $platform));
-        $insert->values($data);
+        $table = $this->getEntityTable($entityType);
+        $insert = $this->getAdapterAggregate()
+            ->insert($table)
+            ->values($data);
 
         return $insert;
     }
@@ -907,30 +746,39 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Create sql object for updating entity data
      *
-     * @param EntityInterface $entity
-     * @param int|string|array $id
+     * @param object $object
+     * @param array $data
+     * @param EntityType|string $entityType
+     * @param array $id
+     * @return \Zend\Db\Sql\PreparableSqlInterface|false
      */
-    protected function createUpdateSqlObject(ValueObjectInterface $entity, $entityType)
+    protected function createUpdateSqlObject($object, $data, $entityType, array $id = null)
     {
         $entityType = $this->getEntityType($entityType);
-        $hydrator = $this->getEntityWriteHydrator($entityType, !$this->isIdUpdateAllowed($entityType));
-        $data = $hydrator->extract($entity);
-
-        if (!is_array($data) || empty($data)) {
-            return false;
-        }
-
-        $write = $this->getWriteAggregate();
-        $platform = $write->getPlatform();
-        $sql = $write->sql();
-        $update = $sql->update($this->getEntityTable($entityType, $platform));
-        $where = $this->prepareIdForWhere($write, $entityType, $entity->getId());
+        $id = ($id)?: $this->extractIdFromData($data, $entityType);
+        $where = $this->mapDataForDatabase($id, $entityType);
 
         if (!$where) {
             return false;
         }
 
-        $update->set($data)->where($where, PredicateSet::OP_AND);
+        if (!$this->isIdUpdateAllowed($entityType)) {
+            foreach ($entityType->getIdentifier() as $attribute) {
+                unset($data[$attribute->getName()]);
+            }
+        }
+
+        $set = $this->mapDataForDatabase($data, $entityType);
+        if (empty($set)) {
+            return false;
+        }
+
+        $table = $this->getEntityTable($entityType);
+        $update = $this->getAdapterAggregate()
+            ->sql()
+            ->update($table)
+            ->set($set)
+            ->where($where, PredicateSet::OP_AND);
 
         return $update;
     }
@@ -938,21 +786,26 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     /**
      * Returns the delete sql object
      *
-     * @param EntityInterface $entity
+     * @param object $object
+     * @param array $data
      */
-    protected function createDeleteSqlObject(EntityInterface $entity)
+    protected function createDeleteSqlObject($object, $entityType, array $id = null)
     {
-        $write = $this->getWriteAggregate();
-        $where = $this->prepareIdForWhere($write, $entity);
+        $data = $this->getEntityHydrator($entityType)->extract($object);
+        $id = ($id)?: $this->extractIdFromData($data, $entityType);
+        $where = $this->mapDataForDatabase($id, $entityType);
 
         if (!$where) {
             return false;
         }
 
-        $table = $this->getEntityTable($entity, $write->getPlatform());
-        $delete = $write->sql()->delete($table);
+        $table = $this->getEntityTable($entityType);
+        $delete = $this->getAdapterAggregate()
+            ->sql()
+            ->delete($table)
+            ->where($where);
 
-        return $delete->where($where);
+        return $delete;
     }
 
     /**
@@ -966,16 +819,13 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * This method will return NULL when the DBMS supports auto increment/identity
      *
      * @param EntityInterface|EntityType|string $entityType
-     * @param AdapterAggregate $adapterAggregate The adapter aggregate to use (Defaults to the write aggregate)
      * @return int|string|null The generated id if required or null if the DBMS supports auto increment/identity
      */
-    protected function prepareGeneratedValue($entityType, AdapterAggregate $adapterAggregate = null)
+    protected function prepareGeneratedValue($entityType)
     {
-        if (!$adapterAggregate) {
-            $adapterAggregate = $this->getWriteAggregate();
-        }
-
+        $adapterAggregate = $this->getAdapterAggregate();
         $platform = $adapterAggregate->getPlatform();
+
         if ($platform->getCapabilities()->supportsAutomaticIdentities()) {
             return null;
         }
@@ -999,13 +849,13 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * @param AdapterAggregate $adapterAggregate The adapter aggregate to use (Defaults to the write aggregate)
      * @param int|string|null $preparedValue The prepared sequence value if the DBMS doesn't support auto increment
      */
-    protected function fetchGeneratedValue(ResultInterface $result, $preparedValue, AdapterAggregate $adapterAggregate = null)
+    protected function fetchGeneratedValue(ResultInterface $result, $preparedValue)
     {
-        if (!$adapterAggregate) {
-            $adapterAggregate = $this->getWriteAggregate();
-        }
+        $capabilities = $this->getAdapterAggregate()
+            ->getPlatform()
+            ->getCapabilities();
 
-        if (!$adapterAggregate->getPlatform()->getCapabilities()->supportsAutomaticIdentities()) {
+        if (!$capabilities->supportsAutomaticIdentities()) {
             if ($preparedValue === null) {
                 throw new InvalidArgumentException('The current platform does not support auto identity values. The pre-generated value must not be NULL in this case.');
             }
@@ -1023,42 +873,104 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     protected function saveEntity(EntityInterface $entity)
     {
-        $this->saveValueObject($entity, $entity);
+        $this->saveObject($entity, $entity);
+        return $this;
+    }
+
+    /**
+     * Check if object should be a new record
+     *
+     * @param string $object
+     * @return boolean
+     */
+    protected function isObjectNew($object)
+    {
+        if (!$object instanceof NewItemInterface) {
+            return false;
+        }
+
+        return $object->isNewItem();
+    }
+
+    /**
+     * Hydrate the given id value into the given object
+     *
+     * @param object $object
+     * @param string $attribute
+     * @param string $id
+     * @param EntityType|string $entityType
+     */
+    protected function hydrateIdValue($object, $attribute, $id, $entityType)
+    {
+        if ($object instanceof ArrayExchangeInterface) {
+            $object->add(array($attribute => $id));
+            return $this;
+        }
+
+        $property = Utils::camelize($attribute);
+        $method = 'set' . $property;
+
+        if (is_callable(array($object, $method))) {
+            $object->$method($id);
+            return $this;
+        }
+
+        $reflection = new \ReflectionClass(get_class($object));
+        $property = $reflection->getProperty(lcfirst($property));
+
+        $property->setAccessible(true);
+        $property->setValue($object, $id);
+
         return $this;
     }
 
     /**
      * Save a value object
      *
-     * @param EntityInterface $entity
+     * @param object $object
+     * @param EntityInterface|EntityType|string $entityType
      */
-    protected function saveValueObject(ValueObjectInterface $object, $entity)
+    protected function saveObject($object, $entityType)
     {
-        $addGeneratedId = false;
-        $preparedIdValue = null;
-        $transaction = $this->getWriteTransaction();
+        $entityType = $this->getEntityType($entityType);
+        $transaction = $this->getTransaction();
+        $aggregate = $this->getAdapterAggregate();
+        $data = $this->getEntityHydrator($entityType)->extract($object);
+        $id = $this->extractIdFromData($data, $entityType);
 
         try {
             $transaction->start();
 
-            if (!$object->getId()) {
-                if ($this->getEntityType($entity)->usesGeneratedId()) {
-                    $addGeneratedId = true;
+            $addIdAttribute = false;
+            $preparedIdValue = null;
+            $capabilities = $this->getAdapterAggregate()->getPlatform()->getCapabilities();
+
+            if (!$id || $this->isObjectNew($object)) {
+                if ($this->getEntityType($entityType)->usesGeneratedId()) {
+                    $addIdAttribute = $entityType->getIdentifier()->getAttribute()->getName();
+                    $preparedIdValue = $this->prepareGeneratedValue($entityType);
+
+                    if (!$capabilities->supportsAutomaticIdentities()) {
+                        unset($data[$addIdAttribute]);
+                    } else {
+                        $data[$addIdAttribute] = $preparedIdValue;
+                    }
                 }
 
-                $action = $this->createInsertSqlObject($object, $entity, $preparedIdValue);
+                $action = $this->createInsertSqlObject($object, $data, $entityType);
             } else {
-                $action = $this->createUpdateSqlObject($object, $entity);
+                $action = $this->createUpdateSqlObject($object, $data, $entityType, $id);
             }
 
             if ($action) {
-                $result = $this->getWriteAggregate()
+                $result = $this->getAdapterAggregate()
                     ->sql()
                     ->prepareStatementForSqlObject($action)
                     ->execute();
 
-                if ($addGeneratedId) {
-                    $entity->setId($this->fetchGeneratedValue($result, $preparedIdValue));
+                if ($addIdAttribute) {
+                    $id = $this->fetchGeneratedValue($result, $preparedIdValue);
+                    $this->hydrateIdValue($object, $addIdAttribute, $id);
                 }
             }
 
@@ -1109,20 +1021,34 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \rampage\orm\repository\PersistenceFeatureInterface::delete()
+     * Delete an entity from persistence
+     *
+     * @param EntityInterface $entity
      */
     protected function deleteEntity(EntityInterface $entity)
     {
+        $this->deleteObject($entity, $this->getEntityType($entity));
+        return $this;
+    }
+
+    /**
+     * Delete an object from persistence
+     *
+     * @param object $object
+     * @param EntityType|entity $entityType
+     */
+    protected function deleteObject($object, $entityType, array $id = null)
+    {
         $transaction = $this->getWriteTransaction();
-        $delete = $this->createDeleteSqlObject($entity);
+        $delete = $this->createDeleteSqlObject($object, $entityType, $id);
+
         if (!$delete) {
             return $this;
         }
 
         try {
             $transaction->start();
-            $this->getWriteAggregate()
+            $this->getAdapterAggregate()
                 ->sql()
                 ->prepareStatementForSqlObject($delete)
                 ->execute();
@@ -1185,11 +1111,11 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     public function loadCollectionSize(CollectionInterface $collection, QueryInterface $query)
     {
         $mapper = $this->getQueryMapper($query);
-        $sql = $this->getReadAggregate()->sql();
+        $sql = $this->getAdapterAggregate()->sql();
         $select = $this->getQueryMapper($query)->mapToSizeSelect($query, $sql->select());
         $result = $sql->prepareStatementForSqlObject($select)->execute()->current();
 
-        $size = (is_array($result) && isset($result['size']))? (int)$result['size'] : 0;
+        $size = ($result && isset($result['size']))? (int)$result['size'] : 0;
         $collection->setSize($size);
 
         return $this;
@@ -1218,15 +1144,14 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     public function loadCollection(CollectionInterface $collection, QueryInterface $query, $itemClass = null)
     {
         $mapper = $this->getQueryMapper($query);
-        $sql = $this->getReadAggregate()->sql();
-        $select = $sql->select();
+        $sql = $this->getAdapterAggregate()->sql();
         $entityType = $this->getFullEntityTypeName($query->getEntityType());
-
-        $mapper->mapToSelect($query, $select);
+        $select = $mapper->mapToSelect($query, $sql->select());
         $result = $sql->prepareStatementForSqlObject($select)->execute();
-        $hydrator = $this->getEntityHydrator($entityType, $this->getReadAggregate());
+        $hydrator = $this->getEntityHydrator($entityType);
 
         foreach ($result as $data) {
+            $data = $this->mapDataForObject($data, $entityType);
             $entity = $this->newCollectionItem($entityType, $itemClass);
 
             $hydrator->hydrate($data, $entity);
@@ -1243,24 +1168,30 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     public function getForwardCursor(QueryInterface $query, $itemClass = null)
     {
         $mapper = $this->getQueryMapper($query);
-        $sql = $this->getReadAggregate()->sql();
-        $select = $sql->select();
+        $sql = $this->getAdapterAggregate()->sql();
         $entityType = $this->getFullEntityTypeName($query->getEntityType());
-
-        $mapper->mapToSelect($query, $select);
-        $selectSql = $sql->getSqlStringForSqlObject($select);
+        $select = $mapper->mapToSelect($query, $sql->select());
         $result = $sql->prepareStatementForSqlObject($select)->execute();
 
         // Build the item factory
-        $hydrator = $this->getEntityHydrator($entityType, $this->getReadAggregate());
+        $hydrator = $this->getEntityHydrator($entityType);
         $objectManager = $this->getObjectManager();
+        $fieldMapper = $this->getFieldMapper($entityType);
 
         if (!$itemClass) {
             $itemClass = $this->getEntityClass($entityType);
         }
 
-        $factory = function(array $data) use ($hydrator, $itemClass, $objectManager) {
+        // TODO: Move to invokable instead of using a closure
+        $factory = function(array $data) use ($hydrator, $itemClass, $objectManager, $fieldMapper) {
             $item = $objectManager->newInstance($itemClass);
+            $objectData = array();
+
+            foreach ($data as $field => $value) {
+                $attribute = $fieldMapper->mapField($field);
+                $objectData[$attribute] = $value;
+            }
+
             $hydrator->hydrate($data, $item);
             return $item;
         };

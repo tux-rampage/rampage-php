@@ -26,15 +26,13 @@
 namespace rampage\orm\entity;
 
 use rampage\core\data\Object;
-use rampage\orm\ValueObject;
 use rampage\orm\entity\lazy\EntityInterface as LazyEntityInterface;
 use rampage\orm\exception\RuntimeException;
-
 
 /**
  * Abstract entity class
  */
-abstract class AbstractEntity extends ValueObject implements EntityInterface, LazyEntityInterface
+abstract class AbstractEntity extends Object implements EntityInterface, LazyEntityInterface
 {
     /**
      * Lazy attributes
@@ -44,6 +42,39 @@ abstract class AbstractEntity extends ValueObject implements EntityInterface, La
     protected $lazyAttributes = array();
 
     /**
+     * ID Field name
+     *
+     * @var string
+     */
+    protected $idField = 'id';
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\entity\EntityInterface::getId()
+     */
+    public function getId()
+    {
+        if (!$this->idField) {
+            return null;
+        }
+
+        return $this->get($this->idField);
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \rampage\orm\entity\EntityInterface::setId()
+     */
+    public function setId($id)
+    {
+        if ($this->idField) {
+            $this->set($this->idField, $id);
+        }
+
+        return $this;
+    }
+
+	/**
      * (non-PHPdoc)
      * @see \rampage\core\data\Object::clear()
      */

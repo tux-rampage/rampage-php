@@ -23,24 +23,17 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform\hydrator;
-
-use Zend\Stdlib\Hydrator\HydratorInterface;
+namespace rampage\orm\entity\feature;
 
 /**
- * Field hydrator
+ * Ability to mark the item as new for persistence layer
  */
-interface FieldHydratorInterface extends HydratorInterface
+interface NewItemInterface
 {
     /**
-     * Returns the allowed fields
-     */
-    public function getAllowedFields();
-
-    /**
-     * Set the allowed fields
+     * Returns if the implementing object should be saved as new record in the persistence layer
      *
-     * @param array $fields
+     * @return bool
      */
-    public function setAllowedFields(array $fields = null);
+    public function isNewItem();
 }

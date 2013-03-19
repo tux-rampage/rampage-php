@@ -17,32 +17,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
+ * @package   rampage.orm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm;
-
-use rampage\core\data\ArrayExchangeInterface;
+namespace rampage\orm\hydrator;
 
 /**
- * Interface for value objects
+ * Lazy loadable value delet
  */
-interface ValueObjectInterface extends ArrayExchangeInterface
+interface LazyValueInterface
 {
-    /**
-     * Must return the id for this entity
-     *
-     * @return string|int
-     */
-    public function getId();
-
-    /**
-     * Sets the id for this entity
-     *
-     * @param string|int $id
-    */
-    public function setId($id);
+    public function __invoke($attribute);
 }

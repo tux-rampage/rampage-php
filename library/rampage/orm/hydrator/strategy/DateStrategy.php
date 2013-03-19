@@ -23,27 +23,17 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\db\platform\hydrator;
-
-use Zend\Stdlib\Hydrator\HydratorInterface;
-use rampage\orm\db\platform\FieldMapper;
+namespace rampage\orm\hydrator\strategy;
 
 /**
- * Mapping hydrator interface
+ * Date hydration strategy
  */
-interface MappingHydratorInterface extends HydratorInterface
+class DateStrategy extends DateTimeStrategy
 {
     /**
-     * Returns the field mapper instance
+     * Date format
      *
-     * @return \rampage\orm\db\platform\FieldMapper
+     * @var string
      */
-    public function getFieldMapper();
-
-    /**
-     * Set the fieldmapper instance
-     *
-     * @param \rampage\orm\db\platform\FieldMapper $fieldMapper
-     */
-    public function setFieldMapper(FieldMapper $fieldMapper);
+    protected $format = 'Y-m-d';
 }

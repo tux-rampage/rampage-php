@@ -23,38 +23,59 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm;
+namespace rampage\orm\hydrator\strategy;
 
-use rampage\core\data\Object;
+use Zend\Stdlib\Hydrator\Strategy\StrategyInterface;
 
 /**
- * basic value object implementation
+ * DateTime hydrator strategy
  */
-class ValueObject extends Object implements ValueObjectInterface
+class DateTimeStrategy implements StrategyInterface
 {
     /**
-     * Object identifier
+     * Date format
      *
-     * @var string|int
+     * @var string
      */
-    private $id = null;
+    protected $format = 'Y-m-d H:i:s';
+
+    /**
+     * Date format
+     *
+     * @param string $format
+     */
+    public function __construct($format = null)
+    {
+        if ($format) {
+            $this->format = $format;
+        }
+    }
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\orm\ValueObjectInterface::getId()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    public function getId()
+    public function extract($value)
     {
-        return $this->id;
+        if ($value instanceof \DateTime) {
+            return $value->toString($this->format);
+        }
+
+        return $value;
     }
 
 	/**
      * (non-PHPdoc)
-     * @see \rampage\orm\ValueObjectInterface::setId()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function setId($id)
+    public function hydrate($value)
     {
-        $this->id = $id;
-        return $this;
+        $date = null;
+
+        if (($value !== null) && !($value instanceof \DateTime)) {
+            $value = new \DateTime($value);
+        }
+
+        return $date;
     }
 }

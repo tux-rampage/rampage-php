@@ -33,6 +33,8 @@ use rampage\core\PathManager;
 use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\Attribute;
+use rampage\orm\entity\type\Reference as EntityTypeReference;
+
 use rampage\orm\exception\InvalidConfigException;
 use rampage\core\xml\mergerule\UniqueAttributeRule;
 
@@ -258,6 +260,37 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             }
         }
 
-        // TODO: references
+        foreach ($xml->xpath('./reference[@name != ""]') as $referenceNode) {
+            $name = (string)$referenceNode['name'];
+            $entity = (string)$referenceNode['entity'];
+
+            $reference = new EntityTypeReference($entity);
+            foreach ($referenceNode->xpath('./attribute') as $attribRefNode) {
+                $attributeReference = array(
+                    (string)$attribRefNode['name'],
+                    (string)$attribRefNode['foreign']
+                );
+
+                if (isset($attribRefNode['literal'])) {
+                    $attributeReference[] = $attribRefNode->toValue('bool', 'literal');
+                }
+
+                $reference->addAttributeReference($attributeReference);
+            }
+
+            if (!$reference->hasAttributeReferences()) {
+                continue;
+            }
+
+            if (isset($referenceNode['lazy'])) {
+                $reference->setIsLazy($referenceNode->toValue('bool', 'lazy'));
+            }
+
+            if (isset($referenceNode['property'])) {
+                $reference->setProperty($referenceNode->toValue('bool', 'property'));
+            }
+
+            $type->addReference($name, $reference);
+        }
     }
 }

@@ -216,19 +216,14 @@ If two attributes have the same position, they'll be added in the order they're 
 
     <complexType name="EntityReferenceConfig">
         <all>
-            <element name="attribute" maxOccurs="unbounded"
-                minOccurs="1">
+            <element name="attribute" maxOccurs="unbounded" minOccurs="1">
                 <complexType>
-                    <attribute name="name" type="string"
-                        use="required">
-                    </attribute>
-                    <attribute name="foreign" type="string"
-                        use="required">
-                    </attribute>
+                    <attribute name="name" type="string" use="required"></attribute>
+                    <attribute name="foreign" type="string" use="required"></attribute>
+                    <attribute name="literal" type="boolean"></attribute>
                 </complexType>
             </element>
-            <element name="constraint" maxOccurs="unbounded"
-                minOccurs="0">
+            <element name="constraint" maxOccurs="unbounded" minOccurs="0">
                 <complexType>
                     <attribute name="type" use="required">
                         <simpleType>
@@ -253,22 +248,22 @@ If two attributes have the same position, they'll be added in the order they're 
         </all>
         <attribute name="name" type="string" use="required">
             <annotation>
-                <documentation>
-                    the name of this reference to identify it for schema
-                    updates.
-                </documentation>
+                <documentation>the name of this reference to identify it for schema updates.</documentation>
             </annotation>
         </attribute>
         <attribute name="entity" type="string" use="required">
             <annotation>
-                <documentation>
-                    The name of the entity to reference to.
-                </documentation>
+                <documentation>The name of the entity to reference to.</documentation>
             </annotation>
         </attribute>
-        <attribute name="repository" type="string" use="optional">
+        <attribute name="lazy" type="boolean" use="optional">
             <annotation>
-                <documentation>If the referenced entity is defined in another repository this should be provided in this attribute.</documentation>
+                <documentation>Flag if this reference should be loaded lazy if possible. This depends on the repository implementation and if the entity object supports lazy loadable attributes.</documentation>
+            </annotation></attribute>
+        <attribute name="property" type="string">
+            <annotation>
+                <documentation>The property of the entity object to where this reference should be loaded.
+If this is omitted or empty this reference should be ignored during load</documentation>
             </annotation></attribute>
     </complexType>
 </schema>

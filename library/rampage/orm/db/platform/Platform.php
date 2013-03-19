@@ -300,7 +300,7 @@ class Platform implements PlatformInterface
      */
     protected function getDefaultHydratorClass()
     {
-        return 'rampage.orm.db.platform.hydrator.FieldHydrator';
+        return 'rampage.orm.hydrator.ProxyHydrator';
     }
 
     /**
@@ -311,6 +311,7 @@ class Platform implements PlatformInterface
     public function getHydrator($entity)
     {
         $entity = $this->canonicalizeEntityName($entity);
+
         if (isset($this->hydrators[$entity])) {
             return $this->hydrators[$entity];
         }
@@ -321,10 +322,6 @@ class Platform implements PlatformInterface
         }
 
         $instance = $this->getObjectManager()->newInstance($class);
-
-        if (is_callable(array($instance, 'setFieldMapper'))) {
-            $instance->setFieldMapper($this->getFieldMapper($entity));
-        }
 
         $this->getConfig()->configureHydrator($instance, $this, $entity);
         $this->setHydrator($entity, $instance);

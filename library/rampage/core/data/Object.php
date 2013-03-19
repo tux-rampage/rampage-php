@@ -223,6 +223,19 @@ class Object implements ArrayExchangeInterface
     }
 
     /**
+     * Exchange array
+     *
+     * This method is to avoid Zend\Stdlib\Hydrator\ArraySerializable is using __call()
+     *
+     * @param array $data
+     * @return \rampage\core\data\Object
+     */
+    public function exchangeArray($data)
+    {
+        return $this->populate($data);
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\data\ArrayExchangeInterface::populate()
      */

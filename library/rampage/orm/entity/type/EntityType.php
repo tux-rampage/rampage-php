@@ -172,7 +172,7 @@ class EntityType
         return $this->class;
     }
 
-	/**
+    /**
      * Default implementing class name
      *
      * @param string $class
@@ -183,7 +183,7 @@ class EntityType
         return $this;
     }
 
-	/**
+    /**
      * Add an attribute
      *
      * @param Attribute $attribute
@@ -211,26 +211,24 @@ class EntityType
      * Add a reference
      *
      * @param string $name
-     * @param string $entity
+     * @param Reference|string $referenceOrEntity
      * @param array $localAttributes
      * @param array $referencedAttributes
      * @return \rampage\orm\entity\type\EntityType
      */
-    public function addReference($name, $entity, array $localAttributes, array $referencedAttributes)
+    public function addReference($name, $referenceOrEntity, array $referencedAttributes = array())
     {
-        $this->references[$name] = array(
-            'attributes' => $localAttributes,
-            'references' => array(
-                'entity' => $entity,
-                'attributes' => $referencedAttributes
-            )
-        );
+        if ($referenceOrEntity instanceof Reference) {
+            $this->references[$name] = $referenceOrEntity;
+        } else {
+            $this->references[$name] = new Reference($referencedAttributes, $referenceOrEntity);
+        }
 
         return $this;
     }
 
     /**
-     * @return the $attributes
+     * @return \rampage\orm\entity\type\Attribute[]
      */
     public function getAttributes()
     {
@@ -253,7 +251,7 @@ class EntityType
     }
 
     /**
-     * @return the $references
+     * @return \rampage\orm\entity\type\Reference[]
      */
     public function getReferences()
     {

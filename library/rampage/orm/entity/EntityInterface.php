@@ -25,13 +25,27 @@
 
 namespace rampage\orm\entity;
 
-use rampage\orm\ValueObjectInterface;
+use rampage\core\data\ArrayExchangeInterface;
 
 /**
  * Entity interface
  */
-interface EntityInterface extends ValueObjectInterface
+interface EntityInterface extends ArrayExchangeInterface
 {
+    /**
+     * Returns the identifier
+     *
+     * @return int|string|null
+     */
+    public function getId();
+
+    /**
+     * Set the identifier
+     *
+     * @param int|string $id
+     */
+    public function setId($id);
+
     /**
      * Must return the entity type name
      *
