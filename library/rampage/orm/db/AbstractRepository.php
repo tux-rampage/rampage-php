@@ -58,9 +58,9 @@ use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use rampage\orm\entity\feature\NewItemInterface;
 
 use Zend\Db\Sql\Predicate\PredicateSet;
+use Zend\Db\Sql\Expression as SQLExpression;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
-
 
 /**
  * Abstract DB repository
@@ -622,7 +622,6 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     protected function getLoadSelect($object, $id, $entityType)
     {
         $entityType = $this->getEntityType($entityType);
-        $where = array();
 
         if (!is_array($id) && !($id instanceof \Traversable)) {
             if ($entityType->getIdentifier()->isMultiAttribute()) {
@@ -630,10 +629,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             }
 
             $attribute = $entityType->getIdentifier()->getAttribute()->getName();
-            $where = array($attribute => $id);
+            $id = array($attribute => $id);
         }
 
-        $where = $this->mapDataForDatabase($where, $entityType);
+        $where = $this->mapDataForDatabase($id, $entityType);
         if (!$where) {
             return false;
         }
@@ -662,7 +661,10 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             $entity = $this->newEntity($entityType);
         }
 
-        $this->loadObject($entity, $id, $entityType);
+        if (!$this->loadObject($entity, $id, $entityType)) {
+            return false;
+        }
+
         return $entity;
     }
 
@@ -695,7 +697,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         $hydrator = $this->getEntityHydrator($entityType);
 
         $hydrator->hydrate($data, $object);
-        return $this;
+        return true;
     }
 
     /**
@@ -748,6 +750,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         // Build insert sql object
         $table = $this->getEntityTable($entityType);
         $insert = $this->getAdapterAggregate()
+            ->sql()
             ->insert($table)
             ->values($data);
 
@@ -889,18 +892,93 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     }
 
     /**
-     * Check if object should be a new record
+     * Check if id matches the identifier
      *
-     * @param string $object
-     * @return boolean
+     * @param string|array $id
+     * @param EntityType $entityType
+     * @return bool
      */
-    protected function isObjectNew($object)
+    private function checkValueMatchesIdentifier($id, EntityType $entityType)
     {
-        if (!$object instanceof NewItemInterface) {
+        /* @var $identifier \rampage\orm\entity\type\Identifier */
+        $identifier = $entityType->getIdentifier();
+
+        if (!is_array($id)) {
+            return !$identifier->isMultiAttribute();
+        }
+
+        $expected = $identifier->getAttributeNames();
+        $actual = array_keys($id);
+
+        if (count($expected) != count($actual)) {
             return false;
         }
 
-        return $object->isNewItem();
+        sort($expected);
+        sort($actual);
+        $diff = array_diff($expected, $actual);
+
+        return empty($diff);
+    }
+
+    /**
+     * Check if there are records for the given id
+     *
+     * @param string $id
+     * @param EntityType|string $entityType
+     */
+    private function hasRecordsForId($id, $entityType)
+    {
+        $entityType = $this->getEntityType($entityType);
+
+        if (!is_array($id)) {
+            $identifier = $entityType->getIdentifier();
+            if ($identifier->isMultiAttribute() || $identifier->isUndefined()) {
+                throw new InvalidArgumentException('Invalid identifier: array expected');
+            }
+
+            $id = array($identifier->getAttribute()->getName() => $id);
+        }
+
+        $where = $this->mapDataForDatabase($id, $entityType);
+        if (!$where) {
+            return false;
+        }
+
+        $table = $this->getEntityTable($entityType);
+        $sql = $this->getAdapterAggregate()->sql();
+        $select = $sql->select($table)
+            ->columns(array('numrows' => new SQLExpression('COUNT(*)')))
+            ->where($where);
+
+        $result = $sql->prepareStatementForSqlObject($select)->execute()->current();
+        if (!$result || !isset($result['numrows'])) {
+            return false;
+        }
+
+        return ($result['numrows'] > 0);
+    }
+
+    /**
+     * Check if object should be a new record
+     *
+     * @param string $object
+     * @param int|string|array $id
+     * @param EntityType $entityType
+     * @return boolean
+     */
+    protected function isObjectNew($object, $id, $entityType)
+    {
+        if ($object instanceof NewItemInterface) {
+            return $object->isNewItem();
+        }
+
+        $entityType = $this->getEntityType($entityType);
+        if ($entityType->usesGeneratedId() && $this->checkValueMatchesIdentifier($id, $entityType)) {
+            return false;
+        }
+
+        return !$this->hasRecordsForId($id, $entityType);
     }
 
     /**
@@ -956,12 +1034,12 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
             $preparedIdValue = null;
             $capabilities = $this->getAdapterAggregate()->getPlatform()->getCapabilities();
 
-            if (!$id || $this->isObjectNew($object)) {
-                if ($this->getEntityType($entityType)->usesGeneratedId()) {
+            if (!$id || $this->isObjectNew($object, $id, $entityType)) {
+                if ($entityType->usesGeneratedId()) {
                     $addIdAttribute = $entityType->getIdentifier()->getAttribute()->getName();
                     $preparedIdValue = $this->prepareGeneratedValue($entityType);
 
-                    if (!$capabilities->supportsAutomaticIdentities()) {
+                    if ($capabilities->supportsAutomaticIdentities()) {
                         unset($data[$addIdAttribute]);
                     } else {
                         $data[$addIdAttribute] = $preparedIdValue;
@@ -981,7 +1059,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
 
                 if ($addIdAttribute) {
                     $id = $this->fetchGeneratedValue($result, $preparedIdValue);
-                    $this->hydrateIdValue($object, $addIdAttribute, $id);
+                    $this->hydrateIdValue($object, $addIdAttribute, $id, $entityType);
                 }
             }
 

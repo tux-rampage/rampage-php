@@ -107,6 +107,17 @@ abstract class AbstractTableDefinition extends NamedDefintion implements Definit
     }
 
     /**
+     * Check if index exists
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function hasIndex($name)
+    {
+        return isset($this->indexes[$name]);
+    }
+
+    /**
      * Add a reference defintion
      *
      * @param ReferenceDefinition $reference

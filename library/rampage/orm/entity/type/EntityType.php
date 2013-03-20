@@ -261,7 +261,7 @@ class EntityType
     /**
      * Get the identifier definition for this entity
      *
-     * @return \rampage\orm\entity\type\Identitfier
+     * @return \rampage\orm\entity\type\Identifier
      */
     public function getIdentifier()
     {

@@ -514,7 +514,7 @@ class ManifestConfig extends Config
             $file = $this->getModulePath((string)$child['file'], true);
 
             if ($file->isFile() && $file->isReadable()) {
-                $this->manifest['autoloader_config']['Zend\Loader\ClassMapAutoloader'][] = $file;
+                $this->manifest['autoloader_config']['Zend\Loader\ClassMapAutoloader'][] = $file->getPathname();
             }
         }
 

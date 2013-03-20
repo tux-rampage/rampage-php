@@ -326,6 +326,7 @@ class Setup implements SetupInterface
 
         foreach ($ddlSql as $sql) {
             try {
+                // echo "------------------------------------------\n$sql\n\n";
                 $this->getAdapter()->query($sql, Adapter::QUERY_MODE_EXECUTE);
             } catch (\Exception $e) {
                 throw new RuntimeException("Failed to execute DDL: $sql", 0, $e);

@@ -105,10 +105,10 @@ class ProxyHydrator extends AbstractHydrator
      */
     private function destroyInnerHydrator()
     {
-        $this->injectedStrategies = array();
         $this->innerHydrator = null;
 
         if (!$this->strategy instanceof StrategyEnabledInterface) {
+            $this->injectedStrategies = array();
             return $this;
         }
 
@@ -116,6 +116,7 @@ class ProxyHydrator extends AbstractHydrator
             $this->strategy->removeStrategy($name);
         }
 
+        $this->injectedStrategies = array();
         return $this;
     }
 
@@ -219,9 +220,9 @@ class ProxyHydrator extends AbstractHydrator
      */
     public function extract($object)
     {
-        $this->prepareInnerHydrator();
+        $this->prepareInnerHydrator($object);
         $data = $this->internalExtract($object);
-        $this->destroyInnerHydrator();
+        $this->destroyInnerHydrator($object);
 
         return $data;
     }

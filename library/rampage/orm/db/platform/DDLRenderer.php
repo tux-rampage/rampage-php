@@ -436,7 +436,7 @@ class DDLRenderer implements DDLRendererInterface
         switch ($action) {
             case ReferenceDefinition::ACTION_CASCADE:
             case ReferenceDefinition::ACTION_RESTRICT:
-                $sql .= ' ' . strtoupper($type);
+                $sql .= ' ' . strtoupper($action);
                 break;
 
             case ReferenceDefinition::ACTION_NOACTION:

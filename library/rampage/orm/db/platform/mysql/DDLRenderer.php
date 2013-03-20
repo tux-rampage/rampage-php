@@ -31,6 +31,7 @@ use rampage\orm\db\ddl\ChangeColumn;
 use rampage\orm\db\ddl\IndexDefinition;
 use rampage\orm\db\ddl\AbstractTableDefinition;
 use rampage\orm\db\platform\PlatformInterface;
+use rampage\orm\db\ddl\ReferenceDefinition;
 
 /**
  * DDL renderer
@@ -93,7 +94,7 @@ class DDLRenderer extends DefaultDDLRenderer
      */
     protected function renderIndex(IndexDefinition $index, AbstractTableDefinition $ddl)
     {
-        $fields = $this->renderFieldList($ddl, $index->getFields());
+        $fields = $this->renderIndexFields($index, $ddl);
         $type = ($index->isUnique())? 'UNIQUE' : 'INDEX';
 
         return "$type {$this->renderKeyName($index->getName())} ($fields)";
@@ -167,7 +168,7 @@ class DDLRenderer extends DefaultDDLRenderer
             $spec['default'] = '';
         }
 
-        return $this;
+        return $spec;
     }
 
     /**
@@ -217,5 +218,37 @@ class DDLRenderer extends DefaultDDLRenderer
     {
         $options = $this->getTableOptions($ddl);
         return implode(' ', $options);
+    }
+
+    /**
+     * @see \rampage\orm\db\platform\DDLRenderer::renderAddForeignKey()
+     */
+    protected function renderAddForeignKey(AlterTable $ddl, ReferenceDefinition $reference)
+    {
+        $sql = array();
+
+        if (!$ddl->hasIndex($reference->getName())) {
+            $index = new IndexDefinition($reference->getName(), $reference->getFields());
+            $sql[] = $this->renderAddIndex($ddl, $index);
+        }
+
+        $sql[] = parent::renderAddForeignKey($ddl, $reference);
+        return implode(",\n\t", $sql);
+    }
+
+	/**
+     * @see \rampage\orm\db\platform\DDLRenderer::renderForeignKey()
+     */
+    protected function renderForeignKey(ReferenceDefinition $reference, AbstractTableDefinition $ddl)
+    {
+        $sql = array();
+
+        if (!$ddl->hasIndex($reference->getName())) {
+            $index = new IndexDefinition($reference->getName(), $reference->getFields());
+            $sql[] = $this->renderIndex($index, $ddl);
+        }
+
+        $sql[] = parent::renderForeignKey($reference, $ddl);
+        return implode(",\n\t", $sql);
     }
 }

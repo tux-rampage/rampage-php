@@ -30,6 +30,7 @@ use Zend\Db\Adapter\Driver\DriverInterface;
 use Zend\Db\Adapter\Exception\InvalidArgumentException;
 use Zend\Db\Adapter\Platform as DefaultPlatforms;
 
+use rampage\db\driver\pdo\Driver as PdoDriver;
 use rampage\db\driver\oracle\PDODriver as OraclePDODriver;
 use rampage\db\platform\DriverAwareInterface;
 
@@ -44,18 +45,27 @@ class Adapter extends DefaultAdapter
      */
     protected function createDriver($parameters)
     {
-        if (!is_string($parameters['driver']) || (strtolower($parameters['driver']) != 'pdo_oci')) {
+        if (!is_string($parameters['driver'])) {
             return parent::createDriver($parameters);
         }
 
-        $options = array();
-        if (isset($parameters['options'])) {
-            $options = (array) $parameters['options'];
-            unset($parameters['options']);
+        $driverName = $parameters['driver'];
+        switch ($driverName) {
+            case 'pdo_oci':
+                unset($parameters['options']);
+                return new OraclePDODriver($parameters);
+
+            case 'pdo':
+            default:
+                if (($driverName == 'pdo') || (substr($driverName, 0, 3) == 'pdo')) {
+                    unset($parameters['options']);
+                    return new PdoDriver($parameters);
+                }
+
+                break;
         }
 
-        $driver = new OraclePDODriver($parameters);
-        return $driver;
+        return parent::createDriver($parameters);;
     }
 
     /**
