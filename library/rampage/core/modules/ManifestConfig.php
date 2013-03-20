@@ -510,6 +510,15 @@ class ManifestConfig extends Config
         $xml = $this->getXml();
 
         /* @var $child \rampage\core\xml\SimpleXmlElement */
+        foreach ($xml->xpath("packages/classmap[@file != '']") as $child) {
+            $file = $this->getModulePath((string)$child['file'], true);
+
+            if ($file->isFile() && $file->isReadable()) {
+                $this->manifest['autoloader_config']['Zend\Loader\ClassMapAutoloader'][] = $file;
+            }
+        }
+
+        /* @var $child \rampage\core\xml\SimpleXmlElement */
         foreach ($xml->xpath("packages/package[. != '']") as $child) {
             $dir = (isset($child['directory']))? (string)$child['directory'] : 'src';
             $namespace = trim(str_replace('.', '\\', (string)$child), '\\');
