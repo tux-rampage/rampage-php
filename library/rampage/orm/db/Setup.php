@@ -37,6 +37,7 @@ use rampage\orm\db\ddl\ColumnDefinition;
 use rampage\orm\db\ddl\DefinitionInterface;
 use rampage\orm\db\ddl\AlterTable;
 use rampage\orm\db\ddl\DropTable;
+use rampage\orm\exception\LogicException;
 
 /**
  * Orm DB setup
@@ -62,7 +63,7 @@ class Setup implements SetupInterface
      *
      * @var string
      */
-    private $location = null;
+    protected $location = null;
 
     /**
      * script Files
@@ -129,6 +130,21 @@ class Setup implements SetupInterface
     }
 
     /**
+     * Returns the script location
+     *
+     * @throws LogicException
+     * @return string
+     */
+    protected function getScriptLocation()
+    {
+        if (!$this->location) {
+            throw new LogicException('Missing script files location for db setup');
+        }
+
+        return $this->location;
+    }
+
+    /**
      * Script files
      */
     protected function getScriptFiles()
@@ -137,7 +153,7 @@ class Setup implements SetupInterface
             return $this->files;
         }
 
-        $iterator = new DirectoryIterator($this->location);
+        $iterator = new DirectoryIterator($this->getScriptLocation());
         $files = array(
             'install' => array(),
             'upgrade' => array(),

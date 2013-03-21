@@ -605,6 +605,8 @@ class ManifestConfig extends Config
     public function toArray()
     {
         $this->manifest = array(
+            'name' => $this->getModuleName(),
+            'version' => $this->getModuleVersion(),
             'application_config' => array(),
             'autoloader_config' => array(),
             'console' => array(

@@ -46,6 +46,15 @@ interface RepositoryInterface
     public function setName($name);
 
     /**
+     * Returns the entity type instance
+     *
+     * @param EntityInterface|EntityType|string $name
+     * @throws RuntimeException
+     * @return \rampage\orm\entity\type\EntityType
+     */
+    public function getEntityType($name);
+
+    /**
      * Set the name of the adapter service
      *
      * @param string $name

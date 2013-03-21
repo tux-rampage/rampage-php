@@ -185,11 +185,16 @@ class ModuleRegistry implements \IteratorAggregate
      * Return a specific module
      *
      * @param string $name
-     * @return \rampage\core\Module
+     * @param bool $strict Throw an exception when the module doesn't exist
+     * @return \rampage\core\Module Returns the module
      */
-    public function getModule($name)
+    public function getModule($name, $strict = false)
     {
         if (!isset($this->modules[$name])) {
+            if ($strict) {
+                throw new RuntimeException('The requested module "' . $name . '" does not exist');
+            }
+
             return false;
         }
 

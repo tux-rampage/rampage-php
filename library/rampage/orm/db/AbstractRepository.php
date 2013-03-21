@@ -30,7 +30,6 @@ use rampage\core\data\RestrictableCollectionInterface;
 use rampage\core\Utils;
 use rampage\core\data\ArrayExchangeInterface;
 
-use rampage\orm\RepositoryInterface;
 use rampage\orm\ConfigInterface;
 use rampage\orm\hydrator\EntityHydrator;
 
@@ -57,15 +56,24 @@ use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\ConfigInterface as EntityTypeConfigInterface;
 use rampage\orm\entity\feature\NewItemInterface;
 
+// ZF dependencies
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Sql\Expression as SQLExpression;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
+// Event framework
+use Zend\EventManager\EventManagerAwareInterface;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\EventManager;
+
 /**
  * Abstract DB repository
  */
-abstract class AbstractRepository implements RepositoryInterface, PersistenceFeatureInterface, CursorProviderInterface
+abstract class AbstractRepository implements RepositoryInterface,
+    PersistenceFeatureInterface,
+    CursorProviderInterface,
+    EventManagerAwareInterface
 {
     /**
      * The query mapper for this repository
@@ -117,13 +125,6 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     protected $entityTypes = array();
 
     /**
-     * Id Fields by entity type
-     *
-     * @var array
-     */
-    protected $entityTypeIdFields = array();
-
-    /**
      * Entity tables by platform
      *
      * @var array
@@ -136,6 +137,13 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * @var array
      */
     protected $entityHydrators = array();
+
+    /**
+     * Event manager instance
+     *
+     * @var EventManagerInterface
+     */
+    private $eventManager = null;
 
     /**
      * Construct
@@ -158,6 +166,48 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     abstract protected function getDefaultRepositoryName();
 
     /**
+     * @see \Zend\EventManager\EventManagerAwareInterface::setEventManager()
+     */
+    public function setEventManager(EventManagerInterface $eventManager)
+    {
+        $instanceClass = get_class($this);
+
+        $eventManager->setIdentifiers(array(
+            'rampage.repository.database',
+            strtr($instanceClass, '\\', '.'),
+            strtr(__CLASS__, '\\', '.')
+        ));
+
+        $this->eventManager = $eventManager;
+        return $this;
+    }
+
+	/**
+     * (non-PHPdoc)
+     * @see \Zend\EventManager\EventsCapableInterface::getEventManager()
+     */
+    public function getEventManager()
+    {
+        if (!$this->eventManager) {
+            $this->setEventManager(new EventManager());
+        }
+
+        return $this->eventManager;
+    }
+
+    /**
+     * Returns the event
+     *
+     * @param string $name
+     * @return \rampage\orm\db\Event
+     */
+    protected function getEvent($name, $target = null)
+    {
+        $event = new Event($this, $name, $target);
+        return $event;
+    }
+
+	/**
      * Retruns the transaction for writing
      *
      * @return \rampage\db\driver\feature\TransactionFeatureInterface
@@ -283,14 +333,41 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      * @param string $name
      * @return \rampage\orm\db\adapter\AdapterAggregate
      */
-    private function createAdapterAggregate($name)
+    protected function createAdapterAggregate($name)
     {
         return $this->getObjectManager()->newInstance('rampage.orm.db.adapter.AdapterAggregate', array(
             'adapterName' => $name
         ));
     }
 
-	/**
+    /**
+     * Creates a module setup instance
+     *
+     * @param string $moduleName
+     * @return \rampage\orm\db\ModuleSetup
+     */
+    protected function createModuleSetup($moduleName, $resourceName = null)
+    {
+        $setup = $this->getObjectManager()->newInstance('rampage.orm.db.ModuleSetup', array(
+            'adapterAggregate' => $this->getAdapterAggregate()
+        ));
+
+        if (!$setup instanceof ModuleSetup) {
+            throw new RuntimeException(sprintf(
+                'Invalid module setup instance. Expected rampage.orm.db.ModuleSetup, %s given',
+                is_object($setup)? strtr(get_class($setup), '\\', '.') : gettype($setup)
+            ));
+        }
+
+        $resourceName = ($resourceName)?: $this->getName();
+
+        $setup->setModuleName($moduleName);
+        $setup->setName($resourceName);
+
+        return $setup;
+    }
+
+    /**
      * Read adapter aggregate
      *
      * @return \rampage\orm\db\adapter\AdapterAggregate
@@ -307,7 +384,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
         return $aggregate;
     }
 
-	/**
+    /**
      * Set the adapter aggregate
      *
      * @param \rampage\orm\db\adapter\AdapterAggregate $read
@@ -398,8 +475,8 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     {
         $table = $this->getEntityTable($entityType);
         $columns = $this->getAdapterAggregate()
-        ->metadata()
-        ->getColumnNames($table);
+            ->metadata()
+            ->getColumnNames($table);
 
         $columns = array_combine($columns, $columns);
         if (!is_array($columns)) {
@@ -574,7 +651,7 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     {
         return $this->getObjectManager()->newInstance('rampage.orm.db.query.DefaultMapper', array(
             'repository' => $this,
-            'platform' => $this->getReadAggregate()->getPlatform()
+            'platform' => $this->getAdapterAggregate()->getPlatform()
         ));
     }
 
@@ -707,13 +784,20 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     public function load($id, $entity)
     {
         $method = $this->getEntityPersistenceMethod('load', $entity);
+        $events = $this->getEventManager();
+
+        $events->trigger($this->getEvent(Event::LOAD_BEFORE, $entity));
 
         if (method_exists($this, $method)) {
-            $this->$method($id, $entity);
-            return $this;
+            $result = $this->$method($id, $entity);
+        } else {
+            $result = $this->loadEntity($id, $entity);
         }
 
-        return $this->loadEntity($id, $entity);
+        $entity = ($result !== false)? $result : $entity;
+        $events->trigger($this->getEvent(Event::LOAD_AFTER, $entity)->setParam('success', ($result !== false)));
+
+        return $result;
     }
 
     /**
@@ -1099,14 +1183,19 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
      */
     public function save(EntityInterface $entity)
     {
+        $events = $this->getEventManager();
         $method = $this->getEntityPersistenceMethod('save', $entity);
+
+        $events->trigger($this->getEvent(Event::SAVE_BEFORE, $entity));
 
         if (method_exists($this, $method)) {
             $this->$method($entity);
-            return $this;
+        } else {
+            $this->saveEntity($entity);
         }
 
-        return $this->saveEntity($entity);
+        $events->trigger($this->getEvent(Event::SAVE_AFTER, $entity));
+        return $this;
     }
 
     /**
@@ -1158,12 +1247,17 @@ abstract class AbstractRepository implements RepositoryInterface, PersistenceFea
     public function delete(EntityInterface $entity)
     {
         $method = $this->getEntityPersistenceMethod('delete', $entity);
+        $events = $this->getEventManager();
+
+        $events->trigger($this->getEvent(Event::DELETE_BEFORE, $entity));
+
         if (method_exists($this, $method)) {
             $this->$method($entity);
-            return $this;
+        } else {
+            $this->deleteEntity($entity);
         }
 
-        $this->deleteEntity($entity);
+        $events->trigger($this->getEvent(Event::DELETE_AFTER, $entity));
         return $this;
     }
 

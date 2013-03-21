@@ -37,6 +37,10 @@ use rampage\orm\db\platform\FieldMapper;
 use rampage\orm\db\platform\PlatformInterface;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
+use rampage\core\ObjectManagerInterface;
+use rampage\core\PathManager;
+use rampage\core\ModuleRegistry;
+use Zend\Stdlib\Hydrator\StrategyEnabledInterface;
 
 /**
  * Database config implementation
@@ -65,6 +69,31 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
     protected $aliases = array();
 
     /**
+     * Object manager
+     *
+     * @var \rampage\core\ObjectManagerInterface
+     */
+    private $objectManager = null;
+
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\core\modules\AggregatedXmlConfig::__construct()
+     */
+    public function __construct(ObjectManagerInterface $objectManager, ModuleRegistry $registry, PathManager $pathManager)
+    {
+        $this->objectManager = $objectManager;
+        parent::__construct($registry, $pathManager);
+    }
+
+    /**
+     * @return \rampage\core\ObjectManagerInterface
+     */
+    protected function getObjectManager()
+    {
+        return $this->objectManager;
+    }
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
      */
@@ -90,6 +119,7 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
     {
         $rules = parent::getDefaultMergeRulechain();
         $rules->add(new UniqueAttributeRule('~/(adapter|platform|entity|attribute)$~', 'name'))
+              ->add(new UniqueAttributeRule('~/hydrator$~', 'class'))
               ->add(new AllowSiblingsRule('~/item$~'));
 
         return $rules;
@@ -292,6 +322,33 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      */
     public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity)
     {
+        if (!$hydrator instanceof StrategyEnabledInterface) {
+            return $this;
+        }
+
+        $platformName = $this->xpathQuote($platform->getName());
+        $entityName = $this->xpathQuote($entity);
+        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/hydrator/attribute[@name != '' and @strategy != '']";
+        $di = $this->getObjectManager();
+
+        /* @var $node \rampage\core\xml\SimpleXmlElement */
+        foreach ($this->getXml()->xpath($xpath) as $node) {
+            $strategy = $di->newInstance((string)$node['strategy'], $node->toPhpValue('array', $di));
+            $hydrator->addStrategy((string)$node['name'], $strategy);
+        }
+
+        $xpath = "./platforms/defaults/entity[@name = $entityName]/hydrator/attribute[@name != '' and @strategy != '']";
+        foreach ($this->getXml()->xpath($xpath) as $node) {
+            $name = (string)$node['name'];
+            if ($hydrator->hasStrategy($name)) {
+                continue;
+            }
+
+            $strategy = $di->newInstance((string)$node['strategy'], $node->toPhpValue('array', $di));
+            $hydrator->addStrategy($name, $strategy);
+        }
+
+
         return $this;
     }
 
@@ -303,16 +360,16 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
     {
         $platformName = $this->xpathQuote($platform->getName());
         $entityName = $this->xpathQuote($entity);
-        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @hydrator != '']");
+        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName]/hydrator[@class != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @hydrator != '']");
+            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName]/hydrator[@class != '']");
             if (!$node instanceof SimpleXmlElement) {
                 return false;
             }
         }
 
-        return (string)$node['hydrator'];
+        return (string)$node['class'];
     }
 
     /**

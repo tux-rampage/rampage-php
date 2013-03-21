@@ -49,7 +49,8 @@ class FileLocator implements FileLocatorInterface
     protected $types = array(
         'public',
         'template',
-        'layout'
+        'layout',
+        'db',
     );
 
     /**

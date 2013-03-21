@@ -346,6 +346,7 @@
 	                <all>
 	                    <element minOccurs="0" maxOccurs="unbounded" name="package" type="rampage:PackageDefinition"></element>
 	                    <element minOccurs="0" maxOccurs="1" name="aliases" type="rampage:AliasConfig"></element>
+	                    <element name="classmap" type="rampage:ClassMapDefinition" maxOccurs="unbounded" minOccurs="0"></element>
 	                </all>
 	            </complexType>
 	        </element>
@@ -428,5 +429,9 @@
 	            </complexType>
 	        </element>
 	    </all>
+	</complexType>
+
+	<complexType name="ClassMapDefinition">
+	    <attribute name="file" type="string" use="required"></attribute>
 	</complexType>
 </schema>

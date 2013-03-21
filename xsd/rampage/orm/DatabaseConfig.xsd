@@ -58,28 +58,36 @@
     </complexType>
 
     <complexType name="PlatformMapType">
-        <all>
-            <element name="attribute" maxOccurs="unbounded"
-                minOccurs="0">
+        <sequence>
+            <element name="attribute" maxOccurs="unbounded" minOccurs="0">
                 <complexType>
-                    <attribute name="name" type="string"
-                        use="required">
-                    </attribute>
-                    <attribute name="field" type="string"
-                        use="required">
-                    </attribute>
+                    <attribute name="name" type="string" use="required"></attribute>
+                    <attribute name="field" type="string" use="required"></attribute>
                 </complexType>
             </element>
-        </all>
+            <element name="hydrator" type="dbconfig:EntityHydratorDefinition" maxOccurs="1" minOccurs="0"></element>
+        </sequence>
+        
         <attribute name="name" type="string" use="required"></attribute>
         <attribute name="table" type="string" use="required"></attribute>
-        <attribute name="hydrator" type="string" use="optional"></attribute>
     </complexType>
     <complexType name="PlatformConfigType">
         <all>
             <element name="entity" type="dbconfig:PlatformMapType" maxOccurs="unbounded" minOccurs="0"></element>
         </all>
         <attribute use="required" name="name" type="string"></attribute>
+        <attribute name="class" type="string" use="optional"></attribute>
+    </complexType>
+
+    <complexType name="EntityHydratorDefinition">
+        <sequence>
+            <element name="attribute" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <attribute name="name" type="string" use="required"></attribute>
+                    <attribute name="strategy" type="string" use="required"></attribute>
+                </complexType>
+            </element>
+        </sequence>
         <attribute name="class" type="string" use="optional"></attribute>
     </complexType>
 </schema>

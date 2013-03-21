@@ -33,6 +33,8 @@ use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\Console\Adapter\AdapterInterface;
+use rampage\core\resource\FileLocator;
+use rampage\core\exception\RuntimeException;
 
 /**
  * Module info
@@ -50,63 +52,70 @@ class Module implements ModuleInterface,
      *
      * @var \rampage\core\ModuleRegistry
      */
-    private $_registry = null;
+    private $registry = null;
 
     /**
      * Current path manager
      *
      * @var PathManager
      */
-    private $_pathManager = null;
+    private $pathManager = null;
 
     /**
      * Module name
      *
      * @var string
      */
-    private $_name = null;
+    private $name = null;
 
     /**
      * Is loaded flag
      *
      * @var bool
      */
-    private $_isLoaded = false;
+    private $isLoaded = false;
 
     /**
      * Options
      *
      * @var array
      */
-    private $_options = array();
+    private $options = array();
 
     /**
      * Module path
      *
      * @var string
      */
-    private $_path = null;
+    private $path = null;
+
+    /**
+     * Resource locator
+     *
+     * @var \rampage\core\resource\FileLocator
+     */
+    private $resourceLocator = null;
 
     /**
      * Module class name
      *
      * @var string
      */
-    private $_moduleClass = null;
+    private $moduleClass = null;
 
     /**
      * Manifest data
      *
      * @var array
      */
-    private $_manifest = null;
+    private $manifest = null;
 
     /**
      * Custom module instance
      *
      * @return object
      */
-    private $_instance = null;
+    private $instance = null;
 
     /**
      * Construct
@@ -115,8 +124,8 @@ class Module implements ModuleInterface,
      */
     public function __construct($name, array $options = array())
     {
-        $this->_name = $name;
-        $this->_options = $options;
+        $this->name = $name;
+        $this->options = $options;
     }
 
     /**
@@ -126,7 +135,7 @@ class Module implements ModuleInterface,
      */
     public function getOptions()
     {
-        return $this->_options;
+        return $this->options;
     }
 
 	/**
@@ -136,7 +145,7 @@ class Module implements ModuleInterface,
      */
     public function setRegistry(ModuleRegistry $registry)
     {
-        $this->_registry = $registry;
+        $this->registry = $registry;
         return $this;
     }
 
@@ -147,7 +156,7 @@ class Module implements ModuleInterface,
      */
     protected function getRegistry()
     {
-        return $this->_registry;
+        return $this->registry;
     }
 
     /**
@@ -157,7 +166,7 @@ class Module implements ModuleInterface,
      */
     public function setPathManager(PathManager $path)
     {
-        $this->_pathManager = $path;
+        $this->pathManager = $path;
         return $this;
     }
 
@@ -168,11 +177,11 @@ class Module implements ModuleInterface,
      */
     protected function getPathManager()
     {
-        if (!$this->_pathManager) {
+        if (!$this->pathManager) {
             $this->setPathManager($this->getRegistry()->getPathManager());
         }
 
-        return $this->_pathManager;
+        return $this->pathManager;
     }
 
     /**
@@ -183,7 +192,7 @@ class Module implements ModuleInterface,
      */
     protected function setIsLoaded($flag)
     {
-        $this->_isLoaded = (bool)$flag;
+        $this->isLoaded = (bool)$flag;
         return $this;
     }
 
@@ -196,13 +205,13 @@ class Module implements ModuleInterface,
      */
     public function getModulePath($file = null, $asFileInfo = false)
     {
-        if (isset($this->_options['path'])) {
-            $path = $this->_options['path'];
+        if (isset($this->options['path'])) {
+            $path = $this->options['path'];
         } else {
-            if (isset($this->_options['_path'])) {
-                $info = new SplFileInfo($this->_options['_path']);
+            if (isset($this->options['_path'])) {
+                $info = new SplFileInfo($this->options['_path']);
             } else {
-                $info = new SplFileInfo($this->getPathManager()->get('modules', $this->_name));
+                $info = new SplFileInfo($this->getPathManager()->get('modules', $this->name));
             }
 
             if ($info->isFile()) {
@@ -210,11 +219,11 @@ class Module implements ModuleInterface,
             }
 
             if (!$info->isDir()) {
-                throw new exception\RuntimeException('Failed to locate module: ' . $this->_name);
+                throw new exception\RuntimeException('Failed to locate module: ' . $this->name);
             }
 
             $path = $info->getPathname();
-            $this->_options['path'] = $path;
+            $this->options['path'] = $path;
         }
 
         if ($file) {
@@ -229,11 +238,40 @@ class Module implements ModuleInterface,
     }
 
     /**
+     * Returns an resource path
+     *
+     * @param string $type
+     * @param string $path
+     * @param string $asFileInfo
+     */
+    public function getResourcePath($type, $path, $asFileInfo = false)
+    {
+        if (!$this->resourceLocator) {
+            $this->load();
+            $name = $this->getName();
+
+            if (!isset($this->manifest['application_config']['rampage']['resources'][$name])) {
+                throw new RuntimeException(sprintf('Resource location for module "%s" is not defined', $name));
+            }
+
+            $this->resourceLocator = new FileLocator($this->getPathManager());
+            $this->resourceLocator->addLocation('__module__', $this->manifest['application_config']['rampage']['resources'][$name]);
+        }
+
+        $result = $this->resourceLocator->resolve($type, $path, '__module__', $asFileInfo);
+        if ($result === false) {
+            throw new RuntimeException('Undefined resource type: ' . $type);
+        }
+
+        return $result;
+    }
+
+    /**
      * Is loaded check
      */
     public function isLoaded()
     {
-        return $this->_isLoaded;
+        return $this->isLoaded;
     }
 
     /**
@@ -247,7 +285,7 @@ class Module implements ModuleInterface,
             return $this;
         }
 
-        $this->_isLoaded = true;
+        $this->isLoaded = true;
         $manifest = $this->getModulePath(static::STATIC_FILE, true);
         if ($manifest->isReadable() && $manifest->isFile()) {
             $data = include $manifest;
@@ -257,9 +295,37 @@ class Module implements ModuleInterface,
         }
 
         $config = new ManifestConfig($this, $this->getModulePath('module.xml'));
-        $this->_manifest = $config->toArray();
+        $this->manifest = $config->toArray();
 
         return $this;
+    }
+
+    /**
+     * Returns the module name as defined in the module manifest
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        if (isset($this->manifest['name'])) {
+            return (string)$this->manifest['name'];
+        }
+
+        return $this->name;
+    }
+
+    /**
+     * Returns the module version
+     *
+     * @return string|false
+     */
+    public function getVersion()
+    {
+        if (isset($this->manifest['version'])) {
+            return (string)$this->manifest['version'];
+        }
+
+        return false;
     }
 
     /**
@@ -267,7 +333,7 @@ class Module implements ModuleInterface,
      */
     public function compileManifest($file = null)
     {
-        $array = var_export($this->_manifest, true);
+        $array = var_export($this->manifest, true);
         $array = str_replace($this->getModulePath(), "' . __DIR__ . '", $array);
         $array = str_replace("'' . __DIR__", "__DIR__", $array);
         $code = "<?php return $array;";
@@ -290,7 +356,7 @@ class Module implements ModuleInterface,
      */
     public function isValid()
     {
-        return $this->isLoaded() && is_array($this->_manifest);
+        return $this->isLoaded() && is_array($this->manifest);
     }
 
     /**
@@ -300,7 +366,7 @@ class Module implements ModuleInterface,
      */
     public function hasInstance()
     {
-        return (isset($this->_manifest['module_instance']) && $this->_manifest['module_instance']);
+        return (isset($this->manifest['module_instance']) && $this->manifest['module_instance']);
     }
 
     /**
@@ -312,8 +378,8 @@ class Module implements ModuleInterface,
      */
     protected function findModuleClassFile($class)
     {
-        if (isset($this->_manifest['module_file'])) {
-            return $this->getModulePath($this->_manifest['module_file']);
+        if (isset($this->manifest['module_file'])) {
+            return $this->getModulePath($this->manifest['module_file']);
         }
 
         $file = str_replace('\\', '/', $class) . '.php';
@@ -327,7 +393,7 @@ class Module implements ModuleInterface,
             }
         }
 
-        $this->_manifest['module_file'] = $file;
+        $this->manifest['module_file'] = $file;
         return $path->getPathname();
     }
 
@@ -361,21 +427,21 @@ class Module implements ModuleInterface,
      */
     public function getInstance()
     {
-        if ($this->_instance) {
-            return $this->_instance;
+        if ($this->instance) {
+            return $this->instance;
         }
 
         if (!$this->hasInstance()) {
             return null;
         }
 
-        $class = str_replace('.', '\\', $this->_manifest['module_instance']);
+        $class = str_replace('.', '\\', $this->manifest['module_instance']);
         $class = '\\' . trim($class, '\\');
 
         $this->loadModuleClass($class);
-        $this->_instance = new $class($this);
+        $this->instance = new $class($this);
 
-        return $this->_instance;
+        return $this->instance;
     }
 
     /**
@@ -385,7 +451,7 @@ class Module implements ModuleInterface,
      */
     public function getConfig()
     {
-        $config = $this->_manifest['application_config'];
+        $config = $this->manifest['application_config'];
 //         $this->prepareManifest($config);
 
         $diConfig = new \SplFileInfo($this->getModulePath('di.config.php'));
@@ -408,8 +474,8 @@ class Module implements ModuleInterface,
      */
     public function getConsoleBanner(AdapterInterface $console)
     {
-        if (isset($this->_manifest['console']['banner'])) {
-            return $this->_manifest['console']['banner'];
+        if (isset($this->manifest['console']['banner'])) {
+            return $this->manifest['console']['banner'];
         }
 
         return false;
@@ -421,8 +487,8 @@ class Module implements ModuleInterface,
      */
     public function getConsoleUsage(AdapterInterface $console)
     {
-        if (isset($this->_manifest['console']['usage'])) {
-            return $this->_manifest['console']['usage'];
+        if (isset($this->manifest['console']['usage'])) {
+            return $this->manifest['console']['usage'];
         }
 
         return array();
@@ -439,6 +505,6 @@ class Module implements ModuleInterface,
             return include $file->getPathname();
         }
 
-        return $this->_manifest['autoloader_config'];
+        return $this->manifest['autoloader_config'];
     }
 }
