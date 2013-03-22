@@ -36,4 +36,12 @@ interface ConfigInterface
      * @param EntityType $type
      */
     public function configureEntityType(EntityType $type);
+
+    /**
+     * Returns all defined entities for the given repository
+     *
+     * @param \rampage\orm\RepositoryInterface|string $repository
+     * @return array
+     */
+    public function getDefinedEntities($repository = null);
 }

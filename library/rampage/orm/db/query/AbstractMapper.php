@@ -74,6 +74,13 @@ abstract class AbstractMapper implements MapperInterface
     private $repository = null;
 
     /**
+     * Joined attributes
+     *
+     * @var array
+     */
+    protected $joinedAttributes = array();
+
+    /**
      * Operator map
      *
      * @var string
@@ -197,6 +204,27 @@ abstract class AbstractMapper implements MapperInterface
     }
 
     /**
+     * Map an attribute
+     *
+     * @param string $attribute
+     * @param string $entityType
+     * @return string
+     */
+    protected function mapAttribute($attribute, $entityType = null, $tableAlias = null)
+    {
+        $entityType = $this->getEntityTypeName($entityType);
+        $field = $this->getPlatform()
+            ->getFieldMapper($entityType)
+            ->mapAttribute($attribute);
+
+        if ($tableAlias) {
+            $field = $tableAlias . '.' . $field;
+        }
+
+        return $field;
+    }
+
+    /**
      * Returns the identifier for the given attribute
      *
      * @param string $attribute
@@ -204,14 +232,44 @@ abstract class AbstractMapper implements MapperInterface
      */
     protected function getAttributeIdentifier($attribute)
     {
-        $field = $attribute;
-        $mapper = $this->getPlatform()->getFieldMapper($this->getEntityTypeName());
-
-        if ($mapper) {
-            $field = $mapper->mapAttribute($attribute);
+        if (isset($this->joinedAttributes[$attribute])) {
+            return $this->joinedAttributes[$attribute];
         }
 
+        $field = $this->mapAttribute($attribute);
         return $this->getTableAlias() . '.' . $field;
+    }
+
+    /**
+     * Join defined entity type attributes
+     *
+     * @param Select $select
+     * @param string $joinEntityType
+     * @param string $on
+     * @param string $tableAlias
+     */
+    protected function joinDefinedEntityAttributes(Select $select, $joinEntityType, $on, $tableAlias, $type = Select::JOIN_INNER)
+    {
+        $entityType = $this->getRepository()->getEntityType($this->getEntityTypeName());
+        $collection = $entityType->getJoinedAttributes($joinEntityType);
+        $fullJoinEntityType = $this->getEntityTypeName($joinEntityType);
+        $table = $this->getTable($fullJoinEntityType);
+        $columns = array();
+
+        /* @var $joinedAttribute \rampage\orm\entity\type\AttributeJoinReference */
+        foreach ($collection as $joinedAttribute) {
+            $attribute = $joinedAttribute->getName();
+            $reference = $joinedAttribute->getReference();
+
+            $fieldAlias = $this->mapAttribute($attribute);
+            $field = $this->mapAttribute($reference, $fullJoinEntityType);
+
+            $columns[$fieldAlias] = $field;
+            $this->joinedAttributes[$attribute] = $tableAlias . '.' . $field;
+        }
+
+        $select->join(array($tableAlias => $table), $on, $columns, $type);
+        return $this;
     }
 
     /**

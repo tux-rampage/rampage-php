@@ -66,6 +66,13 @@ class Attribute
     protected $generated = false;
 
     /**
+     * Virtual attribute flag
+     *
+     * @var bool
+     */
+    protected $virtual = false;
+
+    /**
      * Construct
      *
      * @param string $name
@@ -134,5 +141,15 @@ class Attribute
     public function isGenerated()
     {
         return $this->generated;
+    }
+
+    /**
+     * Returns whether the attribute is virtual
+     *
+     * @return boolean
+     */
+    public function isVirtual()
+    {
+        return $this->virtual;
     }
 }

@@ -91,6 +91,7 @@ If so, the name attribute will be used.</documentation>
                     </documentation>
                 </annotation>
             </element>
+            <element name="joinattributes" type="rampageorm:JoinAttributesContainer" maxOccurs="1" minOccurs="0"></element>
         </all>
         <attribute name="name" type="string"></attribute>
         <attribute name="class" type="string"></attribute>
@@ -143,7 +144,7 @@ If so, the name attribute will be used.</documentation>
 
 
         <attribute name="name" type="string" use="required"></attribute>
-        <attribute name="type" use="required">
+        <attribute name="type" use="optional">
             <simpleType>
                 <restriction base="string">
                     <enumeration value="string"></enumeration>
@@ -158,7 +159,7 @@ If so, the name attribute will be used.</documentation>
             </simpleType>
         </attribute>
         <attribute name="nullable" type="boolean" use="optional"></attribute>
-        <attribute name="identity" type="boolean">
+        <attribute name="identity" type="boolean" use="optional">
             <annotation>
                 <documentation>
                     This will specify if this attribute is an identity.
@@ -166,7 +167,7 @@ If so, the name attribute will be used.</documentation>
                 </documentation>
             </annotation>
         </attribute>
-        <attribute name="primary" type="boolean">
+        <attribute name="primary" type="boolean" use="optional">
             <annotation>
                 <documentation>This will mark the attribute as primary key (identifier)</documentation>
             </annotation></attribute>
@@ -223,28 +224,6 @@ If two attributes have the same position, they'll be added in the order they're 
                     <attribute name="literal" type="boolean"></attribute>
                 </complexType>
             </element>
-            <element name="constraint" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                    <attribute name="type" use="required">
-                        <simpleType>
-                            <restriction base="string">
-                                <enumeration value="update"></enumeration>
-                                <enumeration value="delete"></enumeration>
-                            </restriction>
-                        </simpleType>
-                    </attribute>
-                    <attribute name="action" use="required">
-                        <simpleType>
-                            <restriction base="string">
-                                <enumeration value="ignore"></enumeration>
-                                <enumeration value="restrict"></enumeration>
-                                <enumeration value="cascade"></enumeration>
-                                <enumeration value="setnull"></enumeration>
-                            </restriction>
-                        </simpleType>
-                    </attribute>
-                </complexType>
-            </element>
         </all>
         <attribute name="name" type="string" use="required">
             <annotation>
@@ -265,5 +244,28 @@ If two attributes have the same position, they'll be added in the order they're 
                 <documentation>The property of the entity object to where this reference should be loaded.
 If this is omitted or empty this reference should be ignored during load</documentation>
             </annotation></attribute>
+    </complexType>
+
+    <complexType name="JoinAttributesContainer">
+        <sequence>
+            <element name="entity" type="rampageorm:JoinEntityDefinition" maxOccurs="unbounded" minOccurs="1"></element>
+        </sequence>
+    </complexType>
+
+    <complexType name="JoinEntityDefinition">
+        <sequence>
+            <element name="attribute" type="rampageorm:JoinAttributeDefinition" maxOccurs="unbounded" minOccurs="1"></element>
+        </sequence>
+        <attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="JoinAttributeDefinition">
+        <complexContent>
+            <extension base="rampageorm:EntityAttributeConfig">
+                <attribute name="reference" type="string" use="optional"></attribute>
+                <attribute name="primary" type="boolean" use="prohibited"></attribute>
+                <attribute name="identity" type="boolean" use="prohibited"></attribute>
+            </extension>
+        </complexContent>
     </complexType>
 </schema>

@@ -217,6 +217,35 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
     }
 
     /**
+     * @see \rampage\orm\entity\type\ConfigInterface::getDefinedEntities()
+     */
+    public function getDefinedEntities($repository = null)
+    {
+        if ($repository instanceof RepositoryInterface) {
+            $repository = $repository->getName();
+        }
+
+        $xpathCondition = '[@name != ""]';
+        if ($repository) {
+            $repositoryName = $this->xpathQuote($repository);
+            $xpathCondition = "[@name = $repositoryName]";
+        }
+
+        $xpath = "./repository{$xpathCondition}";
+        $entities = array();
+
+        /* @var $repositoryNode \rampage\core\xml\SimpleXmlElement */
+        foreach ($this->getXml()->xpath($xpath) as $repositoryNode) {
+            $currentRepo = (string)$repositoryNode['name'];
+            foreach ($repositoryNode->xpath('./entity[@name != ""]') as $entityNode) {
+                $entities[] = $currentRepo . ':' . (string)$entityNode['name'];
+            }
+        }
+
+        return $entities;
+    }
+
+    /**
      * Configure entity type
      */
     public function configureEntityType(EntityType $type)
@@ -257,6 +286,18 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
 
             if (!empty($index)) {
                 $type->addIndex((string)$node['name'], $index);
+            }
+        }
+
+        /* @var $joinEntityNode \rampage\core\xml\SimpleXmlElement */
+        foreach ($xml->xpath('./joinedattributes/entity[@name != ""]') as $joinEntityNode) {
+            $joinEntityType = (string)$joinEntityNode['name'];
+
+            foreach ($joinEntityNode->xpath('./attribute[@name != ""]') as $joinAttributeNode) {
+                $attrType = isset($joinAttributeNode['type'])? (string)$joinAttributeNode['type'] : null;
+                $nullable = isset($joinAttributeNode['nullable'])? $joinAttributeNode->toValue('bool', 'nullable') : false;
+
+                $type->getJoinedAttributes($joinEntityType)->addAttribute((string)$joinAttributeNode['name'], (string)$joinAttributeNode['reference'], $attrType, $nullable);
             }
         }
 

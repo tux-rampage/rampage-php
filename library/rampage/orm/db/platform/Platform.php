@@ -210,6 +210,10 @@ class Platform implements PlatformInterface
      */
     protected function formatEntityToTableName($entity)
     {
+        if (strpos($entity, ':') !== false) {
+            throw new RuntimeException(sprintf('No table name defined for entity "%s".', $entity));
+        }
+
         $table = strtr($entity, $this->entityTableReplacements);
         $table = strtolower($table);
 

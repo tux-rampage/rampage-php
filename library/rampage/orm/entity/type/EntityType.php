@@ -89,6 +89,13 @@ class EntityType
     private $class = null;
 
     /**
+     * Joined attributes
+     *
+     * @var AttributeJoinCollection
+     */
+    private $joinedAttributes = null;
+
+    /**
      * Flag is generated ids are used
      *
      * @var bool
@@ -196,6 +203,16 @@ class EntityType
     }
 
     /**
+     * Check if an attribute is defined
+     *
+     * @param string $name
+     */
+    public function hasAttribute($name)
+    {
+        return isset($this->attributes[$name]);
+    }
+
+    /**
      * Add an index
      *
      * @param string $name
@@ -225,6 +242,21 @@ class EntityType
         }
 
         return $this;
+    }
+
+    /**
+     * Returns the joined attributes from the given entity type
+     *
+     * @param string $joinEntityType
+     * @return \rampage\orm\entity\type\AttributeJoinCollection
+     */
+    public function getJoinedAttributes($joinEntityType)
+    {
+        if (!isset($this->joinedAttributes[$joinEntityType])) {
+            $this->joinedAttributes[$joinEntityType] = new AttributeJoinCollection($this, $joinEntityType);
+        }
+
+        return $this->joinedAttributes[$joinEntityType];
     }
 
     /**

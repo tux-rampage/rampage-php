@@ -48,9 +48,10 @@ class PDODriver extends DefaultPdoDriver
     public function __construct($connection, Statement $statementPrototype = null, Result $resultPrototype = null, $features = self::FEATURES_DEFAULT)
     {
         if (is_array($connection)) {
-            if (isset($connection['hostname'])) {
+            if (!isset($connection['tns'])) {
+                $hostname = (isset($connection['hostname']))? $connection['hostname'] : 'localhost';
                 $tns = '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)'
-                     . '(HOST=' . $connection['hostname'] . ')';
+                     . '(HOST=' . $hostname . ')';
 
                 if (isset($connection['port'])) {
                     $tns .= '(PORT=' . $connection['port'] . ')';
@@ -66,7 +67,7 @@ class PDODriver extends DefaultPdoDriver
 
                 $tns .= '))(CONNECT_DATA=(' . $connectData . ')))';
             } else {
-                $tns = $connection['database'];
+                $tns = $connection['tns'];
             }
 
             if (isset($connection['charset'])) {

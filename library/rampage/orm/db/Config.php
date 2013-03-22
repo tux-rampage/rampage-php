@@ -161,6 +161,10 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
             return $options;
         }
 
+        if (isset($node->driveroptions)) {
+            $options += $node->driveroptions->toPhpValue('array');
+        }
+
         if (isset($node['driver'])) {
             $options['driver'] = (string)$node['driver'];
         }

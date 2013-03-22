@@ -49,6 +49,7 @@
                 </complexType>
             </element>
             <element name="initsql" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="driveroptions" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
         </all>
 
         <attribute name="name" type="string" use="required"></attribute>

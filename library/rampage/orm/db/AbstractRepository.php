@@ -118,6 +118,23 @@ abstract class AbstractRepository implements RepositoryInterface,
     private $config = null;
 
     /**
+     * Strict entity handlig
+     *
+     * Throw DomainExceptions when this is set to true and the repository should
+     * process entities that are not defined for it
+     *
+     * @var bool
+     */
+    protected $strictEntityHandling = true;
+
+    /**
+     * Defined entities
+     *
+     * @var array
+     */
+    protected $definedEntityTypes = null;
+
+    /**
      * Entity types
      *
      * @var array
@@ -164,6 +181,28 @@ abstract class AbstractRepository implements RepositoryInterface,
      * @return string
      */
     abstract protected function getDefaultRepositoryName();
+
+    /**
+     * Validate the current entity type
+     *
+     * @param EntityType|string $entityType
+     */
+    protected function validateEntityType($entityType)
+    {
+        if (!$this->strictEntityHandling) {
+            return $this;
+        }
+
+        $fullName = $this->getFullEntityTypeName($entityType);
+        if (!in_array($fullName, $this->definedEntityTypes)) {
+            throw new DomainException(sprintf(
+                'This repository (%s implementd by %s) is not responsible for "%s" entities',
+                $this->getName(), strtr(get_class($this), '\\', '.'), $fullName
+            ));
+        }
+
+        return $this;
+    }
 
     /**
      * @see \Zend\EventManager\EventManagerAwareInterface::setEventManager()
@@ -430,6 +469,28 @@ abstract class AbstractRepository implements RepositoryInterface,
     }
 
     /**
+     * Returns all defined entities for this repository
+     *
+     * @return array
+     */
+    protected function getDefinedEntityTypes()
+    {
+        if ($this->definedEntityTypes === null) {
+            if (!$this->getConfig() instanceof EntityTypeConfigInterface) {
+                throw new DomainException('The current repository config does not implement rampage.orm.entity.type.ConfigInterface which is required to retrieve entity configurations.');
+            }
+
+            $this->definedEntityTypes = $this->getConfig()->getDefinedEntities($this);
+
+            if (!is_array($this->definedEntityTypes)) {
+                $this->definedEntityTypes = array();
+            }
+        }
+
+        return $this->definedEntityTypes;
+    }
+
+    /**
      * Get table name for the given entity
      *
      * @param EntityInterface|EntityType|string $entityType
@@ -635,7 +696,7 @@ abstract class AbstractRepository implements RepositoryInterface,
     /**
      * Config instance
      *
-     * @return \rampage\orm\ConfigInterface
+     * @return \rampage\orm\ConfigInterface|\rampage\orm\entity\type\ConfigInterface
      */
     protected function getConfig()
     {
@@ -755,6 +816,7 @@ abstract class AbstractRepository implements RepositoryInterface,
      */
     protected  function loadObject($object, $id, $entityType)
     {
+        $this->validateEntityType($entityType);
         $select = $this->getLoadSelect($object, $id, $entityType);
         if (!$select) {
             return false;
@@ -1105,6 +1167,8 @@ abstract class AbstractRepository implements RepositoryInterface,
      */
     protected function saveObject($object, $entityType)
     {
+        $this->validateEntityType($entityType);
+
         $entityType = $this->getEntityType($entityType);
         $transaction = $this->getTransaction();
         $aggregate = $this->getAdapterAggregate();
@@ -1217,6 +1281,7 @@ abstract class AbstractRepository implements RepositoryInterface,
      */
     protected function deleteObject($object, $entityType, array $id = null)
     {
+        $this->validateEntityType($entityType);
         $transaction = $this->getWriteTransaction();
         $delete = $this->createDeleteSqlObject($object, $entityType, $id);
 
