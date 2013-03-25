@@ -47,6 +47,7 @@ use rampage\orm\db\adapter\AdapterAggregate;
 use rampage\orm\db\lazy\CollectionLoadDelegate;
 use rampage\orm\db\platform\PlatformInterface;
 use rampage\orm\db\platform\SequenceSupportInterface;
+use rampage\orm\db\query\MapperServiceLocator;
 
 use rampage\orm\entity\CollectionInterface;
 use rampage\orm\entity\EntityInterface;
@@ -163,13 +164,28 @@ abstract class AbstractRepository implements RepositoryInterface,
     private $eventManager = null;
 
     /**
+     * Query mapper service locator
+     *
+     * @var \rampage\orm\db\query\MapperServiceLocator
+     */
+    private $queryMapperLocator = null;
+
+    /**
+     * Query mapper classes
+     *
+     * @var string[]
+     */
+    protected $queryMapperClasses = array();
+
+    /**
      * Construct
      */
     public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config, $name = null)
     {
         $this->objectManager = $objectManager;
-        $this->setName($name);
+        $this->queryMapperLocator = new MapperServiceLocator($objectManager, $this->queryMapperClasses);
 
+        $this->setName($name);
         if ($config) {
             $this->setConfig($config);
         }
@@ -181,6 +197,42 @@ abstract class AbstractRepository implements RepositoryInterface,
      * @return string
      */
     abstract protected function getDefaultRepositoryName();
+
+    /**
+     * Returns the query mapper service locator
+     *
+     * @return \rampage\orm\db\query\MapperServiceLocator
+     */
+    protected function getQueryMapperServiceLocator()
+    {
+        return $this->queryMapperLocator;
+    }
+
+    /**
+     * Set query mapper locators
+     *
+     * @param MapperServiceLocator|Traversable|array $locator
+     */
+    public function setQueryMapperServiceLocator($locator)
+    {
+        if (is_array($locator) || ($locator instanceof \Traversable)) {
+            foreach ($locator as $resource => $mapper) {
+                $this->getQueryMapperLocator()->setServiceClass($resource, $mapper);
+            }
+
+            return $this;
+        }
+
+        if (!$locator instanceof MapperServiceLocator) {
+            throw new InvalidArgumentException(sprintf(
+                'The service locator for query mappers must implement rampage.orm.db.query.MapperServiceLocator, %s given.',
+                (is_object($locator))? strtr(get_class($locator), '\\', '.') : gettype($locator)
+            ));
+        }
+
+        $this->queryMapperLocator = $locator;
+        return $this;
+    }
 
     /**
      * Validate the current entity type
@@ -710,7 +762,9 @@ abstract class AbstractRepository implements RepositoryInterface,
      */
     protected function getQueryMapper(QueryInterface $query)
     {
-        return $this->getObjectManager()->newInstance('rampage.orm.db.query.DefaultMapper', array(
+        $entityType = $this->getEntityType($query->getEntityType());
+
+        return $this->getQueryMapperServiceLocator()->get($entityType->getUnqualifiedName(), array(
             'repository' => $this,
             'platform' => $this->getAdapterAggregate()->getPlatform()
         ));

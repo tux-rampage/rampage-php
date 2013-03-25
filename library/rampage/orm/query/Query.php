@@ -25,10 +25,11 @@
 
 namespace rampage\orm\query;
 
+use Traversable;
 use rampage\orm\exception\InvalidArgumentException;
 use rampage\orm\query\constraint\ConstraintLocator;
-use Traversable;
 use rampage\orm\query\constraint\DefaultConstraint;
+use rampage\orm\query\constraint\ConstraintInterface;
 
 /**
  * Persistence query implementation
@@ -128,6 +129,54 @@ class Query implements QueryInterface
     }
 
     /**
+     * Lower constraint
+     *
+     * @param string $attribute
+     * @param string $value
+     * @return \rampage\orm\query\constraint\ConstraintInterface
+     */
+    public function lower($attribute, $value)
+    {
+        return $this->compare($attribute, $value, '<');
+    }
+
+    /**
+     * Greater constraint
+     *
+     * @param string $attribute
+     * @param string $value
+     * @return \rampage\orm\query\constraint\ConstraintInterface
+     */
+    public function greater($attribute, $value)
+    {
+        return $this->compare($attribute, $value, '>');
+    }
+
+    /**
+     * Lower or equal constraint
+     *
+     * @param string $attribute
+     * @param string $value
+     * @return \rampage\orm\query\constraint\ConstraintInterface
+     */
+    public function lowerEqual($attribute, $value)
+    {
+        return $this->compare($attribute, $value, '<=');
+    }
+
+    /**
+     * Greate or equal constraint
+     *
+     * @param string $attribute
+     * @param string $value
+     * @return \rampage\orm\query\constraint\ConstraintInterface
+     */
+    public function greaterEqual($attribute, $value)
+    {
+        return $this->compare($attribute, $value, '>=');
+    }
+
+    /**
      * Not equals constraint
      *
      * @param string $attribute
@@ -208,7 +257,7 @@ class Query implements QueryInterface
      */
     public function compare($attribute, $value, $operator = null)
     {
-        return $this->getConstraintLocator()->get(DefaultConstraint::TYPE_ISNULL, array(
+        return $this->getConstraintLocator()->get(DefaultConstraint::TYPE_COMPARE, array(
             'attribute' => $attribute,
             'value' => $value,
             'operator' => $operator,
@@ -308,7 +357,7 @@ class Query implements QueryInterface
      * (non-PHPdoc)
      * @see \rampage\orm\query\QueryInterface::matches()
      */
-    public function matches(\rampage\orm\query\constraint\ConstraintInterface $constraint)
+    public function matches(ConstraintInterface $constraint)
     {
         $this->getConstraints()->add($constraint);
         return $this;
