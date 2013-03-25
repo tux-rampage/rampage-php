@@ -498,16 +498,16 @@ abstract class AbstractRepository implements RepositoryInterface,
      */
     protected function getEntityTable($entityType)
     {
-        $entityType = $this->getFullEntityTypeName($entityType);
-        if (isset($this->entityTables[$entityType])) {
-            return $this->entityTables[$entityType];
+        $resourceName = $this->getEntityType($entityType)->getResourceName();
+        if (isset($this->entityTables[$resourceName])) {
+            return $this->entityTables[$resourceName];
         }
 
         $table = $this->getAdapterAggregate()
             ->getPlatform()
-            ->getTable($entityType);
+            ->getTable($resourceName);
 
-        $this->entityTables[$entityType] = $table;
+        $this->entityTables[$resourceName] = $table;
         return $table;
     }
 

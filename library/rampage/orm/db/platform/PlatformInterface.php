@@ -47,9 +47,9 @@ interface PlatformInterface
     /**
      * Return the table name for the given entity name
      *
-     * @param string $entity
+     * @param string $resourceName
      */
-    public function getTable($entity);
+    public function getTable($resourceName);
 
     /**
      * Format the identifier
@@ -59,20 +59,20 @@ interface PlatformInterface
     public function formatIdentifier($identifier);
 
     /**
-     * Get the field mapper for the given entity
+     * Get the field mapper for the given entity resource
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return FieldMapper
      */
-    public function getFieldMapper($entity);
+    public function getFieldMapper($resourceName);
 
     /**
-     * Fetch the hydrator for the given entity
+     * Fetch the hydrator for the given entity resource
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return \Zend\Stdlib\Hydrator\HydratorInterface
      */
-    public function getHydrator($entity);
+    public function getHydrator($resourceName);
 
     /**
      * Returns a platform constraint mapper

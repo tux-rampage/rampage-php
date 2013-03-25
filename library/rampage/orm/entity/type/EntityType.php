@@ -75,6 +75,13 @@ class EntityType
     private $fullName = null;
 
     /**
+     * Resource name (i.e. the table name)
+     *
+     * @var string
+     */
+    private $resourceName = '';
+
+    /**
      * Repository
      *
      * @var \rampage\orm\RepositoryInterface
@@ -137,6 +144,37 @@ class EntityType
         }
 
         return $name;
+    }
+
+    /**
+     * Set the resource name
+     *
+     * This may be the table name, collection name or whatever the repository may need
+     * For interoperability this should only contain [a-z0-9_]
+     *
+     * @param string $name
+     * @return \rampage\orm\entity\type\EntityType
+     */
+    public function setResourceName($name)
+    {
+        $this->resourceName = (string)$name;
+        return $this;
+    }
+
+    /**
+     * Returns the resource name
+     *
+     * i.e. Table name for DBMS or the collection name for MongoDB
+     *
+     * @return string
+     */
+    public function getResourceName()
+    {
+        if ($this->resourceName == '') {
+            $this->resourceName = $this->getUnqualifiedName();
+        }
+
+        return $this->resourceName;
     }
 
     /**

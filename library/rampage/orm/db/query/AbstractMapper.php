@@ -168,13 +168,28 @@ abstract class AbstractMapper implements MapperInterface
     }
 
     /**
+     * Resturns the entity resource name
+     *
+     * @param string $entityType
+     * @return string
+     */
+    public function getEntityResourceName($entityType = null)
+    {
+        if ($entityType === null) {
+            $entityType = $this->getQuery()->getEntityType();
+        }
+
+        return $this->getRepository()->getEntityType($entityType)->getResourceName();
+    }
+
+    /**
      * Returns the table name
      *
      * @param string $entityType
      */
     protected function getTable($entityType = null)
     {
-        return $this->getPlatform()->getTable($this->getEntityTypeName($entityType));
+        return $this->getPlatform()->getTable($this->getEntityResourceName($entityType));
     }
 
     /**
@@ -212,9 +227,9 @@ abstract class AbstractMapper implements MapperInterface
      */
     protected function mapAttribute($attribute, $entityType = null, $tableAlias = null)
     {
-        $entityType = $this->getEntityTypeName($entityType);
+        $resourceName = $this->getEntityResourceName($entityType);
         $field = $this->getPlatform()
-            ->getFieldMapper($entityType)
+            ->getFieldMapper($resourceName)
             ->mapAttribute($attribute);
 
         if ($tableAlias) {

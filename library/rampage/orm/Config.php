@@ -265,6 +265,10 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             $type->setClass((string)$xml['class']);
         }
 
+        if (isset($xml['resourcename'])) {
+            $type->setResourceName((string)$xml['resourcename']);
+        }
+
         foreach ($xml->xpath('./attribute[@name != ""]') as $node) {
             $attribute = new Attribute(
                 (string)$node['name'],

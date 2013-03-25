@@ -111,9 +111,9 @@ class DDLRenderer extends DefaultDDLRenderer
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\DDLRenderer::renderFieldName()
      */
-    protected function renderFieldName($entity, $attribute)
+    protected function renderFieldName($resourceName, $attribute)
     {
-        $identifier = parent::renderFieldName($entity, $attribute);
+        $identifier = parent::renderFieldName($resourceName, $attribute);
         $this->ensureValidIdentifierLength($identifier, true);
 
         return $identifier;

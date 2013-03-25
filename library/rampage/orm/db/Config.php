@@ -300,19 +300,19 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::configureFieldMapper()
      */
-    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $entity)
+    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $resource)
     {
         $platformName = $this->xpathQuote($platform->getName());
-        $entityName = $this->xpathQuote($entity);
+        $resourceName = $this->xpathQuote($resource);
 
         // Defaults
-        $xpath = "./platforms/defaults/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
+        $xpath = "./platforms/defaults/entity[@name = $resourceName]/attribute[@name != '' and @field != '']";
         foreach ($this->getXml()->xpath($xpath) as $node) {
             $mapper->add((string)$node['name'], (string)$node['field']);
         }
 
         // Platform specific
-        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/attribute[@name != '' and @field != '']";
+        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $resourceName]/attribute[@name != '' and @field != '']";
         foreach ($this->getXml()->xpath($xpath) as $node) {
             $mapper->add((string)$node['name'], (string)$node['field']);
         }
@@ -324,15 +324,15 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::configureHydrator()
      */
-    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity)
+    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $resource)
     {
         if (!$hydrator instanceof StrategyEnabledInterface) {
             return $this;
         }
 
         $platformName = $this->xpathQuote($platform->getName());
-        $entityName = $this->xpathQuote($entity);
-        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $entityName]/hydrator/attribute[@name != '' and @strategy != '']";
+        $resourceName = $this->xpathQuote($resource);
+        $xpath = "./platforms/platform[@name = $platformName]/entity[@name = $resourceName]/hydrator/attribute[@name != '' and @strategy != '']";
         $di = $this->getObjectManager();
 
         /* @var $node \rampage\core\xml\SimpleXmlElement */
@@ -341,7 +341,7 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
             $hydrator->addStrategy((string)$node['name'], $strategy);
         }
 
-        $xpath = "./platforms/defaults/entity[@name = $entityName]/hydrator/attribute[@name != '' and @strategy != '']";
+        $xpath = "./platforms/defaults/entity[@name = $resourceName]/hydrator/attribute[@name != '' and @strategy != '']";
         foreach ($this->getXml()->xpath($xpath) as $node) {
             $name = (string)$node['name'];
             if ($hydrator->hasStrategy($name)) {
@@ -360,14 +360,14 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getHydratorClass()
      */
-    public function getHydratorClass(PlatformInterface $platform, $entity)
+    public function getHydratorClass(PlatformInterface $platform, $resource)
     {
         $platformName = $this->xpathQuote($platform->getName());
-        $entityName = $this->xpathQuote($entity);
-        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName]/hydrator[@class != '']");
+        $resourceName = $this->xpathQuote($resource);
+        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $resourceName]/hydrator[@class != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName]/hydrator[@class != '']");
+            $node = $this->getNode("./platforms/defaults/entity[@name = $resourceName]/hydrator[@class != '']");
             if (!$node instanceof SimpleXmlElement) {
                 return false;
             }
@@ -380,14 +380,14 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getTable()
      */
-    public function getTable(PlatformInterface $platform, $entity)
+    public function getTable(PlatformInterface $platform, $resource)
     {
         $platformName = $this->xpathQuote($platform->getName());
-        $entityName = $this->xpathQuote($entity);
-        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @table != '']");
+        $resourceName = $this->xpathQuote($resource);
+        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $resourceName and @table != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @table != '']");
+            $node = $this->getNode("./platforms/defaults/entity[@name = $resourceName and @table != '']");
             if (!$node instanceof SimpleXmlElement) {
                 return false;
             }
@@ -400,14 +400,14 @@ class Config extends AggregatedXmlConfig implements adapter\ConfigInterface, pla
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\ConfigInterface::getSequenceName()
      */
-    public function getSequenceName(PlatformInterface $platform, $entity)
+    public function getSequenceName(PlatformInterface $platform, $resource)
     {
         $platformName = $this->xpathQuote($platform->getName());
-        $entityName = $this->xpathQuote($entity);
-        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $entityName and @sequence != '']");
+        $resourceName = $this->xpathQuote($resource);
+        $node = $this->getNode("./platforms/platform[@name = $platformName]/entity[@name = $resourceName and @sequence != '']");
 
         if (!$node instanceof SimpleXmlElement) {
-            $node = $this->getNode("./platforms/defaults/entity[@name = $entityName and @sequence != '']");
+            $node = $this->getNode("./platforms/defaults/entity[@name = $resourceName and @sequence != '']");
             if (!$node instanceof SimpleXmlElement) {
                 return null;
             }

@@ -185,7 +185,7 @@ class Platform implements PlatformInterface
      * @param string $name
      * @return string
      */
-    protected function canonicalizeEntityName($name)
+    protected function canonicalizeEntityResourceName($name)
     {
         $name = strtolower($name);
         return $name;
@@ -194,10 +194,10 @@ class Platform implements PlatformInterface
     /**
      * Create field mapper
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return \rampage\orm\db\platform\FieldMapper
      */
-    protected function createFieldMapper($entity)
+    protected function createFieldMapper($resourceName)
     {
         return new FieldMapper();
     }
@@ -205,17 +205,13 @@ class Platform implements PlatformInterface
     /**
      * Format entity to table name
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return string
      */
-    protected function formatEntityToTableName($entity)
+    protected function formatResourceToTableName($resourceName)
     {
-        if (strpos($entity, ':') !== false) {
-            throw new RuntimeException(sprintf('No table name defined for entity "%s".', $entity));
-        }
-
-        $table = strtr($entity, $this->entityTableReplacements);
-        $table = strtolower($table);
+        $table = strtr($resourceName, $this->entityTableReplacements);
+        $table = $this->formatIdentifier($table);
 
         return $table;
     }
@@ -232,31 +228,31 @@ class Platform implements PlatformInterface
     /**
      * Returns the table name
      *
-     * @param string $entity
+     * @param string $resourceName
      */
-    public function getTable($entity)
+    public function getTable($resourceName)
     {
-        $entitiy = $this->canonicalizeEntityName($entity);
-        $table = $this->getConfig()->getTable($this, $entity);
+        $entitiy = $this->canonicalizeEntityResourceName($resourceName);
+        $table = $this->getConfig()->getTable($this, $resourceName);
 
         if (!$table) {
-            $table = $this->formatEntityToTableName($entity);
+            $table = $this->formatResourceToTableName($resourceName);
         }
 
-        return $this->formatIdentifier($table);
+        return $table;
     }
 
     /**
      * Set the an entity field mapper
      *
-     * @param string $entity
+     * @param string $resourceName
      * @param FieldMapper $mapper
      * @return \rampage\orm\db\platform\DefaultPlatform
      */
-    public function setFieldMapper($entity, FieldMapper $mapper)
+    public function setFieldMapper($resourceName, FieldMapper $mapper)
     {
-        $entity = $this->canonicalizeEntityName($entity);
-        $this->fieldMappers[$entity] = $mapper;
+        $resourceName = $this->canonicalizeEntityResourceName($resourceName);
+        $this->fieldMappers[$resourceName] = $mapper;
 
         return $this;
     }
@@ -264,34 +260,34 @@ class Platform implements PlatformInterface
     /**
      * Get the field mapper for the given entity
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return FieldMapper
      */
-    public function getFieldMapper($entity)
+    public function getFieldMapper($resourceName)
     {
-        $entity = $this->canonicalizeEntityName($entity);
-        if (isset($this->fieldMappers[$entity])) {
-            return $this->fieldMappers[$entity];
+        $resourceName = $this->canonicalizeEntityResourceName($resourceName);
+        if (isset($this->fieldMappers[$resourceName])) {
+            return $this->fieldMappers[$resourceName];
         }
 
-        $mapper = $this->createFieldMapper($entity);
-        $this->getConfig()->configureFieldMapper($mapper, $this, $entity);
+        $mapper = $this->createFieldMapper($resourceName);
+        $this->getConfig()->configureFieldMapper($mapper, $this, $resourceName);
 
-        $this->setFieldMapper($entity, $mapper);
+        $this->setFieldMapper($resourceName, $mapper);
         return $mapper;
     }
 
     /**
      * Set the hydrator
      *
-     * @param string $entity
+     * @param string $resourceName
      * @param HydratorInterface $hydrator
      * @return \rampage\orm\db\platform\DefaultPlatform
      */
-    public function setHydrator($entity, HydratorInterface $hydrator)
+    public function setHydrator($resourceName, HydratorInterface $hydrator)
     {
-        $entity = $this->canonicalizeEntityName($entity);
-        $this->hydrators[$entity] = $hydrator;
+        $resourceName = $this->canonicalizeEntityResourceName($resourceName);
+        $this->hydrators[$resourceName] = $hydrator;
 
         return $this;
     }
@@ -309,25 +305,25 @@ class Platform implements PlatformInterface
     /**
      * Fetch the hydrator for the given entity
      *
-     * @param string $entity
+     * @param string $resourceName
      */
-    public function getHydrator($entity)
+    public function getHydrator($resourceName)
     {
-        $entity = $this->canonicalizeEntityName($entity);
+        $resourceName = $this->canonicalizeEntityResourceName($resourceName);
 
-        if (isset($this->hydrators[$entity])) {
-            return $this->hydrators[$entity];
+        if (isset($this->hydrators[$resourceName])) {
+            return $this->hydrators[$resourceName];
         }
 
-        $class = $this->getConfig()->getHydratorClass($this, $entity);
+        $class = $this->getConfig()->getHydratorClass($this, $resourceName);
         if (!$class) {
             $class = $this->getDefaultHydratorClass();
         }
 
         $instance = $this->getObjectManager()->newInstance($class);
 
-        $this->getConfig()->configureHydrator($instance, $this, $entity);
-        $this->setHydrator($entity, $instance);
+        $this->getConfig()->configureHydrator($instance, $this, $resourceName);
+        $this->setHydrator($resourceName, $instance);
 
         return $instance;
     }

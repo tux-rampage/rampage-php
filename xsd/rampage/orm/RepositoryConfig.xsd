@@ -95,6 +95,7 @@ If so, the name attribute will be used.</documentation>
         </all>
         <attribute name="name" type="string"></attribute>
         <attribute name="class" type="string"></attribute>
+        <attribute name="resourcename" type="string" use="optional"></attribute>
     </complexType>
 
     <complexType name="EntityAttributeConfig">

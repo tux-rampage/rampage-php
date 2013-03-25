@@ -52,7 +52,7 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
         return new PlatformCapabilities();
     }
 
-	/**
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\Platform::formatIdentifier()
      */
@@ -70,11 +70,11 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
         return new DDLRenderer($this);
     }
 
-	/**
+    /**
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\Platform::createFieldMapper()
      */
-    protected function createFieldMapper($entity)
+    protected function createFieldMapper($resourceName)
     {
         return new FieldMapper();
     }
@@ -82,21 +82,21 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
     /**
      * Returns the sequence name for the given entity type
      *
-     * @param string $entityType
+     * @param string $resourceName
      * @return string
      */
-    public function getSequenceName($entityType)
+    public function getSequenceName($resourceName)
     {
-        if (isset($this->sequenceNames[$entityType])) {
-            return $this->sequenceNames[$entityType];
+        if (isset($this->sequenceNames[$resourceName])) {
+            return $this->sequenceNames[$resourceName];
         }
 
-        $sequence = $this->getConfig()->getSequenceName($this, $entityType);
+        $sequence = $this->getConfig()->getSequenceName($this, $resourceName);
         if (!$sequence) {
-            $sequence = $this->getTable($entityType) . '_SEQ';
+            $sequence = $this->getTable($resourceName) . '_SEQ';
         }
 
-        $this->sequenceNames[$entityType] = $sequence;
+        $this->sequenceNames[$resourceName] = $sequence;
         return $sequence;
     }
 
@@ -104,9 +104,9 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
      * (non-PHPdoc)
      * @see \rampage\orm\db\platform\SequenceSupportInterface::fetchNextSequenceId()
      */
-    public function fetchNextSequenceId(Adapter $adapter, $entityType)
+    public function fetchNextSequenceId(Adapter $adapter, $resourceName)
     {
-        $sequence = $this->getSequenceName($entityType);
+        $sequence = $this->getSequenceName($resourceName);
         $platform = $this->getAdapterPlatform();
 
         $sql = "SELECT {$platform->quoteIdentifier($sequence)}.NEXTVAL AS NEXTVAL FROM DUAL";

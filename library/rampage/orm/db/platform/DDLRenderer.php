@@ -123,23 +123,23 @@ class DDLRenderer implements DDLRendererInterface
     /**
      * Get table name
      *
-     * @param unknown $entity
+     * @param unknown $resourceName
      */
-    protected function getTable($entity)
+    protected function getTable($resourceName)
     {
-        return $this->getPlatform()->getTable($entity);
+        return $this->getPlatform()->getTable($resourceName);
     }
 
     /**
      * Returns the field name for the given attribute
      *
-     * @param string $entity
+     * @param string $resourceName
      * @param string $attribute
      * @return string
      */
-    protected function getFieldName($entity, $attribute)
+    protected function getFieldName($resourceName, $attribute)
     {
-        return $this->getPlatform()->getFieldMapper($entity)->mapAttribute($attribute);
+        return $this->getPlatform()->getFieldMapper($resourceName)->mapAttribute($attribute);
     }
 
     /**
@@ -322,16 +322,16 @@ class DDLRenderer implements DDLRendererInterface
     /**
      * Map field list
      *
-     * @param string $entity
+     * @param string $resourceName
      * @param array $attributes
      * @return string[]
      */
-    protected function mapFieldList($entity, array $attributes)
+    protected function mapFieldList($resourceName, array $attributes)
     {
         $fields = array();
 
         foreach ($attributes as $attribute) {
-            $fields[] = $this->renderFieldName($entity, $attribute);
+            $fields[] = $this->renderFieldName($resourceName, $attribute);
         }
 
         return $fields;

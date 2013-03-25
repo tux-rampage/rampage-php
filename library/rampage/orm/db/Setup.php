@@ -297,34 +297,34 @@ class Setup implements SetupInterface
     /**
      * Create table ddl
      *
-     * @param string $entityName
+     * @param string $resourceName
      * @return \rampage\orm\db\ddl\CreateTable
      */
-    public function createTable($entityName)
+    public function createTable($resourceName)
     {
-        return new CreateTable($entityName);
+        return new CreateTable($resourceName);
     }
 
     /**
      * Alter table definition
      *
-     * @param string $entityName
+     * @param string $resourceName
      * @return \rampage\orm\db\ddl\AlterTable
      */
-    public function alterTable($entityName)
+    public function alterTable($resourceName)
     {
-        return new AlterTable($entityName);
+        return new AlterTable($resourceName);
     }
 
     /**
      * Drop table definition
      *
-     * @param string $entityName
+     * @param string $resourceName
      * @return \rampage\orm\db\ddl\DropTable
      */
-    public function dropTable($entityName)
+    public function dropTable($resourceName)
     {
-        return new DropTable($entityName);
+        return new DropTable($resourceName);
     }
 
     /**

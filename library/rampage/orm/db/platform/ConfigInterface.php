@@ -42,41 +42,41 @@ interface ConfigInterface
     /**
      * Returns the db table for the given entity
      *
-     * @param string $entity
+     * @param string $resourceName
      */
-    public function getTable(PlatformInterface $platform, $entity);
+    public function getTable(PlatformInterface $platform, $resourceName);
 
     /**
      * Returns the sequence name for the given entity
      *
-     * @param string $entity
+     * @param string $resourceName
      * @return string|null
      */
-    public function getSequenceName(PlatformInterface $platform, $entity);
+    public function getSequenceName(PlatformInterface $platform, $resourceName);
 
     /**
      * Returns the hydrator class
      */
-    public function getHydratorClass(PlatformInterface $platform, $entity);
+    public function getHydratorClass(PlatformInterface $platform, $resourceName);
 
     /**
      * Platform interface
      *
-     * @param PlatformInterface $platform
+     * @param PlatformInterface $resourceName
      */
-    public function getConstraintMapperClass(PlatformInterface $platform);
+    public function getConstraintMapperClass(PlatformInterface $resourceName);
 
     /**
      * Returns the fieldmap for the given entity
      *
-     * @param string $entity
+     * @param string $resourceName
      */
-    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $entity);
+    public function configureFieldMapper(FieldMapper $mapper, PlatformInterface $platform, $resourceName);
 
     /**
      * Configure hydrator
      *
-     * @param Hydrator $entity
+     * @param Hydrator $resourceName
      */
-    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $entity);
+    public function configureHydrator(HydratorInterface $hydrator, PlatformInterface $platform, $resourceName);
 }

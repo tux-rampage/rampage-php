@@ -35,17 +35,17 @@ interface SequenceSupportInterface
     /**
      * Returns the sequence name for the given entity type
      *
-     * @param string $entityType
+     * @param string $resourceName
      * @return string
      */
-    public function getSequenceName($entityType);
+    public function getSequenceName($resourceName);
 
     /**
      * Fetch the next sequence id
      *
      * @param \Zend\Db\Adapter\Adapter
-     * @param string $entityType
+     * @param string $resourceName
      * @return int|string
      */
-    public function fetchNextSequenceId(Adapter $adapter, $entityType);
+    public function fetchNextSequenceId(Adapter $adapter, $resourceName);
 }
