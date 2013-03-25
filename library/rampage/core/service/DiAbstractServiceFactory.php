@@ -27,7 +27,6 @@ namespace rampage\core\service;
 
 use Zend\ServiceManager\AbstractFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Di\Exception\CircularDependencyException;
 
 /**
  * Abstract factory for creating services

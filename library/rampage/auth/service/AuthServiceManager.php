@@ -30,9 +30,6 @@ use rampage\auth\models\config\RepositoryInterface as ConfigRepositoryInterface;
 use rampage\auth\models\user\RepositoryManagerInterface;
 use rampage\auth\models\config\InstanceConfigInterface;
 use rampage\core\ObjectManagerInterface;
-use rampage\auth\models\AuthenticationService;
-use rampage\auth\models\AggregatedAuthResult;
-use rampage\auth\models\AdapterAggregation;
 
 /**
  * Instance manager
