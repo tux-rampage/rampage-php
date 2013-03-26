@@ -81,7 +81,7 @@ interface PersistenceFeatureInterface
      * @param string $entity
      * @param Query $query
      */
-    public function getCollection(QueryInterface $query);
+    public function getCollection(QueryInterface $query, $itemClass = null);
 
     /**
      * Load a collection

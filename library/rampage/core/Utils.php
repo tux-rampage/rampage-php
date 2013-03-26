@@ -126,4 +126,34 @@ class Utils
             $object->$method($value);
         }
     }
+
+    /**
+     * returns the printable class name
+     *
+     * @param string $class
+     * @return string
+     */
+    public static function getPrintableClassName($class)
+    {
+        return strtr($class, '\\', '.');
+    }
+
+    /**
+     * Format type name
+     *
+     * @param mixed $var
+     * @return string
+     */
+    public static function getPritableTypeName($var)
+    {
+        if (is_object($var)) {
+            return static::getPrintableClassName(get_class($var));
+        }
+
+        if (is_resource($var)) {
+            return '[' . get_resource_type($var) . ' resource]';
+        }
+
+        return gettype($var);
+    }
 }

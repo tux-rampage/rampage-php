@@ -40,10 +40,10 @@ class AttributeJoinReference extends Attribute
     /**
      * @see \rampage\orm\entity\type\Attribute::__construct()
      */
-    public function __construct($name, $reference = null, $type = null, $nullable = false)
+    public function __construct($name, $reference = null, $type = null)
     {
         $this->reference = (string)$reference;
-        parent::__construct($name, $type, false, false, $nullable);
+        parent::__construct($name, $type, false, false, true);
     }
 
 	/**

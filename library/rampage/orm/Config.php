@@ -37,6 +37,7 @@ use rampage\orm\entity\type\Reference as EntityTypeReference;
 
 use rampage\orm\exception\InvalidConfigException;
 use rampage\core\xml\mergerule\UniqueAttributeRule;
+use rampage\core\xml\SimpleXmlElement;
 
 /**
  * Config
@@ -246,6 +247,76 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
     }
 
     /**
+     * Configure entity type references
+     *
+     * @param EntityType $type
+     * @param SimpleXmlElement $xml
+     */
+    private function configureEntityTypeReference(EntityType $type, SimpleXmlElement $referenceNode)
+    {
+        $name = (string)$referenceNode['name'];
+        $entity = (string)$referenceNode['entity'];
+        $property = (isset($referenceNode['property']))? (string)$referenceNode['property'] : $name;
+        $reference = new EntityTypeReference($entity);
+
+        foreach ($referenceNode->xpath('./attribute') as $attribRefNode) {
+            $attributeReference = array(
+                (string)$attribRefNode['name'],
+                (string)$attribRefNode['foreign']
+            );
+
+            if (isset($attribRefNode['literal'])) {
+                $attributeReference[] = $attribRefNode->toValue('bool', 'literal');
+            }
+
+            $reference->addAttributeReference($attributeReference);
+        }
+
+        if (!$reference->hasAttributeReferences()) {
+            return $this;
+        }
+
+        $reference->setProperty($property);
+        if (isset($referenceNode['type'])) {
+            $reference->setType((string)$referenceNode['type']);
+        }
+
+        if (isset($referenceNode->hydration)) {
+            $hydration = $referenceNode->hydration;
+            $reference->setHydrationOptions($hydration->toPhpValue('array'));
+
+            if (isset($hydration['type'])) {
+                $reference->getHydration((string)$hydration['type']);
+            }
+        }
+
+        $type->addReference($name, $reference);
+        return $this;
+    }
+
+    /**
+     * Configure entity type join
+     *
+     * @param EntityType $type
+     * @param SimpleXmlElement $joinEntityNode
+     */
+    private function configureEntityTypeJoin(EntityType $type, SimpleXmlElement $joinEntityNode)
+    {
+        $name = (string)$joinEntityNode['name'];
+
+        foreach ($joinEntityNode->xpath('./attribute[@name != ""]') as $attributeNode) {
+            $attribute = (string)$attributeNode['name'];
+            $reference = (string)$attributeNode['reference'];
+            $attrType = isset($attributeNode['type'])? (string)$attributeNode['type'] : null;
+
+            $type->getJoinedAttributes($name)
+                ->addAttribute($attribute, $reference, $attrType);
+        }
+
+        return $this;
+    }
+
+    /**
      * Configure entity type
      */
     public function configureEntityType(EntityType $type)
@@ -281,61 +352,26 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             $type->addAttribute($attribute);
         }
 
-        foreach ($xml->xpath('./index[@name != ""]') as $node) {
-            $index = array();
-            foreach ($node->xpath('./attribute[@name != ""]') as $attributeNode) {
-                $name = (string)$attributeNode['name'];
-                $index[$name] = $name;
-            }
+        // TODO: Make configuring entity type indices dependent on context.
+//         foreach ($xml->xpath('./index[@name != ""]') as $node) {
+//             $index = array();
+//             foreach ($node->xpath('./attribute[@name != ""]') as $attributeNode) {
+//                 $name = (string)$attributeNode['name'];
+//                 $index[$name] = $name;
+//             }
 
-            if (!empty($index)) {
-                $type->addIndex((string)$node['name'], $index);
-            }
-        }
+//             if (!empty($index)) {
+//                 $type->addIndex((string)$node['name'], $index);
+//             }
+//         }
 
         /* @var $joinEntityNode \rampage\core\xml\SimpleXmlElement */
         foreach ($xml->xpath('./joinedattributes/entity[@name != ""]') as $joinEntityNode) {
-            $joinEntityType = (string)$joinEntityNode['name'];
-
-            foreach ($joinEntityNode->xpath('./attribute[@name != ""]') as $joinAttributeNode) {
-                $attrType = isset($joinAttributeNode['type'])? (string)$joinAttributeNode['type'] : null;
-                $nullable = isset($joinAttributeNode['nullable'])? $joinAttributeNode->toValue('bool', 'nullable') : false;
-
-                $type->getJoinedAttributes($joinEntityType)->addAttribute((string)$joinAttributeNode['name'], (string)$joinAttributeNode['reference'], $attrType, $nullable);
-            }
+            $this->configureEntityTypeJoin($type, $joinEntityNode);
         }
 
         foreach ($xml->xpath('./reference[@name != ""]') as $referenceNode) {
-            $name = (string)$referenceNode['name'];
-            $entity = (string)$referenceNode['entity'];
-
-            $reference = new EntityTypeReference($entity);
-            foreach ($referenceNode->xpath('./attribute') as $attribRefNode) {
-                $attributeReference = array(
-                    (string)$attribRefNode['name'],
-                    (string)$attribRefNode['foreign']
-                );
-
-                if (isset($attribRefNode['literal'])) {
-                    $attributeReference[] = $attribRefNode->toValue('bool', 'literal');
-                }
-
-                $reference->addAttributeReference($attributeReference);
-            }
-
-            if (!$reference->hasAttributeReferences()) {
-                continue;
-            }
-
-            if (isset($referenceNode['lazy'])) {
-                $reference->setIsLazy($referenceNode->toValue('bool', 'lazy'));
-            }
-
-            if (isset($referenceNode['property'])) {
-                $reference->setProperty($referenceNode->toValue('bool', 'property'));
-            }
-
-            $type->addReference($name, $reference);
+            $this->configureEntityTypeReference($type, $referenceNode);
         }
     }
 }

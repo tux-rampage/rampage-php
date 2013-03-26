@@ -25,24 +25,15 @@
 
 namespace rampage\orm\hydrator;
 
-use rampage\core\Utils;
 use rampage\orm\entity\type\EntityType;
 use rampage\orm\entity\type\Attribute;
 use rampage\orm\entity\type\Reference;
-use rampage\orm\entity\lazy\EntityInterface as LazyEntityInterface;
 
 /**
  * Entity
  */
 class EntityHydrator extends ProxyHydrator
 {
-    /**
-     * Reflection properties by class
-     *
-     * @var array
-     */
-    private static $reflectionProperties = array();
-
     /**
      * entity type
      *
@@ -58,11 +49,19 @@ class EntityHydrator extends ProxyHydrator
     protected $strategy = null;
 
     /**
+     * Hydration manager
+     *
+     * @var HydrationManager
+     */
+    private $referenceHydrationManager = null;
+
+    /**
      * Construct
      */
-    public function __construct(EntityType $entityType)
+    public function __construct(EntityType $entityType, HydrationManager $referenceHydrationManager)
     {
         $this->entityType = $entityType;
+        $this->referenceHydrationManager = $referenceHydrationManager;
 
         parent::__construct();
 
@@ -78,27 +77,13 @@ class EntityHydrator extends ProxyHydrator
     }
 
     /**
-     * Returns the reflection property
+     * Reference hydration manager
      *
-     * @param object|string $object
-     * @param string $name
-     * @return \ReflectionProperty
+     * @return \rampage\orm\hydrator\HydrationManager
      */
-    protected static function getReflectionProperty($object, $name)
+    protected function getReferenceHydrationManager()
     {
-        $class = (is_object($object))? get_class($object) : (string)$object;
-
-        if (isset(static::$reflectionProperties[$class][$name])) {
-            return static::$reflectionProperties[$class][$name];
-        }
-
-        $reflection = new \ReflectionClass($class);
-        $property = $reflection->getProperty($name);
-
-        $property->setAccessible(true);
-        static::$reflectionProperties[$class][$name] = $property;
-
-        return $property;
+        return $this->referenceHydrationManager;
     }
 
     /**
@@ -139,17 +124,19 @@ class EntityHydrator extends ProxyHydrator
     }
 
     /**
-     * Hydrate an entity reference
+     * Hydrate an entity reference and return its value
      *
      * @param Reference $reference
      * @param array $data
      * @param object $object
      */
-    protected function hydrateReference(Reference $reference, array $data, $object)
+    private function hydrateReference(Reference $reference, array $data, $object, &$value)
     {
         $property = $reference->getProperty();
-        if (!$property || !$this->hasStrategy($property)) {
-            return $this;
+        $hydrationManager = $this->getReferenceHydrationManager();
+
+        if (!$property || !$this->hasStrategy($property) || !$hydrationManager->has($reference->getHydration())) {
+            return false;
         }
 
         $value = array();
@@ -167,33 +154,11 @@ class EntityHydrator extends ProxyHydrator
         }
 
         if (empty($value)) {
-            return $this;
+            return false;
         }
 
         $value = $this->getStrategy($property)->hydrate($value);
-
-        if ($reference->isLazy() && ($object instanceof LazyEntityInterface) && ($value instanceof LazyValueInterface)) {
-            $object->addLazyAttribute($property, $value);
-        }
-
-        if ($value instanceof LazyValueInterface) {
-            $value = $value($property);
-        }
-
-        $property = Utils::camelize($property);
-
-        if ($this->getHydratorStrategy() == 'reflection') {
-            $reflection = $this->getReflectionProperty($object, lcfirst($property));
-            $reflection->setValue($object, $value);
-            return $this;
-        }
-
-        $method = 'set' . $property;
-        if (is_callable(array($object, $method))) {
-            $object->$method($property);
-        }
-
-        return $this;
+        return true;
     }
 
     /**
@@ -204,8 +169,23 @@ class EntityHydrator extends ProxyHydrator
     {
         parent::internalHydrate($data, $object);
 
+        $references = array();
         foreach ($this->getEntityType()->getReferences() as $reference) {
-            $this->hydrateReference($reference, $data, $object);
+            $value = null;
+
+            if (!$this->hydrateReference($reference, $data, $object, $value)) {
+                continue;
+            }
+
+            $hydration = strtolower($reference->getHydration());
+            $property = $reference->getProperty();
+            $references[$hydration][$property] = $value;
+        }
+
+        foreach ($references as $hydration => $referenceData) {
+            $this->getReferenceHydrationManager()
+                ->get($hydration)
+                ->hydrate($referenceData, $object);
         }
 
         return $this;

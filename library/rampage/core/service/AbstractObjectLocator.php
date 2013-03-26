@@ -170,9 +170,9 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
             throw new RuntimeException('Failed to locate object: ' . $name);
         }
 
-        $name = $this->canonicalizeName($name);
-        if (isset($this->invokables[$name])) {
-            $name = $this->invokables[$name];
+        $cName = $this->canonicalizeName($name);
+        if (isset($this->invokables[$cName])) {
+            $name = $this->invokables[$cName];
         }
 
         $instance = $this->create($name, $options);

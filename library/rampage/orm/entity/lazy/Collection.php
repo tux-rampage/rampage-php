@@ -113,7 +113,9 @@ class Collection extends EntityCollection implements CollectionInterface
      */
     public function setLoaderDelegate(CollectionLoaderInterface $delegate)
     {
+        $this->reset();
         $this->loadDelegate = $delegate;
+
         return $this;
     }
 }

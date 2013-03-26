@@ -77,10 +77,10 @@ class AttributeJoinCollection implements IteratorAggregate
      * @param unknown $reference
      * @param unknown $type
      */
-    public function addAttribute($attribute, $reference = null, $type = null, $nullable = false)
+    public function addAttribute($attribute, $reference = null, $type = null)
     {
         if (!$attribute instanceof AttributeJoinReference) {
-            $attribute = new AttributeJoinReference($attribute, $reference, $type, $nullable);
+            $attribute = new AttributeJoinReference($attribute, $reference, $type);
         }
 
         $this->attributes[$attribute->getName()] = $attribute;

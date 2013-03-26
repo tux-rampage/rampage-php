@@ -225,6 +225,11 @@ If two attributes have the same position, they'll be added in the order they're 
                     <attribute name="literal" type="boolean"></attribute>
                 </complexType>
             </element>
+            <element name="hydration" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <attribute name="type" type="string" use="required"></attribute>
+                </complexType>
+            </element>
         </all>
         <attribute name="name" type="string" use="required">
             <annotation>
@@ -236,15 +241,22 @@ If two attributes have the same position, they'll be added in the order they're 
                 <documentation>The name of the entity to reference to.</documentation>
             </annotation>
         </attribute>
-        <attribute name="lazy" type="boolean" use="optional">
-            <annotation>
-                <documentation>Flag if this reference should be loaded lazy if possible. This depends on the repository implementation and if the entity object supports lazy loadable attributes.</documentation>
-            </annotation></attribute>
         <attribute name="property" type="string">
             <annotation>
-                <documentation>The property of the entity object to where this reference should be loaded.
-If this is omitted or empty this reference should be ignored during load</documentation>
-            </annotation></attribute>
+                <documentation>
+                    The property of the entity object to where this reference should be loaded. If this is omitted or empty this
+                    reference should be ignored during load
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="type" use="optional">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="collection"></enumeration>
+                    <enumeration value="entity"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
     </complexType>
 
     <complexType name="JoinAttributesContainer">

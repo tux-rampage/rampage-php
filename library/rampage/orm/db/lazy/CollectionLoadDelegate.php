@@ -50,15 +50,26 @@ class CollectionLoadDelegate implements CollectionLoaderInterface
     protected $repository = null;
 
     /**
+     * collection item class
+     *
+     * @var string
+     */
+    protected $itemClass = null;
+
+    /**
      * Construct
      *
      * @param PersistenceFeatureInterface $repository
      * @param QueryInterface $query
      */
-    public function __construct(PersistenceFeatureInterface $repository, QueryInterface $query)
+    public function __construct(PersistenceFeatureInterface $repository, QueryInterface $query, $itemClass = null)
     {
         $this->repository = $repository;
         $this->query = $query;
+
+        if ($itemClass) {
+            $this->itemClass = $itemClass;
+        }
     }
 
     /**
@@ -78,6 +89,4 @@ class CollectionLoadDelegate implements CollectionLoaderInterface
     {
         $this->repository->loadCollectionSize($collection, $this->query);
     }
-
-
 }

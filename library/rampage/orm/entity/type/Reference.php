@@ -34,6 +34,8 @@ class Reference
 {
     const TYPE_MULTIPLE = 'multiple';
     const TYPE_SINGLE = 'single';
+    const TYPE_COLLECTION = 'collection';
+    const TYPE_OBJECT = 'object';
 
     /**
      * Referenced attributes
@@ -50,18 +52,11 @@ class Reference
     private $referencedEntity = null;
 
     /**
-     * Load lazy if possible
-     *
-     * @var bool
-     */
-    private $lazy = true;
-
-    /**
      * Reference type
      *
      * @var string
      */
-    private $type = self::TYPE_MULTIPLE;
+    private $type = self::TYPE_COLLECTION;
 
     /**
      * Property to load into
@@ -70,6 +65,32 @@ class Reference
      */
     private $property = null;
 
+    /**
+     * hydration strategy
+     *
+     * @var string
+     */
+    private $hydration = 'method';
+
+    /**
+     * Hydration Options
+     *
+     * @var array
+     */
+    private $hydrationOptions = null;
+
+    /**
+     * @var string
+     */
+    private $itemClass = null;
+
+    /**
+     * Construct
+     *
+     * @param string $referencedEntity
+     * @param array $attributeReferences
+     * @throws InvalidArgumentException
+     */
     public function __construct($referencedEntity, array $attributeReferences = array())
     {
         $referencedEntity = (string)$referencedEntity;
@@ -133,6 +154,33 @@ class Reference
     }
 
     /**
+     * Returns the hydration type
+     *
+     * @return string
+     */
+    public function getHydration()
+    {
+        return $this->hydration;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHydrationOptions()
+    {
+        return $this->hydrationOptions;
+    }
+
+	/**
+     * @param array $hydrationOptions
+     */
+    public function setHydrationOptions(array $hydrationOptions)
+    {
+        $this->hydrationOptions = $hydrationOptions;
+        return $this;
+    }
+
+	/**
      * Referenced entity name
      *
      * @return string
@@ -140,16 +188,6 @@ class Reference
     public function getReferencedEntity()
     {
         return $this->referencedEntity;
-    }
-
-    /**
-     * Lazy load if possible
-     *
-     * @return bool
-     */
-    public function isLazy()
-    {
-        return $this->lazy;
     }
 
     /**
@@ -178,13 +216,13 @@ class Reference
     }
 
     /**
-     * Set lazy flag
+     * Set the hydration strategy
      *
-     * @param bool $flag
+     * @param string $hydration
      */
-    public function setIsLazy($flag)
+    public function setHydration($hydration)
     {
-        $this->lazy = (bool)$flag;
+        $this->hydration = (string)$hydration;
         return $this;
     }
 

@@ -31,6 +31,7 @@ use rampage\core\Utils;
 use rampage\core\data\ArrayExchangeInterface;
 
 use rampage\orm\ConfigInterface;
+use rampage\orm\AbstractRepository as AbstractBaseRepository;
 use rampage\orm\hydrator\EntityHydrator;
 
 use rampage\orm\repository\PersistenceFeatureInterface;
@@ -71,7 +72,7 @@ use Zend\EventManager\EventManager;
 /**
  * Abstract DB repository
  */
-abstract class AbstractRepository implements RepositoryInterface,
+abstract class AbstractRepository extends AbstractBaseRepository implements RepositoryInterface,
     PersistenceFeatureInterface,
     CursorProviderInterface,
     EventManagerAwareInterface
@@ -82,20 +83,6 @@ abstract class AbstractRepository implements RepositoryInterface,
      * @var string
      */
     private $queryMapper = null;
-
-    /**
-     * Repository name
-     *
-     * @var string
-     */
-    private $name = null;
-
-    /**
-     * Database adapter name
-     *
-     * @var string
-     */
-    protected $adapterName = 'default';
 
     /**
      * Object manager
@@ -110,13 +97,6 @@ abstract class AbstractRepository implements RepositoryInterface,
      * @var \rampage\orm\db\adapter\AdapterAggregate
      */
     private $adapterAggregate = null;
-
-    /**
-     * Repository Config
-     *
-     * @var \rampage\orm\ConfigInterface
-     */
-    private $config = null;
 
     /**
      * Strict entity handlig
@@ -134,13 +114,6 @@ abstract class AbstractRepository implements RepositoryInterface,
      * @var array
      */
     protected $definedEntityTypes = null;
-
-    /**
-     * Entity types
-     *
-     * @var array
-     */
-    protected $entityTypes = array();
 
     /**
      * Entity tables by platform
@@ -178,12 +151,27 @@ abstract class AbstractRepository implements RepositoryInterface,
     protected $queryMapperClasses = array();
 
     /**
+     * Reference item classes by entity
+     *
+     * @var string[]
+     */
+    protected $referenceItemClasses = array();
+
+    /**
+     * Reference strategies
+     *
+     * @var \rampage\orm\db\hydrator\StrategyManager
+     */
+    protected $referenceStrategies = null;
+
+    /**
      * Construct
      */
     public function __construct(ObjectManagerInterface $objectManager, ConfigInterface $config, $name = null)
     {
         $this->objectManager = $objectManager;
         $this->queryMapperLocator = new MapperServiceLocator($objectManager, $this->queryMapperClasses);
+        $this->referenceStrategies = new hydrator\StrategyManager($objectManager);
 
         $this->setName($name);
         if ($config) {
@@ -235,6 +223,27 @@ abstract class AbstractRepository implements RepositoryInterface,
     }
 
     /**
+     * @param \rampage\orm\db\hydrator\StrategyManager $referenceStrategies
+     */
+    public function setReferenceStrategies($referenceStrategies)
+    {
+        if ($referenceStrategies instanceof hydrator\StrategyManager) {
+            $this->referenceStrategies = $referenceStrategies;
+            return $this;
+        }
+
+        if (!is_array($referenceStrategies) && !($referenceStrategies instanceof \Traversable)) {
+            throw new InvalidArgumentException('Referenece startegies must be an array or implement rampage.orm.db.hydrator.StrategyManager or Traversable');
+        }
+
+        foreach ($referenceStrategies as $name => $class) {
+            $this->referenceStrategies->setServiceClass($name, $class);
+        }
+
+        return $this;
+    }
+
+	/**
      * Validate the current entity type
      *
      * @param EntityType|string $entityType
@@ -372,6 +381,40 @@ abstract class AbstractRepository implements RepositoryInterface,
     }
 
     /**
+     * Prepare the given entity hydrator
+     *
+     * @param EntityHydrator $hydrator
+     */
+    protected function prepareEntityHydrator(EntityHydrator $hydrator, EntityType $entityType)
+    {
+        /* @var $reference \rampage\orm\entity\type\Reference */
+        foreach ($entityType->getReferences() as $reference) {
+            $type = $reference->getType();
+            $property = $reference->getProperty();
+
+            if (!$property || !$this->referenceStrategies->has($type)) {
+                continue;
+            }
+
+            $entityTypeName = $entityType->getUnqualifiedName();
+            $options = array(
+                'repository' => $this,
+                'entityType' => $entityType,
+            );
+
+            if (isset($this->referenceItemClasses[$entityTypeName])) {
+                $options['itemClass'] = $this->referenceItemClasses[$entityTypeName];
+                $options['ensureType'] = $this->referenceItemClasses[$entityTypeName];
+            }
+
+            $strategy = $this->referenceStrategies->get($type, $options);
+            $hydrator->addStrategy($property, $strategy);
+        }
+
+        return $this;
+    }
+
+    /**
      * Create a new hydrator
      *
      * @param string $entityType
@@ -394,6 +437,8 @@ abstract class AbstractRepository implements RepositoryInterface,
         }
 
         $proxy->setHydratorStrategy($hydrator);
+        $this->prepareEntityHydrator($hydrator, $this->getEntityType($entityType));
+
         return $proxy;
     }
 
@@ -484,40 +529,6 @@ abstract class AbstractRepository implements RepositoryInterface,
     {
         $this->adapterAggregate = $aggregate;
         return $this;
-    }
-
-    /**
-     * Returns the entity type instance
-     *
-     * @param EntityInterface|EntityType|string $name
-     * @throws RuntimeException
-     * @return \rampage\orm\entity\type\EntityType
-     */
-    public function getEntityType($name)
-    {
-        if ($name instanceof EntityType) {
-            return $name;
-        } else if ($name instanceof EntityInterface) {
-            $name = $name->getEntityType();
-        }
-
-        if (strpos($name, ':') === false) {
-            $name = $this->getName() . ':' . $name;
-        }
-
-        if (isset($this->entityTypes[$name])) {
-            return $this->entityTypes[$name];
-        }
-
-        $config = $this->getConfig();
-        if (!$config instanceof EntityTypeConfigInterface) {
-            throw new RuntimeException('The current repository config does not implement rampage\orm\entity\type\ConfigInterface');
-        }
-
-        $type = new EntityType($name, $this, $config);
-        $this->entityTypes[$name] = $type;
-
-        return $type;
     }
 
     /**
@@ -714,45 +725,6 @@ abstract class AbstractRepository implements RepositoryInterface,
         }
 
         return $this->name;
-    }
-
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\orm\RepositoryInterface::setName()
-     */
-    public function setName($name)
-    {
-        $this->name = ($name === null)? null : (string)$name;
-        return $this;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\orm\RepositoryInterface::setAdapterName()
-     */
-    public function setAdapterName($name)
-    {
-        $this->adapterName = $name;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\orm\RepositoryInterface::setConfig()
-     */
-    public function setConfig(ConfigInterface $config)
-    {
-        $this->config = $config;
-        return $this;
-    }
-
-    /**
-     * Config instance
-     *
-     * @return \rampage\orm\ConfigInterface|\rampage\orm\entity\type\ConfigInterface
-     */
-    protected function getConfig()
-    {
-        return $this->config;
     }
 
     /**
@@ -1384,7 +1356,7 @@ abstract class AbstractRepository implements RepositoryInterface,
      * (non-PHPdoc)
      * @see \rampage\orm\repository\PersistenceFeatureInterface::getCollection()
      */
-    public function getCollection(QueryInterface $query)
+    public function getCollection(QueryInterface $query, $itemClass = null)
     {
         $collection = $this->newCollection($query);
 
@@ -1393,12 +1365,12 @@ abstract class AbstractRepository implements RepositoryInterface,
         }
 
         if ($collection instanceof LazyCollectionInterface) {
-            $collection->setLoaderDelegate(new CollectionLoadDelegate($this, $query));
+            $collection->setLoaderDelegate(new CollectionLoadDelegate($this, $query, $itemClass));
             return $collection;
         }
 
         $this->loadCollectionSize($collection, $query);
-        $this->loadCollection($collection, $query);
+        $this->loadCollection($collection, $query, $itemClass);
 
         return $collection;
     }
