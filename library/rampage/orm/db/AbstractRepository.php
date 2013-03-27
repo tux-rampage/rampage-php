@@ -1442,10 +1442,13 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
     public function getForwardCursor(QueryInterface $query, $itemClass = null)
     {
         $mapper = $this->getQueryMapper($query);
-        $sql = $this->getAdapterAggregate()->sql();
         $entityType = $this->getFullEntityTypeName($query->getEntityType());
+
+        $sql = $this->getAdapterAggregate()->sql();
         $select = $mapper->mapToSelect($query, $sql->select());
-        $result = $sql->prepareStatementForSqlObject($select)->execute();
+        $result = function() use ($select, $sql) {
+            return $sql->prepareStatementForSqlObject($select)->execute();
+        };
 
         // Build the item factory
         $hydrator = $this->getEntityHydrator($entityType);

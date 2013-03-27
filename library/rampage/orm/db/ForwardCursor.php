@@ -28,6 +28,7 @@ namespace rampage\orm\db;
 use Iterator;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use rampage\orm\exception\InvalidArgumentException;
+use rampage\orm\exception\LogicException;
 
 /**
  * Forward cursor
@@ -61,7 +62,7 @@ class ForwardCursor implements Iterator
      * @param ResultInterface $result
      * @param callable $factory
      */
-    public function __construct(ResultInterface $result, $factory)
+    public function __construct($result, $factory)
     {
         $this->result = $result;
         $this->setFactory($factory);
@@ -88,12 +89,38 @@ class ForwardCursor implements Iterator
     }
 
     /**
+     * Returns the result by invoking the factory
+     *
+     * @throws LogicException
+     * @return \Zend\Db\Adapter\Driver\ResultInterface
+     */
+    private function invokeResultFactory()
+    {
+        if (!is_callable($this->result)) {
+            throw new LogicException('Invalid result factory');
+        }
+
+        $result = $this->result;
+        $result = $result();
+
+        if (!$result instanceof ResultInterface) {
+            throw new LogicException('Invalid result');
+        }
+
+        return $result;
+    }
+
+    /**
      * Returns the result set
      *
      * @return \Zend\Db\Adapter\Driver\ResultInterface
      */
     protected function getResult()
     {
+        if (!$this->result instanceof ResultInterface) {
+            $this->result = $this->invokeResultFactory();
+        }
+
         return $this->result;
     }
 
