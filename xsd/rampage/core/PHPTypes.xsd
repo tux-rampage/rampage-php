@@ -21,7 +21,7 @@
 		</all>
 	</complexType>
 
-	<complexType name="ArrayItemType">
+	<complexType name="PHPValueType">
 		<choice>
 			<element ref="phptypes:string" maxOccurs="1"
 				minOccurs="1">
@@ -32,7 +32,6 @@
 			<element ref="phptypes:array" maxOccurs="1" minOccurs="1"></element>
 			<element ref="phptypes:instance" maxOccurs="1" minOccurs="1"></element>
 		</choice>
-		<attribute name="key" type="string"></attribute>
 		<attribute name="type">
 			<simpleType>
 				<restriction base="string">
@@ -55,4 +54,12 @@
 	</complexType>
 
 	<element name="instance" type="phptypes:ClassInstanceType"></element>
+
+	<complexType name="ArrayItemType">
+	    <complexContent>
+	        <extension base="phptypes:PHPValueType">
+	            <attribute name="key" type="string" use="optional"></attribute>
+	        </extension>
+	    </complexContent>
+	</complexType>
 </schema>

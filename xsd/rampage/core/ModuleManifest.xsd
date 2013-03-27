@@ -434,11 +434,7 @@
 	                </sequence>
 	            </complexType>
 	        </element>
-	        <element name="instances" maxOccurs="1" minOccurs="0">
-	            <complexType>
-                    <all>
-                        <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1" minOccurs="0"></element>
-                        <element name="aliases" maxOccurs="1" minOccurs="0">
+            <element name="aliases" maxOccurs="1" minOccurs="0">
                             <complexType>
                                 <sequence>
                                     <element name="alias" maxOccurs="unbounded" minOccurs="1">
@@ -450,27 +446,13 @@
                                 </sequence>
                             </complexType>
                         </element>
-                        <element name="classes" maxOccurs="1" minOccurs="0">
-                            <complexType>
-                                <sequence>
-                                    <element name="class" maxOccurs="unbounded" minOccurs="0">
-                                        <complexType>
-                                            <all>
-                                                <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1"
-                                                    minOccurs="0">
-                                                </element>
-                                                <element name="injections" type="rampage:DiInjectionsConfig" maxOccurs="1"
-                                                    minOccurs="0">
-                                                </element>
-                                            </all>
-                                            <attribute name="name" type="string" use="required"></attribute>
-                                            <attribute name="shared" type="boolean" use="optional"></attribute>
-                                        </complexType>
+            <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1" minOccurs="0"></element>
+            <element name="instances" maxOccurs="1" minOccurs="0">
+	            <complexType>
+                    <sequence>
+                        <element name="type" maxOccurs="unbounded" minOccurs="0" type="rampage:DiClassPreferences">
                                     </element>
-                                </sequence>
-                            </complexType>
-                        </element>
-                    </all>
+                    </sequence>
 
 	            </complexType>
 	        </element>
@@ -479,17 +461,24 @@
 
 	<complexType name="DiInjectionsConfig">
         <sequence>
-            <element name="method" maxOccurs="unbounded" minOccurs="0">
+            <element name="service" maxOccurs="unbounded"
+                minOccurs="0">
                 <complexType>
-                    <sequence>
-                        <element name="param" maxOccurs="unbounded" minOccurs="0" type="phptypes:ArrayItemType">
-                        </element>
-                    </sequence>
                     <attribute name="method" type="string"></attribute>
+                    <attribute name="name" type="string"
+                        use="required">
+                    </attribute>
                 </complexType>
             </element>
-            <element name="service" type="string" maxOccurs="unbounded" minOccurs="0"></element>
-            <element name="instance" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="instance" maxOccurs="unbounded"
+                minOccurs="0">
+                <complexType>
+                    <attribute name="method" type="string"></attribute>
+                    <attribute name="class" type="string"
+                        use="required">
+                    </attribute>
+                </complexType>
+            </element>
         </sequence>
         
         
@@ -499,10 +488,47 @@
 	    <sequence>
 	        <element name="preference" maxOccurs="unbounded" minOccurs="1">
 	            <complexType>
-	                <attribute name="type" type="string" use="required"></attribute>
-	                <attribute name="preference" type="string" use="required"></attribute>
+	                <attribute name="type" type="string"
+	                    use="required">
+	                </attribute>
+	                <attribute name="service" type="string"
+	                    use="optional">
+	                </attribute>
+	                <attribute name="class" type="string" use="optional"></attribute>
 	            </complexType>
 	        </element>
 	    </sequence>
+	</complexType>
+	<complexType name="DiClassPreferences">
+	    <all>
+	        <element minOccurs="0" maxOccurs="1" name="injections"
+	            type="rampage:DiInjectionsConfig">
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="parameters">
+	            <complexType>
+	                <sequence>
+	                    <element minOccurs="1" maxOccurs="unbounded"
+	                        name="parameter" type="rampage:DiParameterItemType">
+	                    </element>
+	                </sequence>
+	            </complexType>
+	        </element>
+	    </all>
+	    <attribute use="required" name="name" type="string"></attribute>
+	    <attribute use="optional" name="shared" type="boolean"></attribute>
+	</complexType>
+
+	<complexType name="DiParameterItemType">
+	    <complexContent>
+	        <extension base="phptypes:PHPValueType">
+	            <sequence>
+	                <element ref="phptypes:instance" maxOccurs="0"
+	                    minOccurs="0">
+	                </element>
+	            </sequence>
+	            <attribute name="name" type="string"></attribute>
+	            <attribute name="service" type="string" use="optional"></attribute>
+	        </extension>
+	    </complexContent>
 	</complexType>
 </schema>

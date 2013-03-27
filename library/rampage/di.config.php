@@ -1,6 +1,7 @@
 <?php
 
-return array(
+use rampage\core\di\ServiceType;
+$conf = array(
     'definition' => array(
         'runtime' => array(
             'enabled' => true
@@ -45,13 +46,13 @@ return array(
 
         'rampage\core\resource\Theme' => array(
             'parameters' => array(
-                'fallback' => 'rampage.resource.FileLocator',
+                'fallback' => new ServiceType('rampage.resource.FileLocator'),
             )
         ),
 
         'rampage\core\model\design\Config' => array(
             'parameters' => array(
-                'data' => 'Config'
+                'data' => new ServiceType('Config')
             )
         ),
 
@@ -59,14 +60,14 @@ return array(
         // to the map proxy itself
         'rampage\core\resource\url\locator\MapProxy' => array(
             'parameters' => array(
-                'parent' => 'rampage.core.resource.UrlLocator'
+                'parent' => new ServiceType('rampage.core.resource.UrlLocator')
             ),
         ),
 
         // Same as for url map proxy
         'rampage\core\resource\file\locator\MapProxy' => array(
             'parameters' => array(
-                'parent' => 'rampage.Theme',
+                'parent' => new ServiceType('rampage.Theme'),
             ),
         ),
 
@@ -75,3 +76,9 @@ return array(
         )
     )
 );
+
+foreach ($conf['instance']['preferences'] as $key => $value) {
+    $conf['instance']['preferences'][$key] = new ServiceType($value);
+}
+
+return $conf;

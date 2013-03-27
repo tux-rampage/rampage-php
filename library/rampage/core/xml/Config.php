@@ -295,7 +295,7 @@ class Config implements EventManagerAwareInterface
      * Get a node
      *
      * @param string $xpath
-     * @return \rampage\core\xml\SimpleXmlElement
+     * @return \rampage\core\xml\SimpleXmlElement|null
      */
     public function getNode($xpath = null)
     {
@@ -304,6 +304,10 @@ class Config implements EventManagerAwareInterface
         }
 
         $result = $this->getXml()->xpath($xpath)->current();
+        if ($result === false) {
+            $result = null;
+        }
+
         return $result;
     }
 }

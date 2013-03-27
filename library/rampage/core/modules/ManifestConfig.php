@@ -27,6 +27,7 @@ namespace rampage\core\modules;
 
 use rampage\core\xml\Config;
 use rampage\core\xml\SimpleXmlElement;
+use rampage\core\di\ServiceType;
 use DOMDocument;
 
 /**
@@ -81,6 +82,19 @@ class ManifestConfig extends Config
         }
 
         return $result;
+    }
+
+    /**
+     * Format php class name
+     *
+     * this will transform dot style class names to namespaced php classes
+     *
+     * @param string $class
+     * @return string
+     */
+    private function formatClassName($class)
+    {
+        return strtr((string)$class, '.', '\\');
     }
 
     /**
@@ -148,6 +162,73 @@ class ManifestConfig extends Config
             }
 
             $this->manifest['application_config']['service_manager'][$configName][$name] = $value;
+        }
+
+        return $this;
+    }
+
+    protected function loadDiConfig()
+    {
+        $node = $this->getNode('./services/di');
+        if ($node === null) {
+            return $this;
+        }
+
+        foreach ($node->xpath('./definitions/precompiled[@file != ""]') as $definitionNode) {
+            $this->manifest['application_config']['di']['definition']['compiler'][] = $this->getModulePath((string)$definitionNode['file']);
+        }
+
+        $instanceConfig = array();
+
+        foreach ($node->xpath('./aliases/alias[@alias != "" and @class != ""]') as $aliasNode) {
+            $alias = (string)$aliasNode['alias'];
+            $$instanceConfig['aliases'][$alias] = (string)$aliasNode['class'];
+        }
+
+        foreach ($node->xpath('./preferences/preference[@type != "" and (@class != "" or @service != "")]') as $preference) {
+            $type = $this->formatClassName($preference['type']);
+            $preferredType = $this->formatClassName($preference['class']);
+            $service = (string)$preference['service'];
+
+            if ($service) {
+                $preferredType = $service;
+            }
+
+            $instanceConfig['preferences'][$type][] = $preferredType;
+        }
+
+        foreach ($node->xpath('./instances/type[@name != ""]') as $typeNode) {
+            $name = $this->formatClassName($typeNode['name']);
+            if (in_array($name, array('preferences', 'preference', 'alias', 'aliases'))) {
+                continue;
+            }
+
+            if (isset($typeNode['shared'])) {
+                $instanceConfig[$name]['shared'] = $typeNode->toValue('bool', 'shared');
+            }
+
+            foreach ($typeNode->xpath('./injections/service[@method != "" and @name != ""]') as $injectService) {
+                $method = (string)$injectService['method'];
+                $param = $name . '::' . $method . ':0';
+                $instanceConfig[$name]['injections'][$method][$param] = new ServiceType((string)$injectService['name']);
+            }
+
+            foreach ($typeNode->xpath('./injections/instance[@method != "" and @class != ""]') as $injectService) {
+                $method = (string)$injectService['method'];
+                $param = $name . '::' . $method . ':0';
+                $instanceConfig[$name]['injections'][$method][$param] = $this->formatClassName($injectService['class']);
+            }
+
+            foreach ($typeNode->xpath('./parameters/parameter[@name != ""]') as $parameterNode) {
+                $paramName = (string)$parameterNode['name'];
+                $value = isset($parameterNode['service'])? new ServiceType((string)$parameterNode['service']) : $parameterNode->toPhpValue();
+
+                $instanceConfig[$name]['parameters'][$paramName] = $value;
+            }
+        }
+
+        if (!empty($instanceConfig)) {
+            $this->manifest['application_config']['di']['instance'] = $instanceConfig;
         }
 
         return $this;
@@ -619,6 +700,7 @@ class ManifestConfig extends Config
              ->loadResourceConfig()
              ->loadThemeConfig()
              ->loadServiceConfig()
+             ->loadDiConfig()
              ->loadLocaleConfig()
              ->loadControllersConfig()
              ->loadRouteConfig()

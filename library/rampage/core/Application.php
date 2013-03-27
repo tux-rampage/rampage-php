@@ -176,7 +176,7 @@ class Application extends MvcApplication
         }
 
         echo '<h1 style="color: #f00;">Application Failure</h1>';
-        echo sprintf('<div style="overflow: auto; margin-top: 40px;"><strong>Uncaught Exception (%s)</strong>: %s [code: %d]<br /><pre>%s</pre></div>', get_class($exception), $exception->getMessage(), $exception->getCode(), $exception);
+        echo sprintf('<div style="margin-top: 40px;"><strong>Uncaught Exception (%s)</strong>: %s [code: %d]<br /><pre>%s</pre></div>', get_class($exception), $exception->getMessage(), $exception->getCode(), $exception);
         echo '</body></html>';
         exit(1);
     }

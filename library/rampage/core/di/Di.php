@@ -86,6 +86,11 @@ class Di extends DependencyInjector
 
         $pInstances = $this->instanceManager->getTypePreferences($type);
         foreach ($pInstances as $pInstance) {
+            if ($pInstance instanceof ServiceType) {
+                $computedParams['service'][$fqParamPos] = (string)$pInstance;
+                return true;
+            }
+
             if (is_object($pInstance)) {
                 $computedParams['value'][$fqParamPos] = $pInstance;
                 return true;
@@ -168,6 +173,7 @@ class Di extends DependencyInjector
         // computed parameters array
         $computedParams = array(
             'value'    => array(),
+            'service'  => array(),
             'required' => array(),
             'optional' => array()
         );
@@ -228,7 +234,7 @@ class Di extends DependencyInjector
                             $callTimeUserParams[$name],
                             $this->instanceManager->getClassFromAlias($callTimeCurValue)
                         );
-                    } elseif ($this->definitions->hasClass($callTimeUserParams[$name]) || $this->instanceManager->hasService($callTimeCurValue)) {
+                    } elseif ($this->definitions->hasClass($callTimeCurValue)) {
                         // was a known class provided?
                         $computedParams['required'][$fqParamPos] = array(
                             $callTimeCurValue,
@@ -238,6 +244,8 @@ class Di extends DependencyInjector
                         // must be a value
                         $computedParams['value'][$fqParamPos] = $callTimeCurValue;
                     }
+                } else if ($callTimeCurValue instanceof ServiceType) {
+                    $computedParams['service'][$fqParamPos] = (string)$callTimeCurValue;
                 } else {
                     // int, float, null, object, etc
                     $computedParams['value'][$fqParamPos] = $callTimeCurValue;
@@ -281,6 +289,8 @@ class Di extends DependencyInjector
                             $iConfigCurValue,
                             $iConfigCurValue
                         );
+                    } elseif ($iConfigCurValue instanceof ServiceType) {
+                        $computedParams['service'][$fqParamPos] = (string)$iConfigCurValue;
                     } elseif (is_object($iConfigCurValue)
                       && $iConfigCurValue instanceof Closure
                       && $type !== 'Closure') {
@@ -323,6 +333,17 @@ class Di extends DependencyInjector
             if (isset($computedParams['value'][$fqParamPos])) {
                 // if there is a value supplied, use it
                 $resolvedParams[$index] = $computedParams['value'][$fqParamPos];
+            } else if (isset($computedParams['service'][$fqParamPos])) {
+                // detect circular dependencies! (they can only happen in instantiators)
+                if ($isInstantiator && in_array($computedParams['service'][$fqParamPos], $this->currentDependencies)) {
+                    throw new Exception\CircularDependencyException(
+                        "Circular dependency detected: $class depends on {$value[1]} and viceversa"
+                    );
+                }
+
+                array_push($this->currentDependencies, $class);
+                $resolvedParams[$index] = $this->get($computedParams['service'][$fqParamPos], $callTimeUserParams);
+                array_pop($this->currentDependencies);
             } elseif (isset($computedParams['required'][$fqParamPos])) {
                 // detect circular dependencies! (they can only happen in instantiators)
                 if ($isInstantiator && in_array($computedParams['required'][$fqParamPos][1], $this->currentDependencies)) {
@@ -353,5 +374,95 @@ class Di extends DependencyInjector
         }
 
         return $resolvedParams; // return ordered list of parameters
+    }
+
+    /**
+     * @param object      $instance
+     * @param array       $injectionMethods
+     * @param array       $params
+     * @param string|null $instanceClass
+     * @param string|null$instanceAlias
+     * @param  string                     $requestedName
+     * @throws Exception\RuntimeException
+     */
+    protected function handleInjectDependencies($instance, $injectionMethods, $params, $instanceClass, $instanceAlias, $requestedName)
+    {
+        // localize dependencies
+        $definitions     = $this->definitions;
+        $instanceManager = $this->instanceManager();
+
+        $calledMethods = array('__construct' => true);
+
+        if ($injectionMethods) {
+            foreach ($injectionMethods as $type => $typeInjectionMethods) {
+                foreach ($typeInjectionMethods as $typeInjectionMethod => $methodIsRequired) {
+                    if (!isset($calledMethods[$typeInjectionMethod])) {
+                        if ($this->resolveAndCallInjectionMethodForInstance($instance, $typeInjectionMethod, $params, $instanceAlias, $methodIsRequired, $type)) {
+                            $calledMethods[$typeInjectionMethod] = true;
+                        }
+                    }
+                }
+            }
+
+            if ($requestedName) {
+                $instanceConfig = $instanceManager->getConfig($requestedName);
+
+                if ($instanceConfig['injections']) {
+                    $objectsToInject = $methodsToCall = array();
+                    foreach ($instanceConfig['injections'] as $injectName => $injectValue) {
+                        if (is_int($injectName) && is_string($injectValue)) {
+                            $objectsToInject[] = $this->get($injectValue, $params);
+                        } elseif (is_string($injectName) && is_array($injectValue)) {
+                            if (is_string(key($injectValue))) {
+                                $methodsToCall[] = array('method' => $injectName, 'args' => $injectValue);
+                            } else {
+                                foreach ($injectValue as $methodCallArgs) {
+                                    $methodsToCall[] = array('method' => $injectName, 'args' => $methodCallArgs);
+                                }
+                            }
+                        } elseif (is_object($injectValue)) {
+                            $objectsToInject[] = $injectValue;
+                        } elseif (is_int($injectName) && is_array($injectValue)) {
+                            throw new Exception\RuntimeException(
+                            'An injection was provided with a keyed index and an array of data, try using'
+                            . ' the name of a particular method as a key for your injection data.'
+                            );
+                        }
+                    }
+                    if ($objectsToInject) {
+                        foreach ($objectsToInject as $objectToInject) {
+                            $calledMethods = array('__construct' => true);
+                            foreach ($injectionMethods as $type => $typeInjectionMethods) {
+                                foreach ($typeInjectionMethods as $typeInjectionMethod => $methodIsRequired) {
+                                    if (isset($calledMethods[$typeInjectionMethod])) {
+                                        continue;
+                                    }
+
+                                    $methodParams = $definitions->getMethodParameters($type, $typeInjectionMethod);
+                                    if ($methodParams) {
+                                        foreach ($methodParams as $methodParam) {
+                                            $objectToInjectClass = $this->getClass($objectToInject);
+                                            if (($objectToInject instanceof ServiceType)
+                                              || ($objectToInjectClass == $methodParam[1])
+                                              || static::isSubclassOf($objectToInjectClass, $methodParam[1])) {
+                                                if ($this->resolveAndCallInjectionMethodForInstance($instance, $typeInjectionMethod, array($methodParam[0] => $objectToInject), $instanceAlias, true, $type)) {
+                                                    $calledMethods[$typeInjectionMethod] = true;
+                                                }
+                                                continue 3;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ($methodsToCall) {
+                        foreach ($methodsToCall as $methodInfo) {
+                            $this->resolveAndCallInjectionMethodForInstance($instance, $methodInfo['method'], $methodInfo['args'], $instanceAlias, true, $instanceClass);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
