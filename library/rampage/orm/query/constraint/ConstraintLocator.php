@@ -27,9 +27,13 @@ namespace rampage\orm\query\constraint;
 
 use rampage\core\service\AbstractObjectLocator;
 use rampage\core\ObjectManagerInterface;
+use rampage\core\exception\RuntimeException;
+use rampage\core\Utils;
 
 /**
  * Constraint locator
+ *
+ * @method \rampage\orm\query\constraint\ConstraintInterface get() get($name, array $options = array())
  */
 class ConstraintLocator extends AbstractObjectLocator
 {
@@ -42,6 +46,7 @@ class ConstraintLocator extends AbstractObjectLocator
         parent::__construct($objectManager);
 
         $this->strict = true;
+        $this->requiredInstanceType = 'rampage.orm.query.constraint.ConstraintInterface';
         $this->invokables = array(
             Composite::TYPE_AND => 'rampage.orm.query.constraint.Composite',
             Composite::TYPE_OR => 'rampage.orm.query.constraint.Composite',
@@ -57,13 +62,15 @@ class ConstraintLocator extends AbstractObjectLocator
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \rampage\core\service\AbstractObjectLocator::get()
-     * @return \rampage\orm\query\constraint\ConstraintInterface
+     * @see \rampage\core\service\AbstractObjectLocator::create()
      */
-    public function get($name, array $options = array())
+    protected function create($name, $class, array $options = array())
     {
-        $options['type'] = $name;
-        return parent::get($name, $options);
+        $class = $this->getObjectManager()->resolveClassName($class);
+        if (!in_array('rampage\orm\query\constraint\ConstraintInterface', class_implements($class))) {
+            throw new RuntimeException('Invalid constraint class "' . Utils::getPrintableClassName($class) . '": Does not implement rampage.orm.query.constraint.ConstraintInterface');
+        }
+
+        return $class::factory($name, $options, $this->getObjectManager());
     }
 }

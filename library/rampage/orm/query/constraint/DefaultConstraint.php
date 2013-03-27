@@ -25,6 +25,8 @@
 
 namespace rampage\orm\query\constraint;
 
+use Zend\ServiceManager\ServiceLocatorInterface;
+
 /**
  * Default constraint
  */
@@ -83,6 +85,19 @@ class DefaultConstraint implements ConstraintInterface
         if ($operator) {
             $this->operator = $operator;
         }
+    }
+
+    /**
+     * Factory
+     *
+     * @param string $name
+     * @param array $args
+     * @param ServiceLocatorInterface $serviceLocator
+     */
+    public static function factory($name, array $args, ServiceLocatorInterface $serviceLocator)
+    {
+        @list($attribute, $value, $operator) = $args;
+        return new static($name, $attribute, $value, $operator);
     }
 
     /**

@@ -25,6 +25,8 @@
 
 namespace rampage\orm\query\constraint;
 
+use Zend\ServiceManager\ServiceLocatorInterface;
+
 /**
  * Constraint interface
  */
@@ -36,4 +38,13 @@ interface ConstraintInterface
      * @return string
      */
     public function getType();
+
+    /**
+     * Factory
+     *
+     * @param string $name
+     * @param array $options
+     * @param ServiceLocatorInterface $serviceLocator
+     */
+    public static function factory($name, array $options, ServiceLocatorInterface $serviceLocator);
 }

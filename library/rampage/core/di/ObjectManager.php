@@ -275,12 +275,12 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     }
 
     /**
-     * Format class name
+     * Resolve a class name
      *
      * @param string $class
      * @return string
      */
-    protected function resolveClassName($name)
+    public function resolveClassName($name)
     {
         $class = $this->resolveAlias($name);
         $class = trim(str_replace('.', '\\', $class), '\\');

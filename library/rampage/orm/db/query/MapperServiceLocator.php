@@ -69,9 +69,9 @@ class MapperServiceLocator extends AbstractObjectLocator
      *
      * @see \rampage\core\service\AbstractObjectLocator::create()
      */
-    protected function create($name, array $options = array())
+    protected function create($name, $class, array $options = array())
     {
-        return $this->getObjectManager()->newInstance($name, $options);
+        return $this->getObjectManager()->newInstance($class, $options);
     }
 
     /**

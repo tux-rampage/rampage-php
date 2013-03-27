@@ -155,9 +155,9 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
      * @param array $options
      * @return object
      */
-    protected function create($name, array $options = array())
+    protected function create($name, $class, array $options = array())
     {
-        return $this->getObjectManager()->get($name, $options);
+        return $this->getObjectManager()->get($class, $options);
     }
 
     /**
@@ -170,12 +170,14 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
             throw new RuntimeException('Failed to locate object: ' . $name);
         }
 
+        $class = $name;
         $cName = $this->canonicalizeName($name);
+
         if (isset($this->invokables[$cName])) {
-            $name = $this->invokables[$cName];
+            $class = $this->invokables[$cName];
         }
 
-        $instance = $this->create($name, $options);
+        $instance = $this->create($name, $class, $options);
         $this->ensureValidInstance($instance, $name);
 
         return $instance;

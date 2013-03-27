@@ -45,6 +45,8 @@ use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Predicate\Predicate;
 use Zend\Db\Sql\Predicate\Operator;
 use Zend\Db\Sql\Expression;
+use rampage\orm\query\ConstraintMapperCollection;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 
 /**
@@ -95,6 +97,13 @@ abstract class AbstractMapper implements MapperInterface
     );
 
     /**
+     * Map default constraints for special/virtual attributes
+     *
+     * @var \Zend\ServiceManager\ServiceLocatorInterface
+     */
+    protected $attributeConstraintMappers = array();
+
+    /**
      * Construct
      *
      * @param PlatformInterface $platform
@@ -102,9 +111,21 @@ abstract class AbstractMapper implements MapperInterface
     public function __construct(AbstractRepository $repository, PlatformInterface $platform = null)
     {
         $this->repository = $repository;
+        $this->attributeConstraintMappers = new ConstraintMapperCollection();
+
         if ($platform) {
             $this->setPlatform($platform);
         }
+    }
+
+    /**
+     * Set attribute constraint mapper service locator
+     *
+     * @param ServiceLocatorInterface $mappers
+     */
+    public function setAttributeConstraintMapperLocator(ServiceLocatorInterface $mappers)
+    {
+        $this->attributeConstraintMappers = $mappers;
     }
 
     /**
@@ -251,8 +272,8 @@ abstract class AbstractMapper implements MapperInterface
             return $this->joinedAttributes[$attribute];
         }
 
-        $field = $this->mapAttribute($attribute);
-        return $this->getTableAlias() . '.' . $field;
+        $field = $this->mapAttribute($attribute, null, $this->getTableAlias());
+        return $field;
     }
 
     /**
@@ -361,7 +382,16 @@ abstract class AbstractMapper implements MapperInterface
         }
 
         if ($constraint instanceof DefaultConstraint) {
-            $identifier = $this->getAttributeIdentifier($constraint->getAttribute());
+            $attribute = $constraint->getAttribute();
+            if ($this->attributeConstraintMappers->has($attribute)) {
+                $this->attributeConstraintMappers
+                    ->get($attribute)
+                    ->map($constraint, $predicate);
+
+                return $this;
+            }
+
+            $identifier = $this->getAttributeIdentifier($attribute);
             $value = $constraint->getValue();
 
             switch ($type) {

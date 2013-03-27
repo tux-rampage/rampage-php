@@ -41,6 +41,14 @@ interface ObjectManagerInterface extends ServiceLocatorInterface
     public function addAliases($config);
 
     /**
+     * Resolve a class name
+     *
+     * @param string $class
+     * @return string
+     */
+    public function resolveClassName($name);
+
+    /**
      * Extended service locator interface to allow parameters and disable initializers
      *
      * @param string $name

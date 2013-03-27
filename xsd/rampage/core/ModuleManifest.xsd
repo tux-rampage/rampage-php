@@ -7,54 +7,40 @@
 
 	<complexType name="ServicesType">
 		<all>
-			<element name="factory"
-				type="rampage:ServiceFactoryDefinition" maxOccurs="unbounded"
-				minOccurs="0">
-			</element>
-			<element name="share" maxOccurs="unbounded" minOccurs="0">
-			    <complexType>
-			        <simpleContent>
-			            <extension
-			                base="rampage:SimpleServiceDefinition">
-			                <attribute name="shared" type="boolean" use="optional" default="true"></attribute>
-			            </extension>
-			        </simpleContent>
-			    </complexType>
-			</element>
-			<element name="service" maxOccurs="unbounded"
-			    minOccurs="0">
-			    <complexType>
-			        <simpleContent>
-			            <extension
-			                base="rampage:SimpleServiceDefinition">
-			                <attribute name="class"
-			                    type="rampage:PHPClassName" use="required">
-			                </attribute>
-			            </extension>
-			        </simpleContent>
-			    </complexType>
-			</element>
-			<element name="alias" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                    <simpleContent>
-                        <extension
-                            base="rampage:SimpleServiceDefinition">
-                            <attribute name="aliasto"
-                                type="rampage:PHPClassName" use="required">
-                            </attribute>
-                        </extension>
-                    </simpleContent>
-                </complexType>
-			</element>
-			<element name="initializer"
-				maxOccurs="unbounded"
-				minOccurs="0">
-                <complexType>
-                    <attribute name="initializer"
-                        type="string" use="required">
-                    </attribute>
-                </complexType>
-			</element>
+		    <element name="factory" type="rampage:ServiceFactoryDefinition" maxOccurs="unbounded" minOccurs="0"></element>
+		    <element name="share" maxOccurs="unbounded" minOccurs="0">
+		        <complexType>
+		            <simpleContent>
+		                <extension base="rampage:SimpleServiceDefinition">
+		                    <attribute name="shared" type="boolean" use="optional" default="true"></attribute>
+		                </extension>
+		            </simpleContent>
+		        </complexType>
+		    </element>
+		    <element name="service" maxOccurs="unbounded" minOccurs="0">
+		        <complexType>
+		            <simpleContent>
+		                <extension base="rampage:SimpleServiceDefinition">
+		                    <attribute name="class" type="rampage:PHPClassName" use="required"></attribute>
+		                </extension>
+		            </simpleContent>
+		        </complexType>
+		    </element>
+		    <element name="alias" maxOccurs="unbounded" minOccurs="0">
+		        <complexType>
+		            <simpleContent>
+		                <extension base="rampage:SimpleServiceDefinition">
+		                    <attribute name="aliasto" type="rampage:PHPClassName" use="required"></attribute>
+		                </extension>
+		            </simpleContent>
+		        </complexType>
+		    </element>
+		    <element name="initializer" maxOccurs="unbounded" minOccurs="0">
+		        <complexType>
+		            <attribute name="initializer" type="string" use="required"></attribute>
+		        </complexType>
+		    </element>
+		    <element name="di" type="rampage:DiContainerConfig" maxOccurs="1" minOccurs="0"></element>
 		</all>
 	</complexType>
 
@@ -353,7 +339,7 @@
 	        <element minOccurs="0" maxOccurs="1" name="services" type="rampage:ServicesType"></element>
 	        <element minOccurs="0" maxOccurs="1" name="router" type="rampage:RoutersConfig"></element>
 	        <element name="console" type="rampage:ConsoleConfig" maxOccurs="1" minOccurs="0"></element>
-	        <element minOccurs="0" maxOccurs="unbounded" name="controllers">
+	        <element minOccurs="0" maxOccurs="1" name="controllers">
 	            <complexType>
 	                <all>
 	                    <element minOccurs="1" maxOccurs="unbounded" name="controller">
@@ -433,5 +419,90 @@
 
 	<complexType name="ClassMapDefinition">
 	    <attribute name="file" type="string" use="required"></attribute>
+	</complexType>
+
+	<complexType name="DiContainerConfig">
+        <all>
+	        <element name="definitions" maxOccurs="1" minOccurs="0">
+	            <complexType>
+	                <sequence>
+	                    <element name="precompiled" maxOccurs="unbounded" minOccurs="0">
+	                        <complexType>
+	                            <attribute name="file" type="string" use="required"></attribute>
+	                        </complexType>
+	                    </element>
+	                </sequence>
+	            </complexType>
+	        </element>
+	        <element name="instances" maxOccurs="1" minOccurs="0">
+	            <complexType>
+                    <all>
+                        <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1" minOccurs="0"></element>
+                        <element name="aliases" maxOccurs="1" minOccurs="0">
+                            <complexType>
+                                <sequence>
+                                    <element name="alias" maxOccurs="unbounded" minOccurs="1">
+                                        <complexType>
+                                            <attribute name="alias" type="string" use="required"></attribute>
+                                            <attribute name="class" type="string" use="required"></attribute>
+                                        </complexType>
+                                    </element>
+                                </sequence>
+                            </complexType>
+                        </element>
+                        <element name="classes" maxOccurs="1" minOccurs="0">
+                            <complexType>
+                                <sequence>
+                                    <element name="class" maxOccurs="unbounded" minOccurs="0">
+                                        <complexType>
+                                            <all>
+                                                <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1"
+                                                    minOccurs="0">
+                                                </element>
+                                                <element name="injections" type="rampage:DiInjectionsConfig" maxOccurs="1"
+                                                    minOccurs="0">
+                                                </element>
+                                            </all>
+                                            <attribute name="name" type="string" use="required"></attribute>
+                                            <attribute name="shared" type="boolean" use="optional"></attribute>
+                                        </complexType>
+                                    </element>
+                                </sequence>
+                            </complexType>
+                        </element>
+                    </all>
+
+	            </complexType>
+	        </element>
+        </all>
+	</complexType>
+
+	<complexType name="DiInjectionsConfig">
+        <sequence>
+            <element name="method" maxOccurs="unbounded" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="param" maxOccurs="unbounded" minOccurs="0" type="phptypes:ArrayItemType">
+                        </element>
+                    </sequence>
+                    <attribute name="method" type="string"></attribute>
+                </complexType>
+            </element>
+            <element name="service" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+            <element name="instance" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+        </sequence>
+        
+        
+	</complexType>
+
+	<complexType name="DiPreferencesDefinition">
+	    <sequence>
+	        <element name="preference" maxOccurs="unbounded" minOccurs="1">
+	            <complexType>
+	                <attribute name="type" type="string" use="required"></attribute>
+	                <attribute name="preference" type="string" use="required"></attribute>
+	            </complexType>
+	        </element>
+	    </sequence>
 	</complexType>
 </schema>

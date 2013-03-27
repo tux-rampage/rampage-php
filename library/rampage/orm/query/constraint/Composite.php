@@ -28,6 +28,7 @@ namespace rampage\orm\query\constraint;
 use rampage\orm\exception\InvalidArgumentException;
 use IteratorAggregate;
 use ArrayIterator;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Composite constraint
@@ -68,6 +69,19 @@ class Composite implements IteratorAggregate, CompositeInterface
         if ($type !== null) {
             $this->setType($type);
         }
+    }
+
+    /**
+     * Factory
+     *
+     * @param string $name
+     * @param array $args
+     * @param ServiceLocatorInterface $serviceLocator
+     */
+    public static function factory($name, array $args, ServiceLocatorInterface $serviceLocator)
+    {
+        $type = array_shift($args);
+        return new static($type);
     }
 
     /**
