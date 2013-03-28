@@ -45,7 +45,6 @@ use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Predicate\Predicate;
 use Zend\Db\Sql\Predicate\Operator;
 use Zend\Db\Sql\Expression;
-use rampage\orm\query\ConstraintMapperCollection;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 

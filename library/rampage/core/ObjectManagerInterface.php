@@ -66,4 +66,12 @@ interface ObjectManagerInterface extends ServiceLocatorInterface
      * @return string
      */
     public function newInstance($name, array $params = array());
+
+    /**
+     * Check if a service can be created
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function canCreate($name);
 }

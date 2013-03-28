@@ -33,17 +33,21 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 class DiAbstractServiceFactory implements AbstractFactoryInterface
 {
-	/**
+    /**
+     * Service name regex
+     */
+    const SERVICE_NAME_REGEX = '~^[a-z_][a-z0-9_]*([\\\\.][a-z_][a-z0-9_]*)*$~i';
+
+    /**
      * (non-PHPdoc)
      * @see \Zend\ServiceManager\AbstractFactoryInterface::canCreateServiceWithName()
      */
     public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
-        if (!$serviceLocator->has('ObjectManager')) {
+        if (!$serviceLocator->has('ObjectManager', false) || !preg_match(self::SERVICE_NAME_REGEX, $requestedName)) {
             return false;
         }
 
-        // Assume we can create the requested service ...
         return true;
     }
 

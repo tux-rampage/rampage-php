@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\query;
+namespace rampage\orm\db\query;
 
 use ArrayObject;
 use rampage\core\Utils;

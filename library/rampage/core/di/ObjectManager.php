@@ -41,6 +41,11 @@ use Zend\ServiceManager\InitializerInterface;
 class ObjectManager extends ServiceManager implements ObjectManagerInterface, EventManagerAwareInterface
 {
     /**
+     * Service name regex
+     */
+    const CREATE_NAME_REGEX = '~^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)+$~i';
+
+    /**
      * Parent service manager
      *
      * @var \rampage\core\ServiceManager
@@ -171,7 +176,7 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
             return true;
         }
 
-        return (isset($this->aliases[$cName]) || (strpos($name, '.') !== false));
+        return (isset($this->aliases[$cName]) || preg_match(self::CREATE_NAME_REGEX, $name));
     }
 
     /**
@@ -326,6 +331,6 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     public function newInstance($name, array $params = array())
     {
         $class = $this->resolveClassName($name);
-        return $this->getDi()->newInstance($name, $params, false);
+        return $this->getDi()->newInstance($class, $params, false);
     }
 }

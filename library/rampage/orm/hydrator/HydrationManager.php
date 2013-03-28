@@ -30,6 +30,8 @@ use rampage\core\ObjectManagerInterface;
 
 /**
  * Hydration manager
+ *
+ * @method \Zend\Stdlib\Hydrator\HydratorInterface get() get($name, array $options = null)
  */
 class HydrationManager extends AbstractObjectLocator
 {
@@ -47,14 +49,5 @@ class HydrationManager extends AbstractObjectLocator
         );
 
         parent::__construct($objectManager);
-    }
-
-    /**
-     * @see \rampage\core\service\AbstractObjectLocator::get()
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
-     */
-    public function get($name, array $options = array())
-    {
-        return parent::get($name, $options);
     }
 }

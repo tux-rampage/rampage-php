@@ -335,14 +335,19 @@ class Di extends DependencyInjector
                 $resolvedParams[$index] = $computedParams['value'][$fqParamPos];
             } else if (isset($computedParams['service'][$fqParamPos])) {
                 // detect circular dependencies! (they can only happen in instantiators)
-                if ($isInstantiator && in_array($computedParams['service'][$fqParamPos], $this->currentDependencies)) {
+                $serviceName = (string)$computedParams['service'][$fqParamPos];
+                if ($isInstantiator && in_array($serviceName, $this->currentDependencies)) {
                     throw new Exception\CircularDependencyException(
-                        "Circular dependency detected: $class depends on {$value[1]} and viceversa"
+                        "Circular dependency detected: $class depends on {$serviceName} and viceversa"
                     );
                 }
 
+                if (!$this->instanceManager()->hasService($serviceName)) {
+                    throw new Exception\ClassNotFoundException(sprintf('Failed to locate service "%s" for dependency injection', $serviceName));
+                }
+
                 array_push($this->currentDependencies, $class);
-                $resolvedParams[$index] = $this->get($computedParams['service'][$fqParamPos], $callTimeUserParams);
+                $resolvedParams[$index] = $this->get($serviceName);
                 array_pop($this->currentDependencies);
             } elseif (isset($computedParams['required'][$fqParamPos])) {
                 // detect circular dependencies! (they can only happen in instantiators)

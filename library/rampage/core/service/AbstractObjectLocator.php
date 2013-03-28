@@ -68,6 +68,20 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
     protected $requiredInstanceType = null;
 
     /**
+     * Share instances
+     *
+     * @var bool
+     */
+    protected $share = false;
+
+    /**
+     * Instances
+     *
+     * @var array
+     */
+    protected $instances = array();
+
+    /**
      * @var array map of characters to be replaced through strtr
      */
     protected $canonicalNamesReplacements = array(
@@ -157,7 +171,34 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
      */
     protected function create($name, $class, array $options = array())
     {
-        return $this->getObjectManager()->get($class, $options);
+        return $this->getObjectManager()->newInstance($class, $options);
+    }
+
+    /**
+     * Set a shared instance
+     *
+     * @param string $name
+     * @param object $instance
+     * @return \rampage\core\service\AbstractObjectLocator
+     */
+    protected function setSharedInstance($name, $instance)
+    {
+        $this->ensureValidInstance($instance, $name);
+        $cName = $this->canonicalizeName($name);
+
+        $this->instances[$cName] = $instance;
+        return $this;
+    }
+
+    /**
+     * Check if instance should be shared
+     *
+     * @param string $name
+     * @param object $instance
+     */
+    protected function isShared($name, $instance)
+    {
+        return $this->share;
     }
 
     /**
@@ -173,12 +214,20 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
         $class = $name;
         $cName = $this->canonicalizeName($name);
 
+        if (isset($this->instances[$cName])) {
+            return $this->instances[$cName];
+        }
+
         if (isset($this->invokables[$cName])) {
             $class = $this->invokables[$cName];
         }
 
         $instance = $this->create($name, $class, $options);
         $this->ensureValidInstance($instance, $name);
+
+        if ($this->isShared($name, $instance)) {
+            $this->setSharedInstance($name, $instance);
+        }
 
         return $instance;
     }
@@ -190,7 +239,7 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
     public function has($name)
     {
         $cName = $this->canonicalizeName($name);
-        $available = isset($this->invokables[$cName]);
+        $available = isset($this->invokables[$cName]) || isset($this->instances[$cName]);
 
         if ($this->strict) {
             $available = $available || $this->getObjectManager()->has($name);

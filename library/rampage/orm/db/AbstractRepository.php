@@ -68,6 +68,7 @@ use Zend\Stdlib\Hydrator\HydratorInterface;
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\EventManager;
+use Zend\Console\Prompt\Select;
 
 /**
  * Abstract DB repository
@@ -1369,8 +1370,8 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             return $collection;
         }
 
-        $this->loadCollectionSize($collection, $query);
         $this->loadCollection($collection, $query, $itemClass);
+        $this->loadCollectionSize($collection, $query);
 
         return $collection;
     }
@@ -1411,19 +1412,33 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
         return $this->getObjectManager()->newInstance($class);
     }
 
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\orm\repository\PersistenceFeatureInterface::loadCollection()
+    /**
+     * Load collection from a select
+     *
+     * $itemClass may be a closure or invokable.
+     *
+     * @param CollectionInterface $collection
+     * @param Select $select
+     * @param EntityType|string $entityType
+     * @param string $itemClass The item class or a factory.
      */
-    public function loadCollection(CollectionInterface $collection, QueryInterface $query, $itemClass = null)
+    protected function loadCollectionFromSelect(CollectionInterface $collection, Select $select, $entityType, $itemClass = null)
     {
-        $mapper = $this->getQueryMapper($query);
-        $sql = $this->getAdapterAggregate()->sql();
-        $entityType = $this->getFullEntityTypeName($query->getEntityType());
-        $select = $mapper->mapToSelect($query, $sql->select());
-        $result = $sql->prepareStatementForSqlObject($select)->execute();
-        $hydrator = $this->getEntityHydrator($entityType);
+        $result = $this->getAdapterAggregate()
+            ->sql()
+            ->prepareStatementForSqlObject($select)
+            ->execute();
 
+        if (is_callable($itemClass)) {
+            foreach ($result as $data) {
+                $data = $this->mapDataForObject($data, $entityType);
+                $collection->addItem($itemClass($data));
+            }
+
+            return $this;
+        }
+
+        $hydrator = $this->getEntityHydrator($entityType);
         foreach ($result as $data) {
             $data = $this->mapDataForObject($data, $entityType);
             $entity = $this->newCollectionItem($entityType, $itemClass);
@@ -1432,25 +1447,31 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             $collection->addItem($entity);
         }
 
-        return $collection;
+        return $this;
     }
 
     /**
      * (non-PHPdoc)
-     * @see \rampage\orm\repository\CursorProviderInterface::getForwardCursor()
+     * @see \rampage\orm\repository\PersistenceFeatureInterface::loadCollection()
      */
-    public function getForwardCursor(QueryInterface $query, $itemClass = null)
+    public function loadCollection(CollectionInterface $collection, QueryInterface $query, $itemClass = null)
     {
-        $mapper = $this->getQueryMapper($query);
-        $entityType = $this->getFullEntityTypeName($query->getEntityType());
-
         $sql = $this->getAdapterAggregate()->sql();
-        $select = $mapper->mapToSelect($query, $sql->select());
-        $result = function() use ($select, $sql) {
-            return $sql->prepareStatementForSqlObject($select)->execute();
-        };
+        $select = $this->getQueryMapper($query)->mapToSelect($query, $sql->select());
 
-        // Build the item factory
+        $this->loadCollectionFromSelect($collection, $select, $query->getEntityType(), $itemClass);
+        return $this;
+    }
+
+    /**
+     * Create the cursor item factory
+     *
+     * @param EntityType|string $entityType
+     * @param string $itemClass
+     * @return string
+     */
+    protected function createCursorItemFactory($entityType, $itemClass)
+    {
         $hydrator = $this->getEntityHydrator($entityType);
         $objectManager = $this->getObjectManager();
         $fieldMapper = $this->getFieldMapper($entityType);
@@ -1472,7 +1493,25 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             $hydrator->hydrate($data, $item);
             return $item;
         };
+    }
 
+    /**
+     * (non-PHPdoc)
+     * @see \rampage\orm\repository\CursorProviderInterface::getForwardCursor()
+     */
+    public function getForwardCursor(QueryInterface $query, $itemClass = null)
+    {
+        $mapper = $this->getQueryMapper($query);
+        $entityType = $this->getFullEntityTypeName($query->getEntityType());
+
+        $sql = $this->getAdapterAggregate()->sql();
+        $select = $mapper->mapToSelect($query, $sql->select());
+        $result = function() use ($select, $sql) {
+            return $sql->prepareStatementForSqlObject($select)->execute();
+        };
+
+        // Build the item factory
+        $factory = $this->createCursorItemFactory($entityType, $itemClass);
         $cursor = new ForwardCursor($result, $factory);
         return $cursor;
     }

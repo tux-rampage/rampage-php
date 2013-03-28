@@ -46,7 +46,7 @@ class MapperServiceLocator extends AbstractObjectLocator
     public function __construct(ObjectManagerInterface $objectManager, array $options = array())
     {
         parent::__construct($objectManager);
-        $this->requiredInstanceType = 'rampage.orm.db.query.MapperInterface';
+        $this->requiredInstanceType = 'rampage\orm\db\query\MapperInterface';
 
         foreach ($options as $name => $class) {
             $this->setServiceClass($name, $class);
@@ -62,16 +62,6 @@ class MapperServiceLocator extends AbstractObjectLocator
     {
         $this->defaultClass = $class;
         return $this;
-    }
-
-    /**
-     * Ensure a new instance
-     *
-     * @see \rampage\core\service\AbstractObjectLocator::create()
-     */
-    protected function create($name, $class, array $options = array())
-    {
-        return $this->getObjectManager()->newInstance($class, $options);
     }
 
     /**

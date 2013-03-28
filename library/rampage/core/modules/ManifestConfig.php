@@ -191,7 +191,7 @@ class ManifestConfig extends Config
             $service = (string)$preference['service'];
 
             if ($service) {
-                $preferredType = $service;
+                $preferredType = new ServiceType($service);
             }
 
             $instanceConfig['preferences'][$type][] = $preferredType;

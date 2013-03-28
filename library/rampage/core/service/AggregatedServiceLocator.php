@@ -66,11 +66,11 @@ class AggregatedServiceLocator extends ServiceManager
      */
     public function get($name, $usePeeringServiceManagers = true)
     {
-        if ($this->has($name)) {
+        if (!$this->has($name)) {
             return false;
         }
 
-        list($manager, $service) = explode(':', $name, 2);
+        list($manager, $service) = explode('://', $name, 2);
         return $this->getParentLocator()->get($manager)->get($service);
     }
 
@@ -80,17 +80,17 @@ class AggregatedServiceLocator extends ServiceManager
      */
     public function has($name, $checkAbstractFactories = true, $usePeeringServiceManagers = true)
     {
-        if (strpos($name, ':') === false) {
+        if (strpos($name, '://') === false) {
             return false;
         }
 
-        list($manager, $service) = explode(':', $name, 2);
+        list($manager, $service) = explode('://', $name, 2);
         if (!$manager || !$service) {
             return false;
         }
 
         $parent = $this->getParentLocator();
-        $services = ($parent->has($manager))? $parent->get($manager) : false;
+        $services = ($parent->has($manager, false, false))? $parent->get($manager) : false;
         return (($services instanceof ServiceLocatorInterface)
             && $services->has($service));
     }

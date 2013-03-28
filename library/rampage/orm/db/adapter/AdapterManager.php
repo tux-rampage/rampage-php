@@ -50,13 +50,6 @@ class AdapterManager extends AbstractObjectLocator
     protected $requiredInstanceType = 'Zend\Db\Adapter\Adapter';
 
     /**
-     * Adapter instances
-     *
-     * @var array
-     */
-    protected $instances = array();
-
-    /**
      * (non-PHPdoc)
      * @see \rampage\core\service\AbstractObjectLocator::__construct()
      */
@@ -84,9 +77,7 @@ class AdapterManager extends AbstractObjectLocator
      */
     public function setAdapter($name, AdapterInterface $adapter)
     {
-        $name = $this->canonicalizeName($name);
-        $this->instances[$name] = $adapter;
-
+        $this->setSharedInstance($name, $adapter);
         return $this;
     }
 
@@ -109,7 +100,7 @@ class AdapterManager extends AbstractObjectLocator
             $instance = $this->instances[$name];
         } else {
             $options = $config->getAdapterOptions($name);
-            $instance = $this->create('rampage.orm.db.Adapter', array('driver' => $options));
+            $instance = $this->create($name, 'rampage.orm.db.Adapter', array('driver' => $options));
             $this->ensureValidInstance($instance, $name);
 
             if (isset($options['initsql']) && is_array($options['initsql'])) {

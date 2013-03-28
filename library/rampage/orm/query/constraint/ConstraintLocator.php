@@ -46,7 +46,7 @@ class ConstraintLocator extends AbstractObjectLocator
         parent::__construct($objectManager);
 
         $this->strict = true;
-        $this->requiredInstanceType = 'rampage.orm.query.constraint.ConstraintInterface';
+        $this->requiredInstanceType = 'rampage\orm\query\constraint\ConstraintInterface';
         $this->invokables = array(
             Composite::TYPE_AND => 'rampage.orm.query.constraint.Composite',
             Composite::TYPE_OR => 'rampage.orm.query.constraint.Composite',

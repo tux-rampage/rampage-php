@@ -91,7 +91,6 @@ return array(
 
                 'abstract_factories' => array(
                     'rampage\core\service\DiAbstractServiceFactory',
-                    'rampage\orm\repository\ServiceFactory',
                 ),
 
                 'shared' => array(
