@@ -59,6 +59,14 @@ interface PlatformInterface
     public function formatIdentifier($identifier);
 
     /**
+     * Format date time for db
+     *
+     * @param DateTime $date
+     */
+    public function formatDateTime(\DateTime $date);
+
+
+    /**
      * Get the field mapper for the given entity resource
      *
      * @param string $resourceName

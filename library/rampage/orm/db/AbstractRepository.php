@@ -114,7 +114,14 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
      *
      * @var array
      */
-    protected $definedEntityTypes = null;
+    protected $definedEntityTypes = array();
+
+    /**
+     * Entity types defined in config
+     *
+     * @var array
+     */
+    private $configDefinedEntityTypes = null;
 
     /**
      * Entity tables by platform
@@ -255,11 +262,16 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             return $this;
         }
 
-        $fullName = $this->getFullEntityTypeName($entityType);
-        if (!in_array($fullName, $this->definedEntityTypes)) {
+        $name = $this->getFullEntityTypeName($entityType);
+
+        if ($this->configDefinedEntityTypes === null) {
+            $this->configDefinedEntityTypes = $this->getConfig()->getDefinedEntities($this);
+        }
+
+        if (!in_array($name, $this->definedEntityTypes) && !in_array($name, $this->configDefinedEntityTypes)) {
             throw new DomainException(sprintf(
                 'This repository (%s implementd by %s) is not responsible for "%s" entities',
-                $this->getName(), strtr(get_class($this), '\\', '.'), $fullName
+                $this->getName(), strtr(get_class($this), '\\', '.'), $name
             ));
         }
 
@@ -424,13 +436,14 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
      */
     protected function createHydrator($entityType)
     {
+        $entityType = $this->getEntityType($entityType);
         $hydrator = $this->getAdapterAggregate()
             ->getPlatform()
-            ->getHydrator($entityType);
+            ->getHydrator($entityType->getResourceName());
 
         $proxy = $this->getObjectManager()->newInstance('rampage.orm.hydrator.EntityHydrator', array(
             'repository' => $this,
-            'entityType' => $this->getEntityType($entityType)
+            'entityType' => $entityType
         ));
 
         if (!$proxy instanceof EntityHydrator) {
@@ -438,7 +451,7 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
         }
 
         $proxy->setHydratorStrategy($hydrator);
-        $this->prepareEntityHydrator($hydrator, $this->getEntityType($entityType));
+        $this->prepareEntityHydrator($proxy, $this->getEntityType($entityType));
 
         return $proxy;
     }
@@ -583,11 +596,11 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
      */
     protected function getFieldMapper($entityType)
     {
-        $entityType = $this->getFullEntityTypeName($entityType);
+        $entityType = $this->getEntityType($entityType);
 
         return $this->getAdapterAggregate()
                     ->getPlatform()
-                    ->getFieldMapper($entityType);
+                    ->getFieldMapper($entityType->getResourceName());
     }
 
     /**
@@ -1490,9 +1503,11 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
                 $objectData[$attribute] = $value;
             }
 
-            $hydrator->hydrate($data, $item);
+            $hydrator->hydrate($objectData, $item);
             return $item;
         };
+
+        return $factory;
     }
 
     /**
@@ -1506,6 +1521,7 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
 
         $sql = $this->getAdapterAggregate()->sql();
         $select = $mapper->mapToSelect($query, $sql->select());
+        $selectSql = $sql->getSqlStringForSqlObject($select);
         $result = function() use ($select, $sql) {
             return $sql->prepareStatementForSqlObject($select)->execute();
         };

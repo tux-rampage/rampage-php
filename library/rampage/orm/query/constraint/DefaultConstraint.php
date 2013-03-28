@@ -96,7 +96,7 @@ class DefaultConstraint implements ConstraintInterface
      */
     public static function factory($name, array $args, ServiceLocatorInterface $serviceLocator)
     {
-        @list($attribute, $value, $operator) = $args;
+        @list($attribute, $value, $operator) = array_values($args);
         return new static($name, $attribute, $value, $operator);
     }
 

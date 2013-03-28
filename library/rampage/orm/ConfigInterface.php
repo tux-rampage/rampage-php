@@ -2,7 +2,6 @@
 
 namespace rampage\orm;
 
-use rampage\orm\hydrator\EntityHydrator;
 /**
  * Interface for config
  */

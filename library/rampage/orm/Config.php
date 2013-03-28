@@ -58,6 +58,8 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
      */
     private $repositoryNames = null;
 
+    private $definedEntities = array();
+
     /**
      * (non-PHPdoc)
      * @see \rampage\core\modules\AggregatedXmlConfig::getGlobalFilename()
@@ -226,8 +228,13 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             $repository = $repository->getName();
         }
 
+        $cacheKey = $repository?: '*';
+        if (isset($this->definedEntities[$cacheKey])) {
+            return $this->definedEntities[$cacheKey];
+        }
+
         $xpathCondition = '[@name != ""]';
-        if ($repository) {
+        if ($repository && ($repository != '*')) {
             $repositoryName = $this->xpathQuote($repository);
             $xpathCondition = "[@name = $repositoryName]";
         }
@@ -243,6 +250,7 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             }
         }
 
+        $this->definedEntities[$cacheKey] = $entities;
         return $entities;
     }
 
@@ -366,7 +374,7 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
 //         }
 
         /* @var $joinEntityNode \rampage\core\xml\SimpleXmlElement */
-        foreach ($xml->xpath('./joinedattributes/entity[@name != ""]') as $joinEntityNode) {
+        foreach ($xml->xpath('./joinattributes/entity[@name != ""]') as $joinEntityNode) {
             $this->configureEntityTypeJoin($type, $joinEntityNode);
         }
 

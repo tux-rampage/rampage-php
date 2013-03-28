@@ -393,6 +393,10 @@ abstract class AbstractMapper implements MapperInterface
             $identifier = $this->getAttributeIdentifier($attribute);
             $value = $constraint->getValue();
 
+            if ($value instanceof \DateTime) {
+                $value = $this->getPlatform()->formatDateTime($value);
+            }
+
             switch ($type) {
                 case DefaultConstraint::TYPE_COMPARE:
                     $operator = $constraint->getOperator();
@@ -401,7 +405,7 @@ abstract class AbstractMapper implements MapperInterface
                     }
 
                     $sqlOperator = $this->operatorMap[$operator];
-                    $predicate = new Operator($identifier, $sqlOperator, $value);
+                    $predicate->addPredicate(new Operator($identifier, $sqlOperator, $value));
 
                     break;
 
@@ -455,7 +459,12 @@ abstract class AbstractMapper implements MapperInterface
      */
     protected function mapConstraintComposite(ConstraintCompositeInterface $constraints, Predicate $parentPredicate = null)
     {
-        $predicate = ($parentPredicate)? $parentPredicate->nest() : new Predicate();
+        $type = ($constraints->getType() == ConstraintCompositeInterface::TYPE_AND)? Predicate::COMBINED_BY_AND : Predicate::COMBINED_BY_OR;
+        $predicate = new Predicate(null, $type);
+
+        if ($parentPredicate) {
+            $parentPredicate->addPredicate($predicate);
+        }
 
         foreach ($constraints as $constraint) {
             $this->mapConstraint($constraint, $predicate);

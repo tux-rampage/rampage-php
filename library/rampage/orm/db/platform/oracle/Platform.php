@@ -28,8 +28,10 @@ namespace rampage\orm\db\platform\oracle;
 use rampage\orm\db\platform\Platform as DefaultPlatform;
 use rampage\orm\db\platform\PlatformCapabilities;
 use rampage\orm\db\platform\SequenceSupportInterface;
-use Zend\Db\Adapter\Adapter;
 use rampage\orm\exception\RuntimeException;
+
+use Zend\Db\Adapter\Adapter;
+use Zend\Db\Sql\Expression;
 
 /**
  * Oracle specific platform implementation
@@ -117,5 +119,14 @@ class Platform extends DefaultPlatform implements SequenceSupportInterface
         }
 
         return $result['NEXTVAL'];
+    }
+
+    /**
+     * @see \rampage\orm\db\platform\Platform::formatDateTime()
+     */
+    public function formatDateTime(\DateTime $date)
+    {
+        $expression = "TO_DATE('{$date->format('Y-m-d H:i:s')}', 'YYYY-MM-DD HH24:MI:SS')";
+        return new Expression($expression);
     }
 }

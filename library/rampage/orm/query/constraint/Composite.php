@@ -36,16 +36,6 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 class Composite implements IteratorAggregate, CompositeInterface
 {
     /**
-     * Composition type AND
-     */
-    const TYPE_AND = 'and';
-
-    /**
-     * Composition type OR
-     */
-    CONST TYPE_OR = 'or';
-
-    /**
      * Composition type
      *
      * @var string

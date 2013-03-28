@@ -33,6 +33,16 @@ use Traversable;
 interface CompositeInterface extends ConstraintInterface, Traversable
 {
     /**
+     * Composition type AND
+     */
+    const TYPE_AND = 'and';
+
+    /**
+     * Composition type OR
+     */
+    const TYPE_OR = 'or';
+
+    /**
      * Add a constraint to composite
      *
      * @param ConstraintInterface $constraint

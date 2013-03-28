@@ -338,6 +338,15 @@ class Platform implements PlatformInterface
     }
 
     /**
+     * @see \rampage\orm\db\platform\PlatformInterface::formatDateTime()
+     */
+    public function formatDateTime(\DateTime $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
+
+	/**
      * Set platform capabilities
      *
      * @param PlatformCapabilities $capabilities
