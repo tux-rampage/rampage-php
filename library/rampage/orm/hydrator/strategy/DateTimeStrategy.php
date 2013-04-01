@@ -58,7 +58,7 @@ class DateTimeStrategy implements StrategyInterface
     public function extract($value)
     {
         if ($value instanceof \DateTime) {
-            return $value->toString($this->format);
+            return $value->format($this->format);
         }
 
         return $value;
@@ -73,7 +73,7 @@ class DateTimeStrategy implements StrategyInterface
         $date = null;
 
         if (($value !== null) && !($value instanceof \DateTime)) {
-            $value = new \DateTime($value);
+            $date = new \DateTime($value);
         }
 
         return $date;

@@ -633,7 +633,7 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
     protected function mapDataForObject($data, $entityType)
     {
         if (!is_array($data) && !($data instanceof \Traversable)) {
-            throw new InvalidArgumentException('Data must be an array or implement the Traversable interface');
+            return false;
         }
 
         $result = array();
