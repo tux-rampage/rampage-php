@@ -1,7 +1,16 @@
 {
-    "name": "rampage/rampagephp",
+    "name": "rampage-php/rampage-php",
+    "description": "Rampage PHP Framework",
+    
+    "repositories": [
+        {"type": "composer", "url": "https://packages.zendframework.com/" }
+    ],
+
     "require" : {
         "zendframework/zendframework": "~2.1.0",
-        "ext-intl": "*"
+    },
+    
+    "autoload": {
+        "classmap": ["library/"]
     }
 }

@@ -42,6 +42,7 @@ $conf = array(
 
             // I18n
             'Zend\I18n\Translator\Translator' => 'Translator',
+            'rampage\core\i18n\Locale' => 'Locale',
         ),
 
         'rampage\core\resource\Theme' => array(

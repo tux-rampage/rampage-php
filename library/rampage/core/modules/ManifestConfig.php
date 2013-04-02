@@ -147,7 +147,7 @@ class ManifestConfig extends Config
      * @param string $configName
      * @param string $attribute
      */
-    protected function mapServiceManifest(SimpleXmlElement $xml, $nodeName, $configName, $attribute)
+    protected function mapServiceManifest(SimpleXmlElement $xml, $nodeName, $configName, $attribute, $key)
     {
         if (!$xml->{$nodeName}) {
             return $this;
@@ -161,7 +161,7 @@ class ManifestConfig extends Config
                 continue;
             }
 
-            $this->manifest['application_config']['service_manager'][$configName][$name] = $value;
+            $this->manifest['application_config'][$key][$configName][$name] = $value;
         }
 
         return $this;
@@ -266,8 +266,8 @@ class ManifestConfig extends Config
             $config['service_manager']['initializers'][] = $class;
         }
 
-        $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto')
-             ->mapServiceManifest($xml, 'service', 'invokables', 'class');
+        $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto', 'service_manager')
+             ->mapServiceManifest($xml, 'service', 'invokables', 'class', 'service_manager');
 //              ->mapServiceManifest($xml, 'initializer', 'initializers', 'initializer', true);
 
         return $this;
@@ -679,6 +679,46 @@ class ManifestConfig extends Config
     }
 
     /**
+     * @param SimpleXmlElement $xml
+     * @param string $xpath
+     * @param string $key
+     */
+    protected function loadServiceManagerConfig($xpath, $key)
+    {
+        $xml = $this->getNode($xpath);
+        if (!$xml instanceof SimpleXmlElement) {
+            return $this;
+        }
+
+        $config = &$this->manifest['application_config'];
+
+        foreach ($xml->xpath("./factory[@name != '' and @class != '']") as $factory) {
+            $name = (string)$factory['name'];
+            $class = (string)$factory['class'];
+            $class = trim(strtr($class, '.', '\\'), '\\');
+            $configName = ($factory->is('abstract', false))? 'abstract_factories' : 'factories';
+            $config[$key][$configName][$name] = $class;
+        }
+
+        foreach ($xml->xpath("./share[@name != '']") as $shared) {
+            $name = (string)$shared['name'];
+            $config[$key]['shared'][$name] = $shared->is('shared', true);;
+        }
+
+        foreach ($xml->xpath("./initializer[@initializer != '']") as $initNode) {
+            $class = (string)$initNode['initializer'];
+            $class = trim(strtr($class, '.', '\\'), '\\');
+
+            $config[$key]['initializers'][] = $class;
+        }
+
+        $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto', $key)
+            ->mapServiceManifest($xml, 'service', 'invokables', 'class', $key);
+
+        return $this;
+    }
+
+    /**
      * Parse manifest and create the manifest array
      *
      * @return array
@@ -705,6 +745,8 @@ class ManifestConfig extends Config
              ->loadControllersConfig()
              ->loadRouteConfig()
              ->loadConsoleConfig();
+
+        $this->loadServiceManagerConfig('./view/helpers', 'view_helper_manager');
 
         return $this->manifest;
     }

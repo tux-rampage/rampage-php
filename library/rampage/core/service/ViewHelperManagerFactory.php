@@ -27,9 +27,10 @@ namespace rampage\core\service;
 
 use rampage\core\view\helper\PluginManager;
 use Zend\Mvc\Service\ViewHelperManagerFactory as DefaultViewHelperManagerFactory;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\Console\Console;
 use Zend\Mvc\Router\RouteMatch;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ServiceManager\Config;
+use Zend\Console\Console;
 
 /**
  * View halper manager factory
@@ -68,6 +69,12 @@ class ViewHelperManagerFactory extends DefaultViewHelperManagerFactory
 
         if ($instance instanceof PluginManager) {
             $instance->setObjectManager($serviceLocator->get('objectmanager'));
+        }
+
+        $config = $serviceLocator->get('config');
+        if (isset($config['view_helper_manager']) && is_array($config['view_helper_manager'])) {
+            $config = new Config($config['view_helper_manager']);
+            $config->configureServiceManager($instance);
         }
 
         return $instance;

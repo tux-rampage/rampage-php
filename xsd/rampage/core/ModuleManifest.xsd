@@ -320,34 +320,60 @@
 	                            </restriction>
 	                        </simpleType>
 	                    </element>
-	                    <element minOccurs="0" maxOccurs="1" name="description" type="string"></element>
-	                    <element minOccurs="0" maxOccurs="1" name="dependencies" type="rampage:ModuleDependencies"></element>
+	                    <element minOccurs="0" maxOccurs="1"
+	                        name="description" type="string">
+	                    </element>
+	                    <element minOccurs="0" maxOccurs="1"
+	                        name="dependencies"
+	                        type="rampage:ModuleDependencies">
+	                    </element>
 	                </all>
-	                <attribute use="required" name="name" type="string"></attribute>
-	                <attribute use="required" name="version" type="rampage:VersionNumber"></attribute>
+	                <attribute use="required" name="name"
+	                    type="string">
+	                </attribute>
+	                <attribute use="required" name="version"
+	                    type="rampage:VersionNumber">
+	                </attribute>
 	            </complexType>
 	        </element>
 	        <element minOccurs="0" maxOccurs="1" name="packages">
 	            <complexType>
 	                <all>
-	                    <element minOccurs="0" maxOccurs="unbounded" name="package" type="rampage:PackageDefinition"></element>
-	                    <element minOccurs="0" maxOccurs="1" name="aliases" type="rampage:AliasConfig"></element>
-	                    <element name="classmap" type="rampage:ClassMapDefinition" maxOccurs="unbounded" minOccurs="0"></element>
+	                    <element minOccurs="0" maxOccurs="unbounded"
+	                        name="package"
+	                        type="rampage:PackageDefinition">
+	                    </element>
+	                    <element minOccurs="0" maxOccurs="1"
+	                        name="aliases" type="rampage:AliasConfig">
+	                    </element>
+	                    <element name="classmap"
+	                        type="rampage:ClassMapDefinition"
+	                        maxOccurs="unbounded" minOccurs="0">
+	                    </element>
 	                </all>
 	            </complexType>
 	        </element>
-	        <element minOccurs="0" maxOccurs="1" name="services" type="rampage:ServicesType"></element>
-	        <element minOccurs="0" maxOccurs="1" name="router" type="rampage:RoutersConfig"></element>
-	        <element name="console" type="rampage:ConsoleConfig" maxOccurs="1" minOccurs="0"></element>
+	        <element minOccurs="0" maxOccurs="1" name="services"
+	            type="rampage:ServicesType">
+	        </element>
+	        <element minOccurs="0" maxOccurs="1" name="router"
+	            type="rampage:RoutersConfig">
+	        </element>
+	        <element name="console" type="rampage:ConsoleConfig"
+	            maxOccurs="1" minOccurs="0">
+	        </element>
 	        <element minOccurs="0" maxOccurs="1" name="controllers">
 	            <complexType>
 	                <all>
-	                    <element minOccurs="1" maxOccurs="unbounded" name="controller">
+	                    <element minOccurs="1" maxOccurs="unbounded"
+	                        name="controller">
 	                        <complexType>
 	                            <annotation></annotation>
 	                            <simpleContent>
-	                                <extension base="rampage:PHPClassName">
-	                                    <attribute use="required" name="name" type="string">
+	                                <extension
+	                                    base="rampage:PHPClassName">
+	                                    <attribute use="required"
+	                                        name="name" type="string">
 	                                        <annotation></annotation>
 	                                    </attribute>
 	                                </extension>
@@ -355,7 +381,8 @@
 	                        </complexType>
 	                    </element>
 	                </all>
-	                <attribute use="optional" name="namespace" type="string">
+	                <attribute use="optional" name="namespace"
+	                    type="string">
 	                    <annotation></annotation>
 	                </attribute>
 	                <attribute name="prefix" type="string">
@@ -366,11 +393,22 @@
 	        <element minOccurs="0" maxOccurs="1" name="locale">
 	            <complexType>
 	                <sequence>
-	                    <element minOccurs="0" maxOccurs="unbounded" name="pattern" type="rampage:patternType"></element>
+	                    <element minOccurs="0" maxOccurs="unbounded"
+	                        name="pattern" type="rampage:patternType">
+	                    </element>
 	                </sequence>
 	            </complexType>
 	        </element>
-	        <element minOccurs="0" maxOccurs="1" name="resources" type="rampage:ResourcesConfig"></element>
+            <element name="view" maxOccurs="1" minOccurs="0">
+	            <complexType>
+	                <sequence>
+	                    <element name="helpers" type="rampage:PluginManagerConfig" maxOccurs="1" minOccurs="0"></element>
+	                </sequence>
+	            </complexType>
+            </element>
+            <element minOccurs="0" maxOccurs="1" name="resources"
+	            type="rampage:ResourcesConfig">
+	        </element>
 	    </all>
 	</complexType>
 
@@ -528,6 +566,16 @@
 	            </sequence>
 	            <attribute name="name" type="string"></attribute>
 	            <attribute name="service" type="string" use="optional"></attribute>
+	        </extension>
+	    </complexContent>
+	</complexType>
+
+	<complexType name="PluginManagerConfig">
+	    <complexContent>
+	        <extension base="rampage:ServicesType">
+	            <sequence>
+	                <element name="di" type="string" minOccurs="0" maxOccurs="0"></element>
+	            </sequence>
 	        </extension>
 	    </complexContent>
 	</complexType>
