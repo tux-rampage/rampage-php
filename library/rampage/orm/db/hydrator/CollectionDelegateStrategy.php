@@ -35,7 +35,7 @@ class CollectionDelegateStrategy extends AbstractQueryStrategy
     /**
      * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    public function extract($value)
+    public function hydrate($value)
     {
         $query = $this->createQuery($value);
         return new CollectionLoadDelegate($this->getRepository(), $query, $this->itemClass);
@@ -44,7 +44,7 @@ class CollectionDelegateStrategy extends AbstractQueryStrategy
     /**
      * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function hydrate($value)
+    public function extract($value)
     {
         return $value;
     }

@@ -241,7 +241,7 @@ abstract class AbstractObjectLocator implements ServiceLocatorInterface
         $cName = $this->canonicalizeName($name);
         $available = isset($this->invokables[$cName]) || isset($this->instances[$cName]);
 
-        if ($this->strict) {
+        if (!$this->strict) {
             $available = $available || $this->getObjectManager()->has($name);
         }
 

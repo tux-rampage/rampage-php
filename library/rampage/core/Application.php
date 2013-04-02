@@ -212,4 +212,15 @@ class Application extends MvcApplication
 
         throw $exception;
     }
+
+    /**
+     * Complete the request
+     *
+     * @see \Zend\Mvc\Application::completeRequest()
+     */
+    protected function completeRequest(MvcEvent $event)
+    {
+        $event->stopPropagation(false);
+        return parent::completeRequest($event);
+    }
 }

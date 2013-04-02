@@ -31,18 +31,18 @@ namespace rampage\orm\db\hydrator;
 class CollectionStrategy extends AbstractQueryStrategy
 {
     /**
-     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function extract($value)
+    public function hydrate($value)
     {
         $query = $this->createQuery($value);
         return $this->getRepository()->getCollection($query, $this->itemClass);
     }
 
     /**
-     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    public function hydrate($value)
+    public function extract($value)
     {
         return $value;
     }

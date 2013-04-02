@@ -30,6 +30,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 use rampage\core\model\Config;
 use rampage\core\exception\RuntimeException;
+use Zend\Log\Writer\Null as NullWriter;
 
 /**
  * Log service factory
@@ -54,6 +55,7 @@ class LogServiceFactory implements FactoryInterface
         }
 
         $instance = new Logger($options);
+        $instance->addWriter(new NullWriter());
         return $instance;
     }
 

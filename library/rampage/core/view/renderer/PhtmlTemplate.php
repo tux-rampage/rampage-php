@@ -31,10 +31,10 @@ use ArrayObject;
 /**
  * Render wrapper
  *
- * @method string url() url()
- * @method string resourceUrl() resourceUrl()
- * @method string translate() translate()
- * @method string escapeHtml() escapeHtml()
+ * @method string url() url(string $route)
+ * @method string resourceUrl() resourceUrl(string $resource)
+ * @method string translate() translate(string $message)
+ * @method string escapeHtml() escapeHtml(string $str)
  */
 class PhtmlTemplate extends Object
 {

@@ -65,9 +65,9 @@ class ReferenceStrategy implements StrategyInterface
     }
 
     /**
-     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function extract($value)
+    public function hydrate($value)
     {
         if (!$value) {
             return null;
@@ -90,9 +90,9 @@ class ReferenceStrategy implements StrategyInterface
     }
 
     /**
-     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    public function hydrate($value)
+    public function extract($value)
     {
         if ($value instanceof EntityInterface) {
             return $value->getId();

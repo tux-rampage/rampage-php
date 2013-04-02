@@ -69,7 +69,11 @@ class LazyReferenceStrategy implements StrategyInterface
      */
     public function extract($value)
     {
-        return $this->createDelegate($value);
+        if ($value instanceof EntityInterface) {
+            return $value->getId();
+        }
+
+        return $value;
     }
 
     /**
@@ -77,11 +81,7 @@ class LazyReferenceStrategy implements StrategyInterface
      */
     public function hydrate($value)
     {
-        if ($value instanceof EntityInterface) {
-            return $value->getId();
-        }
-
-        return $value;
+        return $this->createDelegate($value);
     }
 
 }

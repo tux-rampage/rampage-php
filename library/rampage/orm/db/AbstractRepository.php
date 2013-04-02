@@ -409,10 +409,11 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
                 continue;
             }
 
-            $entityTypeName = $entityType->getUnqualifiedName();
+            $refEntityType = $this->getEntityType($reference->getReferencedEntity());
+            $entityTypeName = $refEntityType->getUnqualifiedName();
             $options = array(
                 'repository' => $this,
-                'entityType' => $entityType,
+                'entityType' => $refEntityType,
             );
 
             if (isset($this->referenceItemClasses[$entityTypeName])) {
@@ -1521,8 +1522,8 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
 
         $sql = $this->getAdapterAggregate()->sql();
         $select = $mapper->mapToSelect($query, $sql->select());
-        $selectSql = $sql->getSqlStringForSqlObject($select);
         $result = function() use ($select, $sql) {
+            $selectSql = $sql->getSqlStringForSqlObject($select);
             return $sql->prepareStatementForSqlObject($select)->execute();
         };
 
