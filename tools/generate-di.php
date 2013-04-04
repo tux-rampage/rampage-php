@@ -25,15 +25,21 @@
 
 namespace rampagetools;
 
-set_include_path(
-    __DIR__ . '/../library' . PATH_SEPARATOR .
-    get_include_path()
-);
-
-require_once __DIR__ . '/../library/rampage.php';
 use rampage\core\di\definition\CompilerDefinition;
 use Zend\Code\Scanner\DirectoryScanner as ZendDirectoryScanner;
 // use Zend\Code\Scanner\FileScanner;
+
+// Composer?
+if (is_readable(__DIR__ . '/../autoload.php')) {
+    require_once __DIR__ . '/../autoload.php';
+} else {
+    set_include_path(
+        __DIR__ . '/../library' . PATH_SEPARATOR .
+        get_include_path()
+    );
+
+    require_once __DIR__ . '/../library/rampage.php';
+}
 
 /**
  * Directory scanner
@@ -70,10 +76,16 @@ class DirectoryScanner extends ZendDirectoryScanner
     }
 }
 
-$file = __DIR__ . '/../library/rampage/di.compiled.php';
+$file = $_SERVER['argv'][2]; // __DIR__ . '/../library/rampage/di.compiled.php';
+$dir = $_SERVER['argv'][1];
+
+if (!$file || !$dir) {
+    echo 'USAGE: ' . basename(__FILE__) . ' <directory> <result-filename>', "\n\n";
+    exit(1);
+}
+
 $compiler = new CompilerDefinition();
-$compiler->setDirectoryScanner(new DirectoryScanner(__DIR__ . '/../library'))
-    ->compile();
+$compiler->setDirectoryScanner(new DirectoryScanner($dir))->compile();
 
 file_put_contents($file, '<?php return ' . var_export($compiler->toArrayDefinition()->toArray(), true) . ';');
 echo 'Definition written to: ', $file, "\n";

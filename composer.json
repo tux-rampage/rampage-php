@@ -1,16 +1,19 @@
 {
-    "name": "rampage-php/rampage-php",
+    "name": "rampage-php/framework",
     "description": "Rampage PHP Framework",
+    "license": "GPL-3.0",
     
     "repositories": [
         {"type": "composer", "url": "https://packages.zendframework.com/" }
     ],
 
     "require" : {
-        "zendframework/zendframework": "~2.1.0",
+        "zendframework/zendframework": "~2.1.0"
     },
     
     "autoload": {
         "classmap": ["library/"]
-    }
+    },
+    
+    "bin": ["tools/generate-di.php"]
 }

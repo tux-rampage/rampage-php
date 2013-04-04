@@ -61,6 +61,7 @@ use rampage\orm\entity\feature\NewItemInterface;
 // ZF dependencies
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\Sql\Expression as SQLExpression;
+use Zend\Db\Sql\Select;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
@@ -68,7 +69,6 @@ use Zend\Stdlib\Hydrator\HydratorInterface;
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\EventManager;
-use Zend\Console\Prompt\Select;
 
 /**
  * Abstract DB repository
@@ -765,7 +765,7 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
      */
     protected function newCollection(QueryInterface $query)
     {
-        $collection = $this->getObjectManager()->newInstance('rampage.orm.entity.LazyLoadableCollection');
+        $collection = $this->getObjectManager()->newInstance('rampage.orm.entity.lazy.Collection');
         $itemType = $this->getEntityClass($query->getEntityType());
 
         if ($itemType && ($collection instanceof RestrictableCollectionInterface)) {

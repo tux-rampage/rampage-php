@@ -30,6 +30,7 @@ use rampage\orm\query\Query;
 use rampage\orm\query\constraint\ConstraintInterface;
 use rampage\orm\query\constraint\CompositeInterface as ConstraintCompositeInterface;
 use rampage\orm\query\constraint\DefaultConstraint;
+use rampage\orm\query\constraint\AttributeInterface;
 use rampage\orm\query\QueryInterface;
 
 // DB Deps
@@ -46,7 +47,7 @@ use Zend\Db\Sql\Predicate\Predicate;
 use Zend\Db\Sql\Predicate\Operator;
 use Zend\Db\Sql\Expression;
 use Zend\ServiceManager\ServiceLocatorInterface;
-
+use rampage\orm\exception\LogicException;
 
 /**
  * Default query mapper
@@ -385,16 +386,22 @@ abstract class AbstractMapper implements MapperInterface
             if ($this->attributeConstraintMappers->has($attribute)) {
                 $this->attributeConstraintMappers
                     ->get($attribute)
-                    ->map($constraint, $predicate);
+                    ->map($constraint, $predicate, $this);
 
                 return $this;
             }
 
             $identifier = $this->getAttributeIdentifier($attribute);
             $value = $constraint->getValue();
+            $valueType = Predicate::TYPE_VALUE;
 
             if ($value instanceof \DateTime) {
                 $value = $this->getPlatform()->formatDateTime($value);
+            }
+
+            if ($value instanceof AttributeInterface) {
+                $value = $this->getAttributeIdentifier($value->getName());
+                $valueType = Predicate::TYPE_IDENTIFIER;
             }
 
             switch ($type) {
@@ -405,15 +412,19 @@ abstract class AbstractMapper implements MapperInterface
                     }
 
                     $sqlOperator = $this->operatorMap[$operator];
-                    $predicate->addPredicate(new Operator($identifier, $sqlOperator, $value));
+                    $predicate->addPredicate(new Operator($identifier, $sqlOperator, $value, Predicate::TYPE_IDENTIFIER, $valueType));
 
                     break;
 
                 case DefaultConstraint::TYPE_EQUALS:
-                    $predicate->equalTo($identifier, $value);
+                    $predicate->equalTo($identifier, $value, Predicate::TYPE_IDENTIFIER, $valueType);
                     break;
 
                 case DefaultConstraint::TYPE_IN:
+                    if ($valueType == Predicate::TYPE_IDENTIFIER) {
+                        throw new LogicException('Cannot use attribute as value for ' . $type . ' constraint');
+                    }
+
                     $predicate->in($identifier, $value);
                     break;
 
@@ -422,15 +433,23 @@ abstract class AbstractMapper implements MapperInterface
                     break;
 
                 case DefaultConstraint::TYPE_LIKE:
+                    if ($valueType == Predicate::TYPE_IDENTIFIER) {
+                        throw new LogicException('Cannot use attribute as value for ' . $type . ' constraint');
+                    }
+
                     $identifier = $this->prepareLikeIdentifier($constraint->getAttribute(), $identifier);
                     $predicate->like($identifier, $this->prepareLikeValue($value));
                     break;
 
                 case DefaultConstraint::TYPE_NOTEQUALS:
-                    $predicate->notEqualTo($identifier, $value);
+                    $predicate->notEqualTo($identifier, $value, Predicate::TYPE_IDENTIFIER, $valueType);
                     break;
 
                 case DefaultConstraint::TYPE_NOTLIKE:
+                    if ($valueType == Predicate::TYPE_IDENTIFIER) {
+                        throw new LogicException('Cannot use attribute as value for ' . $type . ' constraint');
+                    }
+
                     $identifier = $this->prepareLikeIdentifier($constraint->getAttribute(), $identifier);
                     $value = $this->prepareLikeValue($value);
 

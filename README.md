@@ -32,8 +32,29 @@ Feel free to contact them for:
 
 ## Composer
 
-__TODO__: Add composer configs/repo to simplify this process.
+1. Add a composer dependency to rampage-php/framework
+2. Run composer.phar install
+3. Include "vendor/autoload.php" as usual.
 
+### Example Composer Config
+
+This is an example you may use for your composer config.
+
+```json
+{
+    "name": "foo/bar",
+    "description": "My FooBar application",
+    "license": "proprietary",
+    
+    "repositories": [
+        {"type": "vcs", "url": "https://github.com/tux-rampage/rampage-php"},
+    ],
+    
+    "require": {
+        "rampage-php/framework": "dev-master",
+    }
+}
+```
 
 # Contributing
 

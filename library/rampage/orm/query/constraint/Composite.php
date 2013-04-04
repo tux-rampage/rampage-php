@@ -70,8 +70,7 @@ class Composite implements IteratorAggregate, CompositeInterface
      */
     public static function factory($name, array $args, ServiceLocatorInterface $serviceLocator)
     {
-        $type = array_shift($args);
-        return new static($type);
+        return new static($name);
     }
 
     /**
