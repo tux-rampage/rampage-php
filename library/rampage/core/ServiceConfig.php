@@ -98,16 +98,7 @@ class ServiceConfig extends ServiceManagerConfig
 
             $events = $instance->getEventManager();
             $events->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
-            $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, function($event) use ($serviceManager) {
-                $sharedEventManager = $serviceManager->get('SharedEventManager');
-                $config = $serviceManager->get('rampage.event.Config');
-
-                if (($sharedEventManager instanceof SharedEventManager)
-                  && ($config instanceof EventConfigInterface)) {
-                    $config->setConfigArray($serviceManager->get('config'));
-                    $sharedEventManager->setConfig($config);
-                }
-            }, 0);
+            $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, new event\SharedEventsInitializer($serviceManager), 0);
         });
 
         return $this;

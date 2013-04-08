@@ -29,6 +29,8 @@ use rampage\core\ModuleRegistry;
 use rampage\core\PathManager;
 use rampage\core\ObjectManagerInterface;
 use rampage\core\modules\AggregatedXmlConfig;
+use rampage\core\xml\mergerule\AllowSiblingsRule;
+
 use Zend\EventManager\SharedEventManagerInterface;
 
 /**
@@ -60,6 +62,17 @@ class Config extends AggregatedXmlConfig implements ConfigInterface
     }
 
     /**
+     * @see \rampage\core\xml\Config::getDefaultMergeRulechain()
+     */
+    protected function getDefaultMergeRulechain()
+    {
+        $rules = parent::getDefaultMergeRulechain();
+        $rules->add(new AllowSiblingsRule('~/listener$~'));
+
+        return $rules;
+    }
+
+	/**
      * @return \rampage\core\ObjectManagerInterface
      */
     protected function getObjectManager()
