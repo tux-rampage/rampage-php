@@ -35,6 +35,7 @@ use ArrayObject;
  * @method string resourceUrl() resourceUrl(string $resource)
  * @method string translate() translate(string $message)
  * @method string escapeHtml() escapeHtml(string $str)
+ * @method string dateFormat() dateFormat($date, $dateType = null, $timeType = null, $locale = null, $pattern = null)
  */
 class PhtmlTemplate extends Object
 {
