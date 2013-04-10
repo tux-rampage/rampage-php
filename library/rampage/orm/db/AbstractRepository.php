@@ -1494,19 +1494,8 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             $itemClass = $this->getEntityClass($entityType);
         }
 
-        // TODO: Move to invokable instead of using a closure
-        $factory = function(array $data) use ($hydrator, $itemClass, $objectManager, $fieldMapper) {
-            $item = $objectManager->newInstance($itemClass);
-            $objectData = array();
-
-            foreach ($data as $field => $value) {
-                $attribute = $fieldMapper->mapField($field);
-                $objectData[$attribute] = $value;
-            }
-
-            $hydrator->hydrate($objectData, $item);
-            return $item;
-        };
+        $factory = new ClassnameItemFactory($objectManager, $hydrator, $itemClass);
+        $factory->setFieldmapper($fieldMapper);
 
         return $factory;
     }
