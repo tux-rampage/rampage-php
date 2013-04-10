@@ -34,6 +34,7 @@ use Zend\Db\Adapter\Adapter;
 use Zend\Db\Adapter\Driver\Feature\DriverFeatureInterface;
 use rampage\db\driver\feature\DummyTransactionFeature;
 use rampage\db\driver\feature\TransactionFeatureInterface;
+use Zend\Db\Sql\Select;
 
 /**
  * Adapter
@@ -243,6 +244,44 @@ class AdapterAggregate
         $this->sql = $sql;
 
         return $sql;
+    }
+
+    /**
+     * Fetch on field from the first record
+     *
+     * @param Select $select
+     * @param string $field
+     * @return mixed|false
+     */
+    public function fetchOne(Select $select, $field = null)
+    {
+        $row = $this->sql()
+            ->prepareStatementForSqlObject($select)
+            ->execute()
+            ->current();
+
+        if (!$row) {
+            return false;
+        }
+
+        if ($field !== null) {
+            return isset($row[$field])? $row[$field] : false;
+        }
+
+        return current($row);
+    }
+
+    /**
+     * Fetch the first row
+     *
+     * @param Select $select
+     */
+    public function fetchRow(Select $select)
+    {
+        return $this->sql()
+            ->prepareStatementForSqlObject($select)
+            ->execute()
+            ->current();
     }
 
     /**

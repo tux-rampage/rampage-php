@@ -395,15 +395,25 @@ class ManifestConfig extends Config
                 break;
         }
 
-        if ($config) {
-            $type = $config['type'];
-            unset($config['type']);
-
-            $config = array(
-                'type' => $type,
-                'options' => $config
-            );
+        if (!$config) {
+            return false;
         }
+
+        if (isset($typeNode['controller'])) {
+            $config['defaults']['controller'] = (string)$typeNode['controller'];
+        }
+
+        if (isset($typeNode['action'])) {
+            $config['defaults']['action'] = (string)$typeNode['action'];
+        }
+
+        $type = $config['type'];
+        unset($config['type']);
+
+        $config = array(
+            'type' => $type,
+            'options' => $config
+        );
 
         return $config;
     }

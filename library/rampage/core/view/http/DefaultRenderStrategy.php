@@ -27,6 +27,7 @@ namespace rampage\core\view\http;
 
 use rampage\core\view\Layout;
 use rampage\core\Application;
+use rampage\core\view\LayoutAwareInterface;
 
 use Zend\Mvc\MvcEvent;
 use Zend\EventManager\ListenerAggregateInterface;
@@ -34,7 +35,6 @@ use Zend\EventManager\EventManagerInterface;
 use Zend\View\Renderer\RendererInterface;
 use Zend\Http\Response;
 use Zend\Http\Request;
-use rampage\core\view\LayoutAwareInterface;
 
 /**
  * Default Render strategy
@@ -87,6 +87,14 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
     }
 
     /**
+     * @return \Zend\View\Renderer\RendererInterface
+     */
+    protected function getRenderer(MvcEvent $event)
+    {
+        return $event->getApplication()->getServiceManager()->get('rampage.core.view.http.Renderer');
+    }
+
+    /**
      * Render
      *
      * @param MvcEvent $event
@@ -104,7 +112,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
             return $this;
         }
 
-        $renderer = $application->getServiceManager()->get('rampage.core.view.http.Renderer');
+        $renderer = $this->getRenderer($event);
         if (!$renderer instanceof RendererInterface) {
             return;
         }

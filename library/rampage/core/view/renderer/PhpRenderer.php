@@ -88,6 +88,13 @@ class PhpRenderer implements RendererInterface
     private $helpers = null;
 
     /**
+     * Layout output
+     *
+     * @var unknown
+     */
+    protected $layoutOutputType = 'html';
+
+    /**
      * Constructor
      */
     public function __construct(PluginManager $pluginManager)
@@ -293,6 +300,17 @@ class PhpRenderer implements RendererInterface
     }
 
     /**
+     * Lyout output type
+     *
+     * @param string $type
+     */
+    public function setLayoutOutputType($type)
+    {
+        $this->layoutOutputType = $type;
+        return $this;
+    }
+
+    /**
      * Render the given View
      *
      * @param \rampage\core\view\TemplateViewInterface $view
@@ -305,7 +323,7 @@ class PhpRenderer implements RendererInterface
         if ($view instanceof Layout) {
             $this->setData($view->getData());
 
-            foreach ($view->getOutputViews('html') as $childName) {
+            foreach ($view->getOutputViews($this->layoutOutputType) as $childName) {
                 $child = $view->getView($childName);
 
                 if ($child instanceof RenderableInterface) {

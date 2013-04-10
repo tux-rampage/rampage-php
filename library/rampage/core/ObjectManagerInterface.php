@@ -26,11 +26,12 @@
 namespace rampage\core;
 
 use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\Di\DependencyInjectionInterface;
 
 /**
  * Object manager interface
  */
-interface ObjectManagerInterface extends ServiceLocatorInterface
+interface ObjectManagerInterface extends ServiceLocatorInterface, DependencyInjectionInterface
 {
     /**
      * Add aliases
@@ -57,15 +58,6 @@ interface ObjectManagerInterface extends ServiceLocatorInterface
      * @return object
      */
     public function get($name, array $params = array(), $callInitializers = true);
-
-    /**
-     * Create a new instance for the requested class
-     *
-     * @param string $name
-     * @param string $params
-     * @return string
-     */
-    public function newInstance($name, array $params = array());
 
     /**
      * Check if a service can be created
