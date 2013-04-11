@@ -44,9 +44,11 @@ class Oracle extends DefaultOraclePlatform implements DriverAwareInterface
      * (non-PHPdoc)
      * @see \rampage\db\platform\DriverAwareInterface::setDriver()
      */
-    public function setDriver(DriverInterface $driver = null)
+    public function setDriver($driver = null)
     {
-        $this->driver = $driver;
+        if ($driver instanceof DriverInterface) {
+            $this->driver = $driver;
+        }
     }
 
     /**

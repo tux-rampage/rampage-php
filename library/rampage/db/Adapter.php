@@ -89,29 +89,12 @@ class Adapter extends DefaultAdapter
                 $platform = new platform\Mysql($options);
                 break;
 
-            case 'SqlServer':
-                $platform = new DefaultPlatforms\SqlServer($options);
-                break;
-
             case 'Oracle':
                 $platform = new platform\Oracle($options);
                 break;
 
-            case 'Sqlite':
-                $platform = new DefaultPlatforms\Sqlite($options);
-                break;
-
-            case 'Postgresql':
-                $platform = new DefaultPlatforms\Postgresql($options);
-                break;
-
-            case 'IbmDb2':
-                $platform = new DefaultPlatforms\IbmDb2($options);
-                break;
-
             default:
-                $platform = new DefaultPlatforms\Sql92($options);
-                break;
+                return parent::createPlatform($parameters);
         }
 
         if (($this->driver instanceof DriverInterface) && ($platform instanceof DriverAwareInterface)) {

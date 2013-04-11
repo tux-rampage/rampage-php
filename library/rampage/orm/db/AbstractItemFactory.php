@@ -81,15 +81,14 @@ abstract class AbstractItemFactory
      */
     protected function mapData($data)
     {
-        if (!is_array($data) || !($data instanceof Traversable)) {
+        if (!is_array($data) && !($data instanceof Traversable)) {
             return false;
         }
 
         $result = array();
-        $mapper = $this->fieldmapper?: function($key) { return $key; };
 
         foreach ($data as $key => $value) {
-            $key = $mapper($key);
+            $key = ($this->fieldmapper)? $this->fieldmapper->mapAttribute($key) : $key;
             $result[$key] = $value;
         }
 

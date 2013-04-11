@@ -863,12 +863,19 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
             return false;
         }
 
-        $data = $this->getAdapterAggregate()
-            ->sql()
-            ->prepareStatementForSqlObject($select)
-            ->execute()
-            ->current();
+        return $this->hydrateFromSelect($select, $object, $entityType);
+    }
 
+    /**
+     * Select result hydration
+     *
+     * @param Select $select
+     * @param object $object
+     * @param string $entityType
+     */
+    protected function hydrateFromSelect(Select $select, $object, $entityType)
+    {
+        $data = $this->getAdapterAggregate()->fetchRow($select);
         if (!$data) {
             return false;
         }

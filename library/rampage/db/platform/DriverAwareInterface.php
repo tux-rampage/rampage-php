@@ -35,5 +35,5 @@ interface DriverAwareInterface
     /**
      * Set the driver instance
      */
-    public function setDriver(DriverInterface $driver = null);
+    public function setDriver($driver = null);
 }

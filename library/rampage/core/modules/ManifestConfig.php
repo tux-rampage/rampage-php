@@ -266,7 +266,7 @@ class ManifestConfig extends Config
             $config['service_manager']['initializers'][] = $class;
         }
 
-        $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto', 'service_manager')
+        $this->mapServiceManifest($xml, 'alias', 'aliases', 'to', 'service_manager')
              ->mapServiceManifest($xml, 'service', 'invokables', 'class', 'service_manager');
 //              ->mapServiceManifest($xml, 'initializer', 'initializers', 'initializer', true);
 
