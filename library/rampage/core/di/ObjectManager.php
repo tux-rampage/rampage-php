@@ -29,16 +29,12 @@ use rampage\core\ServiceManager;
 use rampage\core\ObjectManagerInterface;
 use rampage\core\exception;
 use rampage\core\service\exception\CircularReferenceException;
-
-use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\EventManager;
 use Zend\ServiceManager\InitializerInterface;
 
 /**
  * Peering service manager for retrieving package services
  */
-class ObjectManager extends ServiceManager implements ObjectManagerInterface, EventManagerAwareInterface
+class ObjectManager extends ServiceManager implements ObjectManagerInterface
 {
     /**
      * Service name regex
@@ -53,25 +49,11 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     private $parent = null;
 
     /**
-     * Event Manager
-     *
-     * @var \Zend\EventManager\EventManagerInterface
-     */
-    private $eventManager = null;
-
-    /**
      * Di locator
      *
      * @var \rampage\core\di\Di
      */
     private $di = null;
-
-    /**
-     * Event instance
-     *
-     * @var \rampage\core\di\Event
-     */
-    private $event = null;
 
     /**
      * Package aliases
@@ -101,49 +83,6 @@ class ObjectManager extends ServiceManager implements ObjectManagerInterface, Ev
     protected function getParentServiceManager()
     {
         return $this->parent;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \Zend\EventManager\EventManagerAwareInterface::setEventManager()
-     */
-    public function setEventManager(EventManagerInterface $eventManager)
-    {
-        $eventManager->setIdentifiers(array(
-            'ObjectManager',
-            strtr(get_class($this), '\\', '.')
-        ));
-
-        $this->eventManager = $eventManager;
-        return $this;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \Zend\EventManager\EventsCapableInterface::getEventManager()
-     * @return \Zend\EventManager\EventManagerInterface
-     */
-    public function getEventManager()
-    {
-        if (!$this->eventManager) {
-            $this->setEventManager(new EventManager());
-        }
-
-        return $this->eventManager;
-    }
-
-    /**
-     * Get event instance
-     *
-     * @return \rampage\core\di\Event
-     */
-    protected function getEvent()
-    {
-        if (!$this->event) {
-            $this->event = new Event($this);
-        }
-
-        return $this->event;
     }
 
     /**

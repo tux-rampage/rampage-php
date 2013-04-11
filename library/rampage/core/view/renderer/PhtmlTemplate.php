@@ -31,7 +31,7 @@ use ArrayObject;
 /**
  * Render wrapper
  *
- * @method string url() url(string $route)
+ * @method string url() url($name = null, array $params = array(), $options = array(), $reuseMatchedParams = false)
  * @method string resourceUrl() resourceUrl(string $resource)
  * @method string translate() translate(string $message)
  * @method string escapeHtml() escapeHtml(string $str)
