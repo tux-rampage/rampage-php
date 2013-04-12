@@ -57,7 +57,8 @@ class DefaultFallback extends SplPriorityQueue implements FallbackInterface
     {
         $info = null;
 
-        foreach ($this as $path) {
+        $this->rewind();
+        foreach (clone $this as $path) {
             $info = new SplFileInfo(rtrim($path, '/') . '/' . ltrim($file, '/'));
 
             if ($info->isDir() || $info->isFile() || $info->isLink()) {
