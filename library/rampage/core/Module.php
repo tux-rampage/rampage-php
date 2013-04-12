@@ -294,8 +294,15 @@ class Module implements ModuleInterface,
             return $this;
         }
 
-        $config = new ManifestConfig($this, $this->getModulePath('module.xml'));
-        $this->manifest = $config->toArray();
+        $xmlfile = $this->getModulePath('module.xml', true);
+
+        if ($xmlfile->isFile() && $xmlfile->isReadable()) {
+            $config = new ManifestConfig($this, $this->getModulePath('module.xml'));
+            $this->manifest = $config->toArray();
+        } else {
+            // ZF2 module
+            $this->manifest = array('module_instance' => $this->name . '\\Module');
+        }
 
         return $this;
     }
