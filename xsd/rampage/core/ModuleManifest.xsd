@@ -243,14 +243,9 @@
     </complexType>
 
     <complexType name="PackageDefinition">
-        <simpleContent>
-            <extension base="rampage:PHPClassName">
-                <attribute name="directory" type="string"
-                    use="optional">
-                </attribute>
-                <attribute name="fqpath" type="boolean" use="optional"></attribute>
-            </extension>
-        </simpleContent>
+        <attribute name="name" type="rampage:PHPClassName" use="required"></attribute>
+        <attribute name="directory" type="string" use="optional"></attribute>
+        <attribute name="fqpath" type="boolean" use="optional"></attribute>
     </complexType>
 
     <complexType name="LayoutSection">

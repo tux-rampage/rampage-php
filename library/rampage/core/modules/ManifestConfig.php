@@ -610,9 +610,10 @@ class ManifestConfig extends Config
         }
 
         /* @var $child \rampage\core\xml\SimpleXmlElement */
-        foreach ($xml->xpath("packages/package[. != '']") as $child) {
+        foreach ($xml->xpath("packages/package[. != '' or @name != '']") as $child) {
             $dir = (isset($child['directory']))? (string)$child['directory'] : 'src';
-            $namespace = trim(str_replace('.', '\\', (string)$child), '\\');
+            $namespace = (isset($child['name']))? (string)$child['name'] : (string)$child;
+            $namespace = trim(str_replace('.', '\\', $namespace), '\\');
             $path = trim($dir, '/');
 
             if ($child->is('fqpath', false)) {
