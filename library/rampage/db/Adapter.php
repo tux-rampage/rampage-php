@@ -28,7 +28,6 @@ namespace rampage\db;
 use Zend\Db\Adapter\Adapter as DefaultAdapter;
 use Zend\Db\Adapter\Driver\DriverInterface;
 use Zend\Db\Adapter\Exception\InvalidArgumentException;
-use Zend\Db\Adapter\Platform as DefaultPlatforms;
 
 use rampage\db\driver\pdo\Driver as PdoDriver;
 use rampage\db\driver\oracle\PDODriver as OraclePDODriver;
@@ -103,5 +102,4 @@ class Adapter extends DefaultAdapter
 
         return $platform;
     }
-
 }
