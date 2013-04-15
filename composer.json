@@ -5,7 +5,7 @@
     "keywords": ["framework", "zf2", "rampage"],
     
     "authors": [
-        { "name": "Axel H.", "role": "developer" }
+        { "name": "Axel H.", "email": "rampagephp@linux-rampage.org", "role": "developer" }
     ],
     
     "support": {
@@ -19,6 +19,11 @@
 
     "require" : {
         "zendframework/zendframework": "~2.1.0"
+    },
+    
+    "suggest": {
+        "rampage-php/composer-module-installer": "Allow installing application modules via composer",
+        "rampage-php/dev-tools": "Integration of DB profiling for Zend Developer Tools"
     },
     
     "autoload": {
