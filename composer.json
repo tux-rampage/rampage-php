@@ -2,6 +2,16 @@
     "name": "rampage-php/framework",
     "description": "Rampage PHP Framework",
     "license": "GPL-3.0",
+    "keywords": ["framework", "zf2", "rampage"],
+    
+    "authors": [
+        { "name": "Axel H.", "email": "staff@pro-unreal.de", "role": "developer" }
+    ],
+    
+    "support": {
+        "issues": "https://github.com/tux-rampage/rampage-php/issues",
+        "wiki": "https://github.com/tux-rampage/rampage-php/wiki"
+    },
     
     "repositories": [
         {"type": "composer", "url": "https://packages.zendframework.com/" }
