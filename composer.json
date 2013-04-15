@@ -1,6 +1,6 @@
 {
     "name": "rampage-php/framework",
-    "description": "Rampage PHP Framework",
+    "description": "Rampage PHP Framework based on Zend Framework 2",
     "license": "GPL-3.0",
     "keywords": ["framework", "zf2", "rampage"],
     
