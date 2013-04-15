@@ -5,7 +5,7 @@
     "keywords": ["framework", "zf2", "rampage"],
     
     "authors": [
-        { "name": "Axel H.", "email": "staff@pro-unreal.de", "role": "developer" }
+        { "name": "Axel H.", "role": "developer" }
     ],
     
     "support": {
