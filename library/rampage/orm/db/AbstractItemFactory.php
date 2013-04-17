@@ -88,7 +88,7 @@ abstract class AbstractItemFactory
         $result = array();
 
         foreach ($data as $key => $value) {
-            $key = ($this->fieldmapper)? $this->fieldmapper->mapAttribute($key) : $key;
+            $key = ($this->fieldmapper)? $this->fieldmapper->mapField($key) : $key;
             $result[$key] = $value;
         }
 
