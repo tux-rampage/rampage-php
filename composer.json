@@ -1,40 +1,50 @@
 {
-    "name": "rampage-php/framework",
-    "description": "Rampage PHP Framework based on Zend Framework 2",
-    "license": "GPL-3.0",
-    "keywords": ["framework", "zf2", "rampage"],
-    
-    "authors": [
-        { "name": "Axel H.", "email": "rampagephp@linux-rampage.org", "role": "developer" }
-    ],
-    
-    "support": {
-        "issues": "https://github.com/tux-rampage/rampage-php/issues",
-        "wiki": "https://github.com/tux-rampage/rampage-php/wiki"
-    },
-    
-    "repositories": [
-        {"type": "composer", "url": "https://packages.zendframework.com/" }
-    ],
-
-    "require" : {
-        "zendframework/zendframework": "~2.1.0"
-    },
-    
-    "suggest": {
-        "rampage-php/composer-module-installer": "Allow installing application modules via composer",
-        "rampage-php/dev-tools": "Integration of DB profiling for Zend Developer Tools"
-    },
-    
-    "autoload": {
-        "classmap": ["library/"]
-    },
-    
-    "bin": ["tools/generate-di.php"],
-    
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0.x-dev"
-        }
-    }
+	"name" : "rampage-php/framework",
+	"description" : "Rampage PHP Framework based on Zend Framework 2",
+	"type" : "library",
+	"authors" : [{
+			"name" : "Axel H.",
+			"email" : "rampagephp@linux-rampage.org",
+			"role" : "developer"
+		}
+	],
+	"keywords" : [
+		"framework",
+		"zf2",
+		"rampage"
+	],
+	"homepage" : "https://github.com/tux-rampage/rampage-php",
+	"license" : [
+		"GPL-3.0"
+	],
+	"require" : {
+		"zendframework/zendframework" : "~2.1.0"
+	},
+	"autoload" : {
+		"classmap" : [
+			"library/"
+		]
+	},
+	"support" : {
+		"source" : "https://github.com/tux-rampage/rampage-php",
+		"issues" : "https://github.com/tux-rampage/rampage-php/issues",
+		"wiki" : "https://github.com/tux-rampage/rampage-php/wiki"
+	},
+	"repositories" : [{
+			"type" : "composer",
+			"url" : "https://packages.zendframework.com/"
+		}
+	],
+	"extra" : {
+		"branch-alias" : {
+			"dev-master" : "1.0.x-dev"
+		}
+	},
+	"bin" : [
+		"tools/generate-di.php"
+	],
+	"suggest" : {
+		"rampage-php/dev-tools" : "Integration of DB profiling for Zend Developer Tools",
+		"rampage-php/composer-module-installer" : "Allow installing application modules via composer"
+	}
 }
