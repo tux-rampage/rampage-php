@@ -218,10 +218,6 @@ class Module implements ModuleInterface,
                 $info = new SplFileInfo('phar://' . $info->getPathname());
             }
 
-            if (!$info->isDir()) {
-                throw new exception\RuntimeException('Failed to locate module: ' . $this->name);
-            }
-
             $path = $info->getPathname();
             $this->options['path'] = $path;
         }
@@ -287,7 +283,7 @@ class Module implements ModuleInterface,
 
         $this->isLoaded = true;
         $manifest = $this->getModulePath(static::STATIC_FILE, true);
-        if ($manifest->isReadable() && $manifest->isFile()) {
+        if ($manifest && $manifest->isReadable() && $manifest->isFile()) {
             $data = include $manifest;
 
             $this->manifest = $data;
@@ -296,7 +292,7 @@ class Module implements ModuleInterface,
 
         $xmlfile = $this->getModulePath('module.xml', true);
 
-        if ($xmlfile->isFile() && $xmlfile->isReadable()) {
+        if ($xmlfile && $xmlfile->isFile() && $xmlfile->isReadable()) {
             $config = new ManifestConfig($this, $this->getModulePath('module.xml'));
             $this->manifest = $config->toArray();
         } else {
@@ -443,7 +439,7 @@ class Module implements ModuleInterface,
         }
 
         $class = str_replace('.', '\\', $this->manifest['module_instance']);
-        $class = '\\' . trim($class, '\\');
+        $class = trim($class, '\\');
 
         $this->loadModuleClass($class);
         $this->instance = new $class($this);
