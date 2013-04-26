@@ -78,6 +78,7 @@ class Mapper
     /**
      * @param array $data
      * @param string $toDatabase
+     * @return array
      */
     public function map($data, $toDatabase = false)
     {

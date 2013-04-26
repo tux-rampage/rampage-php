@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +23,16 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\metadata;
 
 use rampage\db\Adapter;
+use rampage\simpleorm\EntityManager;
+use rampage\simpleorm\exception;
+
 /**
- * Entity manager
+ * Metadata container
  */
-class EntityManager
+class Metadata
 {
     /**
      * @var \rampage\db\Adapter
@@ -37,28 +40,36 @@ class EntityManager
     private $adapter = null;
 
     /**
-     * @param ConfigInterface $config
+     * @var EntityManager
      */
-    public function __construct(ConfigInterface $config)
-    {
-        $this->adapter = new Adapter($config->getAdapterOptions());
-    }
+    private $entityManager = null;
 
     /**
      * @param Adapter $adapter
+     */
+    public function __construct(EntityManager $entityManager, Adapter $adapter = null)
+    {
+        $this->entityManager = $entityManager;
+        $this->adapter = $adapter? : $entityManager->getAdapter();
+    }
+
+    /**
+     * Load metadata
+     *
      * @return self
      */
-    public function setAdapter(Adapter $adapter)
+    public function load()
     {
-        $this->adapter = $adapter;
         return $this;
     }
 
     /**
-     * @return \rampage\db\Adapter
+     * @param string $name
+     * @return Entity
+     * @throws exception\EntityNotFoundException
      */
-    public function getAdapter()
+    public function getEntity($name)
     {
-        return $this->adapter;
+        throw new exception\EntityNotFoundException('Could not find entity: ' . $name);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2013 Axel Helmert
+ * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,42 +23,11 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\exception;
 
-use rampage\db\Adapter;
 /**
- * Entity manager
+ * Exception marker interface
  */
-class EntityManager
+interface ExceptionInterface
 {
-    /**
-     * @var \rampage\db\Adapter
-     */
-    private $adapter = null;
-
-    /**
-     * @param ConfigInterface $config
-     */
-    public function __construct(ConfigInterface $config)
-    {
-        $this->adapter = new Adapter($config->getAdapterOptions());
-    }
-
-    /**
-     * @param Adapter $adapter
-     * @return self
-     */
-    public function setAdapter(Adapter $adapter)
-    {
-        $this->adapter = $adapter;
-        return $this;
-    }
-
-    /**
-     * @return \rampage\db\Adapter
-     */
-    public function getAdapter()
-    {
-        return $this->adapter;
-    }
 }
