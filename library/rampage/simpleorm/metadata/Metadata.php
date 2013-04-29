@@ -40,36 +40,75 @@ class Metadata
     private $adapter = null;
 
     /**
+     * @var DefinitionInterface
+     */
+    private $definition = null;
+
+    /**
      * @var EntityManager
      */
     private $entityManager = null;
 
     /**
+     * @var Entity[]
+     */
+    private $entities = array();
+
+    /**
      * @param Adapter $adapter
      */
-    public function __construct(EntityManager $entityManager, Adapter $adapter = null)
+    public function __construct(EntityManager $entityManager, Adapter $adapter = null, DefinitionInterface $definition = null)
     {
         $this->entityManager = $entityManager;
         $this->adapter = $adapter? : $entityManager->getAdapter();
+
+        if ($definition) {
+            $this->definition = $definition;
+        }
     }
 
     /**
-     * Load metadata
-     *
+     * @return \rampage\simpleorm\metadata\DefinitionInterface
+     */
+    protected function getDefinition()
+    {
+        return $this->definition;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasEntity($name)
+    {
+        return (isset($this->entities[$name]) || $this->getDefinition()->hasEntityDefintion($name));
+    }
+
+    /**
+     * @param Entity $entity
      * @return self
      */
-    public function load()
+    public function addEntity(Entity $entity)
     {
+        $this->entities[$entity->getName()] = $entity;
         return $this;
     }
 
     /**
      * @param string $name
-     * @return Entity
-     * @throws exception\EntityNotFoundException
+     * @return \rampage\simpleorm\metadata\Entity
+     * @throws \rampage\simpleorm\exception\EntityNotFoundException
      */
     public function getEntity($name)
     {
-        throw new exception\EntityNotFoundException('Could not find entity: ' . $name);
+        if (!isset($this->entities[$name])) {
+            if (!$this->getDefinition()->hasEntityDefintion($name)) {
+                throw new exception\EntityNotFoundException('Could not find entity: ' . $name);
+            }
+
+            $this->getDefinition()->loadEntityDefintion($name, $this);
+        }
+
+        return $this->entities[$name];
     }
 }

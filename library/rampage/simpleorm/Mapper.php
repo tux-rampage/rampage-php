@@ -32,7 +32,14 @@ use Traversable;
  */
 class Mapper
 {
+    /**
+     * @var array
+     */
     private $attributesToFields = array();
+
+    /**
+     * @var array
+     */
     private $fieldsToAttributes = array();
 
     /**
