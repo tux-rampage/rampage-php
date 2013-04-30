@@ -62,8 +62,15 @@ class EntityAnnotation implements AnnotationInterface
      */
     public function initialize($content)
     {
+        if (preg_match('^\s*([a-zA-Z0-9_]+)(\s+([a-zA-Z0-9.\\_]+))?\s*$', $content, $m)) {
+            $this->table = $m[1];
+            $this->name = strtr($m[3], '\\', '.');
+
+            return;
+        }
+
         if (preg_match('\bname\s*=\s*([a-zA-Z0-9.\\_]+)', $content, $m)) {
-            $this->name = $m[1];
+            $this->name = strtr($m[1], '\\', '.');
         }
 
         if (preg_match('\btable\s*=\s*([a-zA-Z0-9_]+)', $content, $m)) {

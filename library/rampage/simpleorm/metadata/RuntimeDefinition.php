@@ -27,6 +27,7 @@ namespace rampage\simpleorm\metadata;
 
 use Zend\Code\Reflection\ClassReflection;
 use Zend\Code\Annotation\AnnotationManager;
+
 /**
  * Runtime definition
  */
@@ -84,7 +85,6 @@ class RuntimeDefinition implements DefinitionInterface
         $class = $this->formatClassName($name);
         $reflection = new ClassReflection($class);
 
+        $annotations = $reflection->getAnnotations(new annotation\ClassAnnotationManager());
     }
-
-
 }

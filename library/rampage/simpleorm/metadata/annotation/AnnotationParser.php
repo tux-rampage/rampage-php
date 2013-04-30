@@ -41,14 +41,6 @@ class AnnotationParser implements ParserInterface
     private $annotations = array();
 
     /**
-     * Construct
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * @see \Zend\Code\Annotation\Parser\ParserInterface::onCreateAnnotation()
      */
     public function onCreateAnnotation(EventInterface $e)
