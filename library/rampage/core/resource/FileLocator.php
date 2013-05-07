@@ -129,7 +129,31 @@ class FileLocator implements FileLocatorInterface
     }
 
     /**
-     * @inheritdoc
+     * @param string $file
+     * @param string $scope
+     * @param string|array $segements
+     */
+    protected function findStaticPublicFile($file, $scope, $segments)
+    {
+        // check static module file
+        if (!is_array($segments)) {
+            $segments = array($segments);
+        }
+
+        $segments[] = $scope;
+        $segments[] = $file;
+
+        $relative = implode('/', array_filter($segments));
+        $file = new SplFileInfo($this->getPathManager()->get('public', $relative));
+
+        if (!$file->isFile()) {
+            return false;
+        }
+
+        return $relative;
+    }
+
+    /**
      * @see \rampage\core\resource\FileLocatorInterface::publish()
      */
     public function publish($file, $scope = null)
@@ -138,14 +162,18 @@ class FileLocator implements FileLocatorInterface
             @list($scope, $file) = explode('::', $file, 2);
         }
 
+        $relative = $this->findStaticPublicFile($file, $scope, 'static/resource');
+        if ($relative !== false) {
+            return new PublicFileInfo($relative);
+        }
+
         $parts = array('resources', $scope, $file);
         $relative = implode('/', array_filter($parts));
-
-        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
         $source = $this->resolve('public', $file, $scope, true);
+        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
 
         if ($target->isFile() && (($source !== false) && ($source->getMTime() <= $target->getMTime()))) {
-            return $relative;
+            return new PublicFileInfo($relative, 'media');
         }
 
         if (($source === false) || !$source->isFile() || !$source->isReadable()) {
@@ -161,7 +189,7 @@ class FileLocator implements FileLocatorInterface
             return false;
         }
 
-        return $relative;
+        return new PublicFileInfo($relative, 'media');
     }
 
     /**

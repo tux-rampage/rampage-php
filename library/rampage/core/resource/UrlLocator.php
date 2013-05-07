@@ -25,8 +25,6 @@
 
 namespace rampage\core\resource;
 
-use SplFileInfo;
-use rampage\core\PathManager;
 use rampage\core\model\url\Repository as UrlRepository;
 use rampage\core\exception\RuntimeException;
 
@@ -41,13 +39,6 @@ class UrlLocator implements UrlLocatorInterface
      * @var \rampage\core\resource\FileLocatorInterface
      */
     private $fileLocator = null;
-
-    /**
-     * Path Manager
-     *
-     * @var \rampage\core\PathManager
-     */
-    private $pathManager = null;
 
     /**
      * URL Model
@@ -67,12 +58,11 @@ class UrlLocator implements UrlLocatorInterface
      * Construct
      *
      * @param FileLocatorInterface $fileLocator
-     * @param PathManager $pathmanager
+     * @param UrlRepository $urlRepository
      */
-    public function __construct(FileLocatorInterface $fileLocator, PathManager $pathManager, UrlRepository $urlRepository)
+    public function __construct(FileLocatorInterface $fileLocator, UrlRepository $urlRepository)
     {
         $this->fileLocator = $fileLocator;
-        $this->pathManager = $pathManager;
         $this->urlRepository = $urlRepository;
     }
 
@@ -97,16 +87,6 @@ class UrlLocator implements UrlLocatorInterface
     }
 
     /**
-     * Path manager instance
-     *
-     * @return \rampage\core\PathManager
-     */
-    protected function getPathManager()
-    {
-        return $this->pathManager;
-    }
-
-    /**
      * Current theme
      *
      * @return null
@@ -123,50 +103,37 @@ class UrlLocator implements UrlLocatorInterface
     /**
      * Resolve relative path
      *
-     * @param string $type
-     * @param string $file
+     * @param string $filename
      * @param string $scope
+     * @param $theme
      */
-    protected function resolve($filename, $scope, $theme, &$urlType)
+    protected function resolve($filename, $scope, $theme)
     {
         if (isset($this->locations[$theme][$scope][$filename])) {
-            list($relative, $urlType) = $this->locations[$theme][$scope][$filename];
-            return $relative;
+            return $this->locations[$theme][$scope][$filename];
         }
 
-        $segments = array('theme', $theme, $scope, $filename);
-        $relative = implode('/', array_filter($segments));
-        $urlType = null;
+        $info = $this->getFileLocator()->publish($filename, $scope);
 
-        $file = new SplFileInfo($this->getPathManager()->get('public', $relative));
-        if ($file->isFile() && $file->isReadable()) {
-            $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
-            return $relative;
-        }
-
-        $urlType = 'media';
-        $relative = $this->getFileLocator()->publish($filename, $scope);
-
-        if ($relative === false) {
+        if (!$info || !$info->isValid()) {
             throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $filename, $theme));
         }
 
-        $this->locations[$theme][$scope][$filename] = array($relative, $urlType);
-        return $relative;
+        $this->locations[$theme][$scope][$filename] = $info;
+        return $info;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \rampage\core\resource\UrlLocatorInterface::getRelativePath()
+     * @see \rampage\core\resource\UrlLocatorInterface::getPublicFileInfo()
      */
-    public function getRelativePath($file, $scope = null, &$urlType = null)
+    public function getPublicFileInfo($file, $scope = null)
     {
         if (!$scope && (strpos($file, '::') !== false)) {
             @list($scope, $file) = explode('::', $file, 2);
         }
 
         $theme = $this->getCurrentTheme();
-        return $this->resolve($file, $scope, $theme, $urlType);
+        return $this->resolve($file, $scope, $theme);
     }
 
 	/**
@@ -175,9 +142,7 @@ class UrlLocator implements UrlLocatorInterface
      */
     public function getUrl($file, $scope = null)
     {
-        $urlType = null;
-        $path = $this->getRelativePath($file, $scope, $urlType);
-
-        return $this->getUrlModel($urlType)->getUrl($path);
+        $info = $this->getPublicFileInfo($file, $scope);
+        return $this->getUrlModel($info->getUrlType())->getUrl($info->getRelativePath());
     }
 }

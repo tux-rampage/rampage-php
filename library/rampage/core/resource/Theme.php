@@ -122,14 +122,18 @@ class Theme extends FileLocator
             @list($scope, $file) = explode('::', $file, 2);
         }
 
+        $relative = $this->findStaticPublicFile($file, $scope, array('static/theme', $this->getCurrentTheme()));
+        if ($relative !== false) {
+            return new PublicFileInfo($relative);
+        }
+
         $parts = array('themes', $this->getCurrentTheme(), $scope, $file);
         $relative = implode('/', array_filter($parts));
-
-        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
         $source = $this->resolveThemeFile('public', $file, $scope, true);
+        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
 
         if ($target->isFile() && (($source !== false) && ($source->getMTime() <= $target->getMTime()))) {
-            return $relative;
+            return new PublicFileInfo($relative, 'media');
         }
 
         if (($source === false) || !$source->isFile() || !$source->isReadable()) {
@@ -149,7 +153,7 @@ class Theme extends FileLocator
             return false;
         }
 
-        return $relative;
+        return new PublicFileInfo($relative, 'media');
     }
 
     /**

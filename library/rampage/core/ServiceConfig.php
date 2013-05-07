@@ -30,9 +30,6 @@ use Zend\ServiceManager\ServiceManager as ZendServiceManager;
 use Zend\ModuleManager\ModuleManagerInterface;
 use Zend\ModuleManager\ModuleEvent;
 
-use rampage\core\event\SharedEventManager;
-use rampage\core\event\ConfigInterface as EventConfigInterface;
-
 /**
  * Custom service configuration
  */

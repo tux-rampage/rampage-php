@@ -37,7 +37,7 @@ interface FileLocatorInterface
      *
      * @param string $file
      * @param string $scope
-     * @return string The published path relative to the media directory
+     * @return bool|\rampage\core\resource\PublicFileInfo The published path relative to the media directory
      */
     public function publish($file, $scope = null);
 

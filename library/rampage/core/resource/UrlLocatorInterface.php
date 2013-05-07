@@ -30,7 +30,16 @@ namespace rampage\core\resource;
  */
 interface UrlLocatorInterface
 {
-    public function getRelativePath($file, $scope = null, &$urlType = null);
+    /**
+     * @param string $file
+     * @param string $scope
+     * @return \rampage\core\resource\PublicFileInfo
+     */
+    public function getPublicFileInfo($file, $scope = null);
 
+    /**
+     * @param string $file
+     * @param string $scope
+     */
     public function getUrl($file, $scope = null);
 }

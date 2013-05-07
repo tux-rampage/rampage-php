@@ -297,7 +297,10 @@ class Module implements ModuleInterface,
             $this->manifest = $config->toArray();
         } else {
             // ZF2 module
-            $this->manifest = array('module_instance' => $this->name . '\\Module');
+            $this->manifest = array(
+                'application_config' => array(),
+                'module_instance' => $this->name . '\\Module'
+            );
         }
 
         return $this;
