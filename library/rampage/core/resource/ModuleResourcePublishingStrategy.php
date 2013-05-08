@@ -93,7 +93,7 @@ class ModuleResourcePublishingStrategy
         /* @var $file \SplFileInfo */
         $iterator = new DirectoryIterator($source);
         foreach ($iterator as $file) {
-            if (in_array($file->getFilename(), array('.', '..'))) {
+            if (in_array($file->getFilename(), array('.', '..', '.svn', '.git'))) {
                 continue;
             }
 
