@@ -665,7 +665,7 @@ abstract class AbstractRepository extends AbstractBaseRepository implements Repo
         $fields = $this->getEntityColumns($entityType);
 
         foreach ($data as $attribute => $value) {
-            $field = $mapper->mapField($attribute);
+            $field = $mapper->mapAttribute($attribute);
 
             if (in_array($field, $fields)) {
                 $result[$field] = $value;
