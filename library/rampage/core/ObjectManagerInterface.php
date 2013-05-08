@@ -48,15 +48,15 @@ interface ObjectManagerInterface extends ServiceLocatorInterface
      */
     public function resolveClassName($name);
 
-    /**
-     * Extended service locator interface to allow parameters and disable initializers
-     *
-     * @param string $name
-     * @param array $params
-     * @param bool $callInitializers
-     * @return object
-     */
-    public function get($name, array $params = array(), $callInitializers = true);
+//     /**
+//      * Extended service locator interface to allow parameters and disable initializers
+//      *
+//      * @param string $name
+//      * @param array $params
+//      * @param bool $callInitializers
+//      * @return object
+//      */
+//     public function get($name, array $params = array(), $callInitializers = true);
 
     /**
      * Retrieve a new instance of a class
