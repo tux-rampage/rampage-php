@@ -52,7 +52,7 @@ class ConstraintMapperCollection extends ArrayObject implements ServiceLocatorIn
         if (!$newval instanceof ConstraintMapperInterface) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid constraint mapper: %s does not implement use rampage.orm.db.platform.ConstraintMapperInterface',
-                Utils::getPritableTypeName($newval)
+                Utils::getPrintableTypeName($newval)
             ));
         }
 

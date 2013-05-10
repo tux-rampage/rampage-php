@@ -144,7 +144,7 @@ class Utils
      * @param mixed $var
      * @return string
      */
-    public static function getPritableTypeName($var)
+    public static function getPrintableTypeName($var)
     {
         if (is_object($var)) {
             return static::getPrintableClassName(get_class($var));

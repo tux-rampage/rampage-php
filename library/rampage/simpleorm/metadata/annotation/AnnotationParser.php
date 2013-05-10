@@ -71,7 +71,7 @@ class AnnotationParser implements ParserInterface
         if (!$annotation instanceof AnnotationInterface) {
             throw new exception\InvalidArgumentException(sprintf(
                 '%s: expects an instance of rampage\simpleorm\metadata\annotation\AnnotationInterface; received "%s"',
-                __METHOD__, Utils::getPritableTypeName($annotation)
+                __METHOD__, Utils::getPrintableTypeName($annotation)
             ));
         }
 

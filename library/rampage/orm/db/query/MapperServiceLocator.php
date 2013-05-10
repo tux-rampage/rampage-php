@@ -69,7 +69,8 @@ class MapperServiceLocator extends AbstractObjectLocator
      */
     public function get($name, array $options = array())
     {
-        if (!isset($this->invokables[$name])) {
+        $cName = $this->canonicalizeName($name);
+        if (!isset($this->invokables[$cName])) {
             $name = $this->defaultClass;
         }
 

@@ -82,7 +82,7 @@ class ReferenceStrategy implements StrategyInterface
             throw new RuntimeException(sprintf(
                 'Invalid entity instance: %s expected, %s given',
                 Utils::getPrintableClassName($this->ensureType),
-                Utils::getPritableTypeName($instance)
+                Utils::getPrintableTypeName($instance)
             ));
         }
 
