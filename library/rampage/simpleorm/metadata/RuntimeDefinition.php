@@ -31,7 +31,7 @@ use Zend\Code\Annotation\AnnotationManager;
 /**
  * Runtime definition
  */
-class RuntimeDefinition implements DefinitionInterface
+class ReflectionDriver implements DriverInterface
 {
     /**
      * @var \Zend\Code\Annotation\AnnotationManager
@@ -69,7 +69,7 @@ class RuntimeDefinition implements DefinitionInterface
     }
 
     /**
-     * @see \rampage\simpleorm\metadata\DefinitionInterface::hasEntityDefintion()
+     * @see \rampage\simpleorm\metadata\DriverInterface::hasEntityDefintion()
      */
     public function hasEntityDefintion($name)
     {
@@ -78,7 +78,7 @@ class RuntimeDefinition implements DefinitionInterface
     }
 
     /**
-     * @see \rampage\simpleorm\metadata\DefinitionInterface::loadEntityDefintion()
+     * @see \rampage\simpleorm\metadata\DriverInterface::loadEntityDefintion()
      */
     public function loadEntityDefintion($name, Metadata $metadata, Entity $entity = null)
     {

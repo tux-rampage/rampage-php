@@ -57,7 +57,7 @@ class Metadata
     /**
      * @param Adapter $adapter
      */
-    public function __construct(EntityManager $entityManager, Adapter $adapter = null, DefinitionInterface $definition = null)
+    public function __construct(EntityManager $entityManager, Adapter $adapter = null, DriverInterface $definition = null)
     {
         $this->entityManager = $entityManager;
         $this->adapter = $adapter? : $entityManager->getAdapter();

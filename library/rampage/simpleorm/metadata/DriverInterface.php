@@ -28,7 +28,7 @@ namespace rampage\simpleorm\metadata;
 /**
  * Metadata definition interface
  */
-interface DefinitionInterface
+interface DriverInterface
 {
     /**
      * Check if there is a definition available fo the given entity
