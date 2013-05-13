@@ -102,7 +102,7 @@ class ModuleResourcePublishingStrategy
             }
 
             if ($file->isDir()) {
-                $this->copyDir($file->getPathname(), $target . '/' . $file->getFilename());
+                $this->copyDir($file->getPathname(), $target . '/' . $file->getFilename(), $filter);
                 continue;
             }
 
@@ -124,6 +124,10 @@ class ModuleResourcePublishingStrategy
         }
 
         return function(SplFileInfo $info) use ($extensions) {
+            if ($info->isDir()) {
+                return true;
+            }
+
             foreach ($extensions as $ext) {
                 if ($ext == '') {
                     continue;
