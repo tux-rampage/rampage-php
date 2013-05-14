@@ -26,6 +26,7 @@
 namespace rampage\simpleorm;
 
 use rampage\db\Adapter;
+
 /**
  * Entity manager
  */

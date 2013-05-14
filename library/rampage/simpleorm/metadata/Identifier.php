@@ -26,12 +26,18 @@
 namespace rampage\simpleorm\metadata;
 
 use rampage\simpleorm\exception;
+use rampage\simpleorm\IdentifierStrategyInterface;
 
 /**
  * Identifier
  */
 class Identifier extends AttributeCollection
 {
+    /**
+     * @var IdentifierStrategyInterface
+     */
+    private $strategy = null;
+
     /**
      * @param Entity $entity
      */
@@ -47,6 +53,19 @@ class Identifier extends AttributeCollection
 
             $this->append($attribute);
         }
+    }
+
+    public function setStrategy(IdentifierStrategyInterface $strategy)
+    {
+        $fields = array();
+        foreach ($this as $attribute) {
+            $fields[] = $attribute->getField();
+        }
+
+        $strategy->setFields($fields);
+
+        $this->strategy = $strategy;
+        return $this;
     }
 
     /**

@@ -28,7 +28,7 @@ namespace rampage\simpleorm;
 /**
  * ID strategy interface
  */
-class IdentifierStrategyInterface
+interface IdentifierStrategyInterface
 {
     /**
      * @param EntityManager $entityManager
@@ -37,11 +37,13 @@ class IdentifierStrategyInterface
 
     /**
      * @param string $table
+     * @return self
      */
     public function setTable($table);
 
     /**
      * @param array $fields
+     * @return self
      */
     public function setFields(array $fields);
 
@@ -54,18 +56,28 @@ class IdentifierStrategyInterface
     public function exists($data);
 
     /**
-     * Prepare insert
+     * Prepare inserting a new record
      *
-     * @param array $data
      * @return bool
      */
     public function prepareInsert(&$data);
 
     /**
+     * Returns the new identifier value for the last prepareInsert call
+     *
+     * This must return an associative array with the fieldnames as keys.
+     * Must return false if no new value was generated. In this case
+     * no identifier will be hydrated to the object after performing the insert
+     *
+     * @return array|false
+     */
+    public function getNewIdentifierValue();
+
+    /**
      * Prepare update
      *
      * @param array $data
-     * @return \Zend\Db\Sql\Predicate\PredicateInterface
+     * @return \Zend\Db\Sql\Predicate\PredicateInterface|array
      */
-    public function getWherePredicate(&$data);
+    public function getWherePredicate($data);
 }

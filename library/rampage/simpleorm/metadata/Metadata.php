@@ -42,7 +42,7 @@ class Metadata
     /**
      * @var DefinitionInterface
      */
-    private $definition = null;
+    private $driver = null;
 
     /**
      * @var EntityManager
@@ -57,22 +57,22 @@ class Metadata
     /**
      * @param Adapter $adapter
      */
-    public function __construct(EntityManager $entityManager, Adapter $adapter = null, DriverInterface $definition = null)
+    public function __construct(EntityManager $entityManager, Adapter $adapter = null, DriverInterface $driver = null)
     {
         $this->entityManager = $entityManager;
         $this->adapter = $adapter? : $entityManager->getAdapter();
 
-        if ($definition) {
-            $this->definition = $definition;
+        if ($driver) {
+            $this->driver = $driver;
         }
     }
 
     /**
      * @return \rampage\simpleorm\metadata\DefinitionInterface
      */
-    protected function getDefinition()
+    protected function getDriver()
     {
-        return $this->definition;
+        return $this->driver;
     }
 
     /**
@@ -81,7 +81,7 @@ class Metadata
      */
     public function hasEntity($name)
     {
-        return (isset($this->entities[$name]) || $this->getDefinition()->hasEntityDefintion($name));
+        return (isset($this->entities[$name]) || $this->getDriver()->hasEntityDefintion($name));
     }
 
     /**
@@ -102,11 +102,11 @@ class Metadata
     public function getEntity($name)
     {
         if (!isset($this->entities[$name])) {
-            if (!$this->getDefinition()->hasEntityDefintion($name)) {
+            if (!$this->getDriver()->hasEntityDefintion($name)) {
                 throw new exception\EntityNotFoundException('Could not find entity: ' . $name);
             }
 
-            $this->getDefinition()->loadEntityDefintion($name, $this);
+            $this->getDriver()->loadEntityDefintion($name, $this);
         }
 
         return $this->entities[$name];
