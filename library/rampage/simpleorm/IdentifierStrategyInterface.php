@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,34 +23,49 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm\metadata\annotation;
+namespace rampage\simpleorm;
 
 /**
- * Entity annotation
+ * ID strategy interface
  */
-class EntityAnnotation extends AbstractAnnotation
+class IdentifierStrategyInterface
 {
     /**
-     * @see \rampage\simpleorm\metadata\annotation\AnnotationInterface::getKeyword()
+     * @param EntityManager $entityManager
      */
-    public function getKeyword()
-    {
-        return 'entity';
-    }
+    public function setEntityManager(EntityManager $entityManager);
 
     /**
-     * @return string
+     * @param string $table
      */
-    public function getTable()
-    {
-        return $this->getParam('table');
-    }
+    public function setTable($table);
 
     /**
-     * @see \Zend\Code\Annotation\AnnotationInterface::initialize()
+     * @param array $fields
      */
-    public function initialize($content)
-    {
-        $this->parseContent($content, array('table'));
-    }
+    public function setFields(array $fields);
+
+    /**
+     * Check record existence
+     *
+     * @param string $data
+     * @return bool
+     */
+    public function exists($data);
+
+    /**
+     * Prepare insert
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function prepareInsert(&$data);
+
+    /**
+     * Prepare update
+     *
+     * @param array $data
+     * @return \Zend\Db\Sql\Predicate\PredicateInterface
+     */
+    public function getWherePredicate(&$data);
 }

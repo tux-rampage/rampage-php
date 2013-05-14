@@ -38,7 +38,9 @@ class ClassAnnotationManager extends AnnotationManager
     public function __construct()
     {
         $parser = new AnnotationParser();
-        $parser->registerAnnotation(new EntityAnnotation());
+        $parser->registerAnnotation(new EntityAnnotation())
+            ->registerAnnotation(new FieldAnnotation(true))
+            ->registerAnnotation(new IdentifierAnnotation(true));
 
         $this->attach($parser);
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -26,24 +26,29 @@
 namespace rampage\simpleorm\metadata\annotation;
 
 /**
- * Entity annotation
+ * ID strategy annotation
  */
-class EntityAnnotation extends AbstractAnnotation
+class IdentifierStrategyAnnotation extends AbstractAnnotation
 {
+    /**
+     * @var string
+     */
+    private $class = null;
+
+    /**
+     * @param string $content
+     */
+    public function __construct($content)
+    {
+        $this->initialize($content);
+    }
+
     /**
      * @see \rampage\simpleorm\metadata\annotation\AnnotationInterface::getKeyword()
      */
     public function getKeyword()
     {
-        return 'entity';
-    }
-
-    /**
-     * @return string
-     */
-    public function getTable()
-    {
-        return $this->getParam('table');
+        return 'idstrategy';
     }
 
     /**
@@ -51,6 +56,28 @@ class EntityAnnotation extends AbstractAnnotation
      */
     public function initialize($content)
     {
-        $this->parseContent($content, array('table'));
+        if (false === ($pos = strpos($content, '('))) {
+            $this->class = substr($content, 0, $pos);
+            $content = trim(substr($content, $pos));
+            $this->parseContent(trim($content, '()'), array());
+        } else {
+            $this->class = $content;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getClass()
+    {
+        return $this->class;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->params;
     }
 }

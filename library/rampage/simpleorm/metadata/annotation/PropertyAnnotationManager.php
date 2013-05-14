@@ -25,32 +25,22 @@
 
 namespace rampage\simpleorm\metadata\annotation;
 
+use Zend\Code\Annotation\AnnotationManager;
+
 /**
- * Entity annotation
+ * Class annotation manager
  */
-class EntityAnnotation extends AbstractAnnotation
+class PropertyAnnotationManager extends AnnotationManager
 {
     /**
-     * @see \rampage\simpleorm\metadata\annotation\AnnotationInterface::getKeyword()
+     * Construct
      */
-    public function getKeyword()
+    public function __construct()
     {
-        return 'entity';
-    }
+        $parser = new AnnotationParser();
+        $parser->registerAnnotation(new FieldAnnotation())
+            ->registerAnnotation(new IdentifierAnnotation());
 
-    /**
-     * @return string
-     */
-    public function getTable()
-    {
-        return $this->getParam('table');
-    }
-
-    /**
-     * @see \Zend\Code\Annotation\AnnotationInterface::initialize()
-     */
-    public function initialize($content)
-    {
-        $this->parseContent($content, array('table'));
+        $this->attach($parser);
     }
 }

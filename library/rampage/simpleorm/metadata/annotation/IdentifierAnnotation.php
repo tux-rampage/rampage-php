@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -25,20 +25,17 @@
 
 namespace rampage\simpleorm\metadata\annotation;
 
-/**
- * Field annotation
- */
-class FieldAnnotation extends AbstractAnnotation
+class IdentifierAnnotation extends AbstractAnnotation
 {
+    /**
+     * @var IdentifierStrategyAnnotation
+     */
+    private $strategy = null;
+
     /**
      * @var array
      */
-    private $optionNames = array(
-        'type',
-        'field',
-        'hydrationType',
-        'hydrationStrategy'
-    );
+    protected $optionNames = array('auto', 'strategy');
 
     /**
      * @param bool $forClass
@@ -46,16 +43,8 @@ class FieldAnnotation extends AbstractAnnotation
     public function __construct($forClass = false)
     {
         if ($forClass) {
-            array_unshift($this->optionNames, 'property');
+            array_unshift($this->optionNames, 'field');
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getProperty()
-    {
-        return $this->getParam('property');
     }
 
     /**
@@ -63,7 +52,7 @@ class FieldAnnotation extends AbstractAnnotation
      */
     public function getKeyword()
     {
-        return 'field';
+        return 'identifier';
     }
 
     /**
@@ -75,11 +64,11 @@ class FieldAnnotation extends AbstractAnnotation
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getType()
+    public function isAutoIncrement()
     {
-        return $this->getParam('type', 'string');
+        return $this->toBool($this->getParam('auto', true));
     }
 
     /**
@@ -91,18 +80,17 @@ class FieldAnnotation extends AbstractAnnotation
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getHydrationType()
+    public function getStrategy()
     {
-        return $this->getParam('hydrationType', 'property');
-    }
+        if ($this->strategy !== null) {
+            return $this->strategy;
+        }
 
-    /**
-     * @return string|null
-     */
-    public function getHydrationStrategy()
-    {
-        return $this->getParam('hydrationStrategy');
+        $strategy = $this->getParam('strategy', '');
+        $this->strategy = new IdentifierStrategyAnnotation($strategy);
+
+        return $this->strategy;
     }
 }
