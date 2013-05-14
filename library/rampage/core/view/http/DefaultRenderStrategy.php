@@ -149,6 +149,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
         $response = $event->getResponse();
         $data = $layout->getData();
 
+        $layout->getData()->offsetSet('mvc_event', $event);
         if (!$response) {
             $response = new Response();
             $event->setResponse($response);
