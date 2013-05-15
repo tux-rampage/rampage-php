@@ -25,6 +25,7 @@
 
 namespace rampage\simpleorm\metadata;
 
+use rampage\simpleorm\exception;
 use Zend\Code\Reflection\ClassReflection;
 use Zend\Code\Annotation\AnnotationManager;
 
@@ -36,27 +37,83 @@ class ReflectionDriver implements DriverInterface
     /**
      * @var \Zend\Code\Annotation\AnnotationManager
      */
-    private $annotationManager = null;
+    private $classAnnotationManager = null;
 
     /**
-     * @param \Zend\Code\Annotation\AnnotationManager $annotationManager
+     * Reflection instances
+     *
+     * @var array
      */
-    public function __construct(AnnotationManager $annotationManager = null)
+    protected $reflections = array();
+
+    /**
+     * @param \Zend\Code\Annotation\AnnotationManager $classAnnotationManager
+     */
+    public function __construct(AnnotationManager $classAnnotationManager = null)
     {
-        if (!$annotationManager) {
-            $annotationManager = new AnnotationManager();
-            $annotationManager->attach();
+        $this->classAnnotationManager = $classAnnotationManager? : new annotation\ClassAnnotationManager();
+    }
+
+    /**
+     * @param string $class
+     * @return boolean|ClassReflection
+     */
+    protected function reflect($class)
+    {
+        $class = $this->formatClassName($class);
+        if (!class_exists($class)) {
+            return false;
         }
 
-        $this->annotationManager = $annotationManager;
+        if (!isset($this->reflections[$class])) {
+            $this->reflections[$class] = new ClassReflection($class);
+        }
+
+        return $this->reflections[$class];
+    }
+
+    /**
+     * @param ClassReflection $class
+     * @return \rampage\simpleorm\metadata\annotation\EntityAnnotation|false
+     */
+    protected function getEntityAnnotation($reflection)
+    {
+        while ($reflection instanceof ClassReflection) {
+            foreach ($reflection->getAnnotations($this->getClassAnnotationManager()) as $annotation) {
+                if ($annotation instanceof annotation\EntityAnnotation) {
+                    return $annotation;
+                }
+            }
+
+            $reflection = $reflection->getParentClass();
+            if (!$reflection) {
+                break;
+            }
+
+            if (isset($this->reflections[$reflection->getName()])) {
+                $reflection = $this->reflections[$reflection->getName()];
+            } else {
+                $this->reflections[$reflection->getName()] = $reflection;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $class
+     */
+    protected function isEntity($class)
+    {
+        return ($this->getEntityAnnotation($this->reflect($class)) !== false);
     }
 
     /**
      * @return \Zend\Code\Annotation\AnnotationManager
      */
-    public function getAnnotationManager()
+    public function getClassAnnotationManager()
     {
-        return $this->annotationManager;
+        return $this->classAnnotationManager;
     }
 
     /**
@@ -73,8 +130,7 @@ class ReflectionDriver implements DriverInterface
      */
     public function hasEntityDefintion($name)
     {
-        $class = $this->formatClassName($name);
-        return class_exists($class);
+        return $this->isEntity($name);
     }
 
     /**
@@ -82,9 +138,32 @@ class ReflectionDriver implements DriverInterface
      */
     public function loadEntityDefintion($name, Metadata $metadata, Entity $entity = null)
     {
-        $class = $this->formatClassName($name);
-        $reflection = new ClassReflection($class);
+        $reflection = $this->reflect($name);
+        $entityAnnotation = $this->getEntityAnnotation($reflection);
 
-        $annotations = $reflection->getAnnotations(new annotation\ClassAnnotationManager());
+        if (!$entityAnnotation) {
+            throw new exception\InvalidArgumentException('Invalid entity: ' . $name);
+        }
+
+        if ($entity === null) {
+            $entity = new Entity($name, $entityAnnotation->getTable());
+        }
+
+        $annotations = $reflection->getAnnotations($this->getClassAnnotationManager());
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof annotation\FieldAnnotation) {
+                $name = $annotation->getProperty();
+                if (!$name) {
+                    continue;
+                }
+
+                $attribute = new Attribute($name, $annotation->getField(), $annotation->getType());
+                $entity->getAttributes()->add($attribute);
+
+                continue;
+            }
+
+
+        }
     }
 }

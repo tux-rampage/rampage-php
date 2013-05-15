@@ -60,6 +60,11 @@ class Attribute
     private $identifier = false;
 
     /**
+     * @var bool
+     */
+    private $autoIncrement = false;
+
+    /**
      * @var \Zend\Stdlib\Hydrator\Strategy\StrategyInterface
      */
     private $hydrationStrategy = null;
@@ -138,6 +143,16 @@ class Attribute
     }
 
     /**
+     * @param bool $flag
+     * @return self
+     */
+    public function setIsAutoIncrement($flag = true)
+    {
+        $this->autoIncrement = $flag;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getName()
@@ -167,6 +182,14 @@ class Attribute
     public function isIdentifier()
     {
         return $this->identifier;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAutoIncrement()
+    {
+        return $this->isIdentifier() && $this->autoIncrement;
     }
 
     /**

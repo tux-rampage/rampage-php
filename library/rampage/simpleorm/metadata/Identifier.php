@@ -27,6 +27,8 @@ namespace rampage\simpleorm\metadata;
 
 use rampage\simpleorm\exception;
 use rampage\simpleorm\IdentifierStrategyInterface;
+use rampage\simpleorm\StaticIdentifierStrategy;
+use rampage\simpleorm\AutoincrementIdentifierStrategy;
 
 /**
  * Identifier
@@ -39,11 +41,18 @@ class Identifier extends AttributeCollection
     private $strategy = null;
 
     /**
+     * @var Entity
+     */
+    private $entity = null;
+
+    /**
      * @param Entity $entity
      */
     public function __construct(Entity $entity)
     {
         parent::__construct(array());
+
+        $this->entity = $entity;
 
         /* @var $attribute Attribute */
         foreach ($entity->getAttributes() as $attribute) {
@@ -55,17 +64,60 @@ class Identifier extends AttributeCollection
         }
     }
 
-    public function setStrategy(IdentifierStrategyInterface $strategy)
+    /**
+     * @return array
+     */
+    public function getFields()
     {
         $fields = array();
         foreach ($this as $attribute) {
             $fields[] = $attribute->getField();
         }
 
-        $strategy->setFields($fields);
+        return $fields;
+    }
 
+    /**
+     * Create identifier strategy
+     *
+     * @return IdentifierStrategyInterface
+     */
+    protected function createStrategy()
+    {
+        if (!$this->isValid()) {
+            throw new exception\LogicException('Cannot create identifier strategy without valid identifier');
+        }
+
+        if ($this->isMultiKey() || !$this->getAttribute()->isAutoIncrement()) {
+            return new StaticIdentifierStrategy();
+        }
+
+        return new AutoincrementIdentifierStrategy();
+    }
+
+    /**
+     * @param IdentifierStrategyInterface $strategy
+     * @return self
+     */
+    public function setStrategy(IdentifierStrategyInterface $strategy)
+    {
+        $strategy->setFields($this->getFields());
+        $strategy->setTable($this->entity->getTable()); // FIXME: entity reference
         $this->strategy = $strategy;
+
         return $this;
+    }
+
+    /**
+     * Identifier strategy
+     */
+    public function getStrategy()
+    {
+        if (!$this->strategy) {
+            $this->setStrategy($this->createStrategy());
+        }
+
+        return $this->strategy;
     }
 
     /**

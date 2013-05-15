@@ -76,7 +76,7 @@ interface IdentifierStrategyInterface
     /**
      * Prepare update
      *
-     * @param array $data
+     * @param array|ArrayAccess|string|int $data
      * @return \Zend\Db\Sql\Predicate\PredicateInterface|array
      */
     public function getWherePredicate($data);

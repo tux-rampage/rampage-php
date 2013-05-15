@@ -26,6 +26,7 @@
 namespace rampage\simpleorm;
 
 use Zend\Db\Sql\Predicate\Predicate;
+use ArrayAccess;
 
 /**
  * Strategy for auto incremented identifiers (MySQL auto_increment or MSSQL identity)
@@ -78,6 +79,10 @@ class AutoincrementIdentifierStrategy extends AbstractIdentifierStrategy
     {
         if (!$this->field) {
             throw new exception\RuntimeException('No identifier field defined');
+        }
+
+        if (!is_array($data) && !($data instanceof ArrayAccess)) {
+            $data= array($this->field => $data);
         }
 
         if (!isset($data[$this->field])) {
