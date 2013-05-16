@@ -28,6 +28,7 @@ namespace rampage\core\modules;
 use rampage\core\xml\Config;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\di\ServiceType;
+use rampage\core\service\CreateByDiFactory;
 use DOMDocument;
 
 /**
@@ -266,9 +267,13 @@ class ManifestConfig extends Config
             $config['service_manager']['initializers'][] = $class;
         }
 
+        foreach ($xml->xpath('./service[@name != "" and @class != ""]') as $serviceXml) {
+            $name = (string)$serviceXml['name'];
+            $config['service_manager']['factories'][$name] = new CreateByDiFactory((string)$serviceXml['class']);
+        }
+
         $this->mapServiceManifest($xml, 'alias', 'aliases', 'to', 'service_manager')
-             ->mapServiceManifest($xml, 'service', 'invokables', 'class', 'service_manager');
-//              ->mapServiceManifest($xml, 'initializer', 'initializers', 'initializer', true);
+             ->mapServiceManifest($xml, 'class', 'invokables', 'class', 'service_manager');
 
         return $this;
     }
@@ -723,8 +728,13 @@ class ManifestConfig extends Config
             $config[$key]['initializers'][] = $class;
         }
 
+        foreach ($xml->xpath('./service[@name != "" and @class != ""]') as $serviceXml) {
+            $name = (string)$serviceXml['name'];
+            $config[$key]['factories'][$name] = new CreateByDiFactory((string)$serviceXml['class']);
+        }
+
         $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto', $key)
-            ->mapServiceManifest($xml, 'service', 'invokables', 'class', $key);
+            ->mapServiceManifest($xml, 'class', 'invokables', 'class', $key);
 
         return $this;
     }
