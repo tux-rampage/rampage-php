@@ -7,15 +7,9 @@
 
     <complexType name="ServicesType">
         <sequence>
-            <element name="service" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                    <simpleContent>
-                        <extension base="rampage:SimpleServiceDefinition">
-                            <attribute name="class" type="rampage:PHPClassName" use="required"></attribute>
-                        </extension>
-                    </simpleContent>
-                </complexType>
+            <element name="service" maxOccurs="unbounded" minOccurs="0" type="rampage:ServiceClassDefinition">
             </element>
+            <element name="class" type="rampage:ServiceClassDefinition" maxOccurs="unbounded" minOccurs="0"></element>
             <element name="factory" type="rampage:ServiceFactoryDefinition" maxOccurs="unbounded" minOccurs="0"></element>
             <element name="alias" maxOccurs="unbounded" minOccurs="0">
                 <complexType>
@@ -585,5 +579,12 @@
     <complexType name="BaseRouteConfig">
         <attribute name="controller" type="string" use="optional"></attribute>
         <attribute name="action" type="string" use="optional"></attribute>
+    </complexType>
+    <complexType name="ServiceClassDefinition">
+        <simpleContent>
+            <extension base="rampage:SimpleServiceDefinition">
+                <attribute use="required" name="class" type="rampage:PHPClassName"></attribute>
+            </extension>
+        </simpleContent>
     </complexType>
 </schema>
