@@ -24,7 +24,7 @@
 	"autoload" : {
 		"psr-0" : {
 			"rampage" : "library/"
-		},
+		}
 	},
 	"support" : {
 		"source" : "https://github.com/tux-rampage/rampage-php",
