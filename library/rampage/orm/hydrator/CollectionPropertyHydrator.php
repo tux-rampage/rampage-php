@@ -43,16 +43,16 @@ class CollectionPropertyHydrator extends ReflectionHydrator
         $reflectedProperties = self::getReflProperties($object);
 
         foreach ($data as $key => $value) {
-            if (isset($reflectedProperties[$key])) {
+            if (!isset($reflectedProperties[$key])) {
                 continue;
             }
 
             /* @var $property \ReflectionProperty */
             $property = $reflectedProperties[$key];
+            $current = $property->getValue($object);
 
             // is lazy load expected?
             if ($value instanceof CollectionLoaderInterface) {
-                $current = $property->getValue($object);
                 if ($current instanceof LazyCollectionInterface) {
                     $current->setLoaderDelegate($value);
                 }

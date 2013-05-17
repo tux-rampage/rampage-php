@@ -294,7 +294,7 @@ class Config extends AggregatedXmlConfig implements ConfigInterface, EntityTypeC
             $reference->setHydrationOptions($hydration->toPhpValue('array'));
 
             if (isset($hydration['type'])) {
-                $reference->getHydration((string)$hydration['type']);
+                $reference->setHydration((string)$hydration['type']);
             }
         }
 
