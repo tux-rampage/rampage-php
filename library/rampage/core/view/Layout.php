@@ -26,7 +26,6 @@
 namespace rampage\core\view;
 
 use Serializable;
-use ArrayObject;
 
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
@@ -123,7 +122,7 @@ class Layout implements EventManagerAwareInterface, Serializable
         $this->setUpdate($update);
         $this->setViewLocator($locator);
 
-        $this->data = new ArrayObject();
+        $this->data = new DataContainer();
     }
 
     /**
