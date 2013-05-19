@@ -46,7 +46,7 @@ class AnnotationParser implements ParserInterface
     public function onCreateAnnotation(EventInterface $e)
     {
         $class = $e->getParam('class');
-        if (!$class || !preg_match('\\\\(simple)?orm:([a-zA-Z0-9_-]+)$', $class, $m)) {
+        if (!$class || !preg_match('~\\\\(simple)?orm:([a-zA-Z0-9_-]+)$~', $class, $m)) {
             return false;
         }
 
