@@ -23,28 +23,21 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm\metadata;
+namespace rampage\simpleorm;
+
+use SplObjectStorage;
 
 /**
- * Metadata definition interface
+ * Object queue
  */
-interface DriverInterface
+class ResetableObjectStorage extends SplObjectStorage
 {
     /**
-     * Check if there is a definition available fo the given entity
-     *
-     * @param string $name
-     * @return bool
+     * Reset this object storage
      */
-    public function hasEntityDefintion($name);
-
-    /**
-     * Load the given entity metadata into the given metadata object
-     *
-     * @param string $name
-     * @param Metadata $metadata
-     * @param Entity $entity The existing entity definition
-     * @return Entity
-     */
-    public function loadEntityDefintion($name, Metadata $metadata, Entity $entity = null);
+    public function reset()
+    {
+        $this->removeAll($this);
+        return $this;
+    }
 }

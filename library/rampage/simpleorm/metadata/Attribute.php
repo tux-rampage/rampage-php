@@ -42,17 +42,17 @@ class Attribute
     /**
      * @var string
      */
-    private $name;
+    private $name = null;
 
     /**
      * @var string
      */
-    private $field;
+    private $field = null;
 
     /**
      * @var string
      */
-    private $type;
+    private $type = null;
 
     /**
      * @var bool
@@ -89,22 +89,17 @@ class Attribute
     {
         $name = trim((string)$name);
         $field = trim((string)$field);
-        $type = $type?: self::TYPE_STRING;
 
         if ($name == '') {
             throw new exception\InvalidArgumentException('The attribute name must not be empty.');
         }
 
-        if (!in_array($type, $this->validTypes)) {
-            throw new exception\InvalidArgumentException(sprintf(
-                'Invalid attribute type "%s" for attribute "%s".',
-                $type, $name
-            ));
-        }
-
         $this->name = $name;
         $this->field = ($field == '')? $name : $field;
-        $this->type = $type;
+
+        if ($type) {
+            $this->setType($type);
+        }
     }
 
     /**
@@ -174,6 +169,24 @@ class Attribute
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * @param string $type
+     * @throws exception\InvalidArgumentException
+     * @return \rampage\simpleorm\metadata\Attribute
+     */
+    public function setType($type)
+    {
+        if (!in_array($type, $this->validTypes)) {
+            throw new exception\InvalidArgumentException(sprintf(
+                'Invalid attribute type "%s" for attribute "%s".',
+                $type, $this->getName()
+            ));
+        }
+
+        $this->type = $type;
+        return $this;
     }
 
     /**

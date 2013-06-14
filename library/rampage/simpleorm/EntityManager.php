@@ -26,6 +26,7 @@
 namespace rampage\simpleorm;
 
 use rampage\db\Adapter;
+use rampage\db\metadata\Metadata as DatabaseMetadata;
 
 /**
  * Entity manager
@@ -38,11 +39,33 @@ class EntityManager
     private $adapter = null;
 
     /**
+     * @var \rampage\db\metadata\Metadata
+     */
+    private $dbMetadata = null;
+
+    /**
+     * @var metadata\Metadata
+     */
+    private $metadata = null;
+
+    /**
+     * @var array
+     */
+    private $identifierStrategies = array();
+
+    /**
+     * @var
+     */
+    private $typeMap = null;
+
+    /**
      * @param ConfigInterface $config
      */
     public function __construct(ConfigInterface $config)
     {
         $this->adapter = new Adapter($config->getAdapterOptions());
+        $this->typeMap = new TypeMap();
+        $this->metadata = new metadata\Metadata($this);
     }
 
     /**
@@ -61,5 +84,47 @@ class EntityManager
     public function getAdapter()
     {
         return $this->adapter;
+    }
+
+    /**
+     * @param DatabaseMetadata $metadata
+     */
+    public function setDbMetadata(DatabaseMetadata $metadata)
+    {
+        $this->dbMetadata = $metadata;
+        return $this;
+    }
+
+    /**
+     * @return \rampage\db\metadata\Metadata
+     */
+    public function getDbMetadata()
+    {
+        if ($this->dbMetadata) {
+            return $this->dbMetadata;
+        }
+
+        $metadata = new DatabaseMetadata($this->getAdapter());
+        $this->setDbMetadata($metadata);
+
+        return $metadata;
+    }
+
+    /**
+     * Returns the type mapping
+     *
+     * @return \rampage\simpleorm\TypeMap
+     */
+    public function getTypeMap()
+    {
+        return $this->typeMap;
+    }
+
+    /**
+     * @return \rampage\simpleorm\metadata\Metadata
+     */
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 }

@@ -56,7 +56,7 @@ class IdentifierStrategyAnnotation extends AbstractAnnotation
      */
     public function initialize($content)
     {
-        if (false === ($pos = strpos($content, '('))) {
+        if (false !== ($pos = strpos($content, '('))) {
             $this->class = substr($content, 0, $pos);
             $content = trim(substr($content, $pos));
             $this->parseContent(trim($content, '()'), array());

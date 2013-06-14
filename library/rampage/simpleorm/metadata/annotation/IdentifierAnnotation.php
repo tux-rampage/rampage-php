@@ -43,7 +43,7 @@ class IdentifierAnnotation extends AbstractAnnotation
     public function __construct($forClass = false)
     {
         if ($forClass) {
-            array_unshift($this->optionNames, 'field');
+            array_unshift($this->optionNames, 'attribute');
         }
     }
 
@@ -74,9 +74,9 @@ class IdentifierAnnotation extends AbstractAnnotation
     /**
      * @return string|null
      */
-    public function getField()
+    public function getAttribute()
     {
-        return $this->getParam('field');
+        return $this->getParam('attribute');
     }
 
     /**

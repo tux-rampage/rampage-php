@@ -23,28 +23,33 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm\metadata;
+namespace rampage\simpleorm;
 
 /**
- * Metadata definition interface
+ * Object state
  */
-interface DriverInterface
+class ObjectPersistenceState
 {
     /**
-     * Check if there is a definition available fo the given entity
-     *
-     * @param string $name
-     * @return bool
+     * @var array
      */
-    public function hasEntityDefintion($name);
+    private $data = array();
 
     /**
-     * Load the given entity metadata into the given metadata object
-     *
-     * @param string $name
-     * @param Metadata $metadata
-     * @param Entity $entity The existing entity definition
-     * @return Entity
+     * @param array $data
      */
-    public function loadEntityDefintion($name, Metadata $metadata, Entity $entity = null);
+    public function __construct(array $data)
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * Returns the persistence data
+     *
+     * @return array
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
 }

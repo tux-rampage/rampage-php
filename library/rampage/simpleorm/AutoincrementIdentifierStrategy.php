@@ -82,7 +82,7 @@ class AutoincrementIdentifierStrategy extends AbstractIdentifierStrategy
         }
 
         if (!is_array($data) && !($data instanceof ArrayAccess)) {
-            $data= array($this->field => $data);
+            $data = array($this->field => $data);
         }
 
         if (!isset($data[$this->field])) {

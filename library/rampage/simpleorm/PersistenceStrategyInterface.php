@@ -23,28 +23,38 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm\metadata;
+namespace rampage\simpleorm;
 
 /**
- * Metadata definition interface
+ * Persistence strategy interface
  */
-interface DriverInterface
+interface PersistenceStrategyInterface
 {
     /**
-     * Check if there is a definition available fo the given entity
+     * This should mark the given object for persistence
      *
-     * @param string $name
-     * @return bool
+     * @param object $object
      */
-    public function hasEntityDefintion($name);
+    public function store($object);
 
     /**
-     * Load the given entity metadata into the given metadata object
+     * This should mark the object as deleted
      *
-     * @param string $name
-     * @param Metadata $metadata
-     * @param Entity $entity The existing entity definition
-     * @return Entity
+     * @param object $object
      */
-    public function loadEntityDefintion($name, Metadata $metadata, Entity $entity = null);
+    public function delete($object);
+
+    /**
+     * This should commit all changes to the persistence layer
+     *
+     * @return self
+     */
+    public function flush();
+
+    /**
+     * This method should reset the persistence by flushing all pending object actions
+     *
+     * @return self
+     */
+    public function reset();
 }

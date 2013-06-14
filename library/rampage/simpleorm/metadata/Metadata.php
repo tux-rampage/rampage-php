@@ -76,6 +76,14 @@ class Metadata
     }
 
     /**
+     * @return \rampage\simpleorm\EntityManager
+     */
+    public function getEntityManager()
+    {
+        return $this->entityManager;
+    }
+
+    /**
      * @param string $name
      * @return bool
      */
