@@ -65,6 +65,11 @@ class Entity implements IteratorAggregate
     private $identifier = null;
 
     /**
+     * @var array
+     */
+    private $references = array();
+
+    /**
      * @param string $name
      * @param string $table
      * @param array $attributes
@@ -156,6 +161,28 @@ class Entity implements IteratorAggregate
         }
 
         return $this->attributes[$name];
+    }
+
+    /**
+     * Add a reference information
+     *
+     * @param Reference $reference
+     * @return \rampage\simpleorm\metadata\Entity
+     */
+    public function addReference(Reference $reference)
+    {
+        $this->references[] = $reference;
+        return $this;
+    }
+
+    /**
+     * Returns all defined references for this entity
+     *
+     * @return \rampage\simpleorm\metadata\Reference[]
+     */
+    public function getReferences()
+    {
+        return $this->references;
     }
 
     /**

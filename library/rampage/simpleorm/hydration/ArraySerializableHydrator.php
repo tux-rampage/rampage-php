@@ -25,11 +25,13 @@
 
 namespace rampage\simpleorm\hydration;
 
-use rampage\simpleorm\exception;
 use rampage\core\data\ArrayExchangeInterface;
 use Zend\Stdlib\Hydrator\AbstractHydrator;
 use ArrayObject;
 
+/**
+ * Hydrator for ArrayObject and objects that implement ArrayExchangeInterface
+ */
 class ArraySerializableHydrator extends AbstractHydrator
 {
     /**

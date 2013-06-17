@@ -70,6 +70,11 @@ class Attribute
     private $hydrationStrategy = null;
 
     /**
+     * @var bool
+     */
+    private $readOnly = false;
+
+    /**
      * @var array
      */
     protected $validTypes = array(
@@ -85,7 +90,7 @@ class Attribute
      * @param string $field The field name
      * @param string $type The type of this attribute. The default type is string.
      */
-    public function __construct($name, $field = null, $type = null)
+    public function __construct($name, $field = null, $type = null, $readonly = false)
     {
         $name = trim((string)$name);
         $field = trim((string)$field);
@@ -96,6 +101,7 @@ class Attribute
 
         $this->name = $name;
         $this->field = ($field == '')? $name : $field;
+        $this->readOnly = $readonly;
 
         if ($type) {
             $this->setType($type);
@@ -103,7 +109,7 @@ class Attribute
     }
 
     /**
-     * @return \Zend\Stdlib\Hydrator\Strategy\StrategyInterface
+     * @return string|\Zend\Stdlib\Hydrator\Strategy\StrategyInterface
      */
     public function getHydrationStrategy()
     {
@@ -203,6 +209,14 @@ class Attribute
     public function isAutoIncrement()
     {
         return $this->isIdentifier() && $this->autoIncrement;
+    }
+
+    /**
+     * Readonly flag
+     */
+    public function isReadOnly()
+    {
+        return $this->readOnly;
     }
 
     /**
