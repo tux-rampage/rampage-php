@@ -32,7 +32,7 @@ Feel free to contact them for:
 
 ## Composer
 
-1. Add a composer dependency to rampage-php/framework
+1. Add a composer dependency to rampage-php/framework: `php composer.phar require rampage-php/framework`
 2. Run composer.phar install
 3. Include "vendor/autoload.php" as usual.
 
