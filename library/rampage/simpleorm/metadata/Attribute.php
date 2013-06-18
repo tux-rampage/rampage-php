@@ -75,6 +75,11 @@ class Attribute
     private $readOnly = false;
 
     /**
+     * @var Reference
+     */
+    private $reference = null;
+
+    /**
      * @var array
      */
     protected $validTypes = array(
@@ -220,6 +225,32 @@ class Attribute
     }
 
     /**
+     * @return boolean
+     */
+    public function isReference()
+    {
+        return ($this->reference !== null);
+    }
+
+    /**
+     * @param Reference $reference
+     * @return self
+     */
+    public function setReference(Reference $reference)
+    {
+        $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return \rampage\simpleorm\metadata\Reference
+     */
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    /**
      * @param array $data
      */
     public static function factory(array $data)
@@ -240,6 +271,10 @@ class Attribute
 
         if (isset($data['hydration_strategy'])) {
             $attribute->setHydrationStrategy($data['hydration_strategy']);
+        }
+
+        if (isset($data['reference'])) {
+            $this->setReference(Reference::factory($data['reference']));
         }
 
         return $attribute;

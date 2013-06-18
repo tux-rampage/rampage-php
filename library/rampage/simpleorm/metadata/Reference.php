@@ -57,7 +57,7 @@ class Reference
         $this->referencedEntity = $referencedEntity;
 
         if ($type !== null) {
-            if (!in_array($type, array(self::TYPE_COLLECTION, self::TYPE_ENTITY))) {
+            if (in_array($type, array(self::TYPE_COLLECTION, self::TYPE_ENTITY))) {
                 $this->type = $type;
             }
         }
@@ -95,5 +95,32 @@ class Reference
     public function getStrategy()
     {
         return $this->strategy;
+    }
+
+    /**
+     * @param array $fields
+     * @return self
+     */
+    public function setFields(array $fields)
+    {
+        $this->fields = $fields;
+        return $this;
+    }
+
+    /**
+     * @param array $data
+     * @return \rampage\simpleorm\metadata\Reference
+     */
+    public static function factory(array $data)
+    {
+        $name = $data['referenced_entity'];
+        $type = (isset($data['type']))? $data['type'] : null;
+        $reference = new self($name, $type);
+
+        if (isset($data['strategy'])) {
+            $reference->setStrategy($data['strategy']);
+        }
+
+        return $reference;
     }
 }
