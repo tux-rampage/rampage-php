@@ -138,6 +138,21 @@ class Module implements ModuleInterface,
         return $this->options;
     }
 
+    /**
+     * @param string $dir
+     * @throws exception\InvalidArgumentException
+     * @return self
+     */
+    public function setModulePath($dir)
+    {
+        if (!is_dir($dir)) {
+            throw new exception\InvalidArgumentException('Invalid module path: ' . $dir);
+        }
+
+        $this->options['path'] = $dir;
+        return $this;
+    }
+
 	/**
      * Set the module registry
      *
@@ -268,6 +283,19 @@ class Module implements ModuleInterface,
     public function isLoaded()
     {
         return $this->isLoaded;
+    }
+
+    /**
+     * @param string $modulePath
+     * @return self
+     */
+    public function loadManifest($modulePath = null)
+    {
+        $this->setModulePath($modulePath);
+        $this->isLoaded = false;
+
+        $this->load();
+        return $this;
     }
 
     /**
