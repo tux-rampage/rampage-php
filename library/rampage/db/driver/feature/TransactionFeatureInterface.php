@@ -37,16 +37,19 @@ interface TransactionFeatureInterface
 
     /**
      * Start the transaction
+     * @return self
      */
     public function start();
 
     /**
      * Commit the transaction
+     * @return self
      */
     public function commit();
 
     /**
      * Rollback transaction
+     * @return self
      */
     public function rollback();
 }
