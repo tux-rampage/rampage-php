@@ -165,7 +165,7 @@ class ModuleResourcePublishingStrategy
                 continue;
             }
 
-            $segments = array($targetDir, 'module', $scope);
+            $segments = array($targetDir, 'resource', $scope);
             $path = implode('/', array_filter($segments));
 
             $this->copyDir($sourceDir, $path, $filter);
