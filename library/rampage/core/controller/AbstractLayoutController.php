@@ -31,6 +31,8 @@ use rampage\core\view\Layout;
 
 /**
  * Abstract layout controller
+ *
+ * @method \rampage\core\controller\UrlPlugin url()
  */
 abstract class AbstractLayoutController extends AbstractActionController implements LayoutAwareInterface
 {

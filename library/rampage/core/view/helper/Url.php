@@ -112,6 +112,4 @@ class Url extends DefaultUrlHelper
         $uri = $this->getUrlModel()->getUrl($url, $urlOptions);
         return $uri;
     }
-
-
 }

@@ -18,6 +18,12 @@ return array(
                 )
             ),
 
+            'controller_plugins' => array(
+                'factories' => array(
+                    'url' => 'rampage\core\controller\UrlPluginFactory'
+                )
+            ),
+
             'packages' => array(
                 'aliases' => array(
                     'rampage.auth.AuthService' => 'rampage.auth.models.AuthenticationService',
