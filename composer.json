@@ -36,11 +36,6 @@
 			"url" : "https://packages.zendframework.com/"
 		}
 	],
-	"extra" : {
-		"branch-alias" : {
-			"dev-master" : "1.0.x-dev"
-		}
-	},
 	"bin" : [
 		"tools/generate-di.php"
 	],
