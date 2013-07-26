@@ -25,9 +25,10 @@
 
 namespace rampage\core\controller;
 
-use Zend\Mvc\Controller\AbstractActionController;
+use rampage\core\exception;
 use rampage\core\view\LayoutAwareInterface;
 use rampage\core\view\Layout;
+use Zend\Mvc\Controller\AbstractActionController;
 
 /**
  * Abstract layout controller
@@ -44,16 +45,6 @@ abstract class AbstractLayoutController extends AbstractActionController impleme
     private $layout = null;
 
     /**
-     * Construct
-     *
-     * @param Layout $layout
-     */
-    public function __construct(Layout $layout)
-    {
-        $this->setLayout($layout);
-    }
-
-	/**
      * (non-PHPdoc)
      * @see \rampage\core\view\LayoutAwareInterface::setLayout()
      */
@@ -70,6 +61,10 @@ abstract class AbstractLayoutController extends AbstractActionController impleme
      */
     protected function getLayout()
     {
+        if (!$this->layout) {
+            throw new exception\DependencyException('Missing layout instance');
+        }
+
         return $this->layout;
     }
 }

@@ -33,7 +33,7 @@ use ArrayObject;
 /**
  * Data object
  */
-class Object implements ArrayExchangeInterface
+class AbstractValueObject implements ArrayExchangeInterface
 {
     /**
      * Associative array/ArrayObject containing data for this object
@@ -52,50 +52,6 @@ class Object implements ArrayExchangeInterface
         if (is_array($data) || ($data instanceof Traversable)) {
             $this->populate($data);
         }
-    }
-
-    /**
-     * Magic call implementation for unknown methods.
-     *
-     * Provides get/set/has and remove methods for data.
-     *
-     * @param string $method
-     * @param array $args
-     * @return mixed
-     */
-    public function __call($method, $args)
-    {
-        if (strlen($method) > 3)  {
-            $type = substr($method, 0, 3);
-            $name = substr($method, 3);
-
-            switch ($type) {
-                case 'get':
-                    $default = isset($args[0])? $args[0] : null;
-                    return $this->get($this->underscore($name), $default);
-                    break;
-
-                case 'set':
-                    $arg = (isset($args[0]))? $args[0] : null;
-                    return $this->set($this->underscore($name), $arg);
-                    break;
-
-                case 'has':
-                    return $this->has($this->underscore($name));
-                    break;
-
-                case 'uns':
-                    if ((strlen($method) > 5) && (substr($method, 0, 5) == 'unset')) {
-                        $name = $this->underscore(substr($method, 5));
-                        $this->remove($name);
-                        return $this;
-                    }
-
-                    break;
-            } // end switch($type)
-        }
-
-        throw new exception\RuntimeException('Failed to call method ' . $method);
     }
 
     /**
