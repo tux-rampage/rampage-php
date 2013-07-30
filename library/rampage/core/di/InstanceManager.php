@@ -27,7 +27,7 @@ namespace rampage\core\di;
 
 use Zend\Di\InstanceManager as DefaultInstanceManager;
 use Zend\Di\Exception;
-use rampage\core\ObjectManagerInterface;
+use Zend\ServiceManager\ServiceManager;
 
 /**
  * Instance manager
@@ -35,53 +35,34 @@ use rampage\core\ObjectManagerInterface;
 class InstanceManager extends DefaultInstanceManager
 {
     /**
-     * The template to use for housing configuration information
+     * Service Manager
      *
-     * Do NOT share by default, sharing instances is the domain of the service manager!
-     *
-     * @var array
+     * @var \Zend\ServiceManager\ServiceManager
      */
-    protected $configurationTemplate = array(
-        /**
-         * alias|class => alias|class
-         * interface|abstract => alias|class|object
-         * name => value
-         */
-        'parameters' => array(),
-        /**
-         * injection type => array of ordered method params
-         */
-        'injections' => array(),
-        'shared' => false
-    );
+    private $serviceManager = null;
+
 
     /**
      * Constructor
      *
-     * @param ObjectManager $objectManager
+     * @param ServiceManager $serviceManager
      */
-    public function __construct(ObjectManager $objectManager = null)
+    public function __construct(ServiceManager $serviceManager = null)
     {
-        if ($objectManager) {
-            $this->setObjectManager($objectManager);
+        if ($serviceManager) {
+            $this->setServiceManager($serviceManager);
         }
     }
 
-    /**
-     * Object Manager
-     *
-     * @var \rampage\core\ObjectManagerInterface
-     */
-    private $objectManager = null;
 
     /**
-     * Set the current object manager
+     * Set the current service manager
      *
-     * @param ObjectManagerInterface $manager
+     * @param ServiceManager $manager
      */
-    public function setObjectManager(ObjectManagerInterface $manager)
+    public function setServiceManager(ServiceManager$manager)
     {
-        $this->objectManager = $manager;
+        $this->serviceManager = $manager;
         return $this;
     }
 
@@ -90,14 +71,13 @@ class InstanceManager extends DefaultInstanceManager
      *
      * @param string $name
      */
-    public function hasService($name)
+    protected function hasService($name)
     {
-        // consult object manager if there is an instance
-        if (!$this->objectManager) {
+        if (!$this->serviceManager) {
             return false;
         }
 
-        return $this->objectManager->has($name);
+        return $this->serviceManager->has($name, false);
     }
 
     /**
@@ -106,12 +86,60 @@ class InstanceManager extends DefaultInstanceManager
      * @param string $name
      * @return object
      */
-    public function getService($name, array $params = array())
+    protected function getService($name)
     {
-        if (!$this->objectManager) {
-            throw new Exception\UndefinedReferenceException('Cannot get service without an object manager instance!');
+        if (!$this->serviceManager) {
+            throw new Exception\UndefinedReferenceException('Cannot get service without an service manager instance!');
         }
 
-        return $this->objectManager->get($name, $params);
+        return $this->serviceManager->get($name);
+    }
+
+    /**
+     * @see \Zend\Di\InstanceManager::getSharedInstance()
+     */
+    public function getSharedInstance($classOrAlias)
+    {
+        if ($this->hasService($classOrAlias)) {
+            return $this->getService($classOrAlias);
+        }
+
+        return parent::getSharedInstance($classOrAlias);
+    }
+
+	/**
+     * @see \Zend\Di\InstanceManager::hasSharedInstance()
+     */
+    public function hasSharedInstance($classOrAlias)
+    {
+        if ($this->hasService($classOrAlias)) {
+            return true;
+        }
+
+        return parent::hasSharedInstance($classOrAlias);
+    }
+
+    /**
+     * @see \Zend\Di\InstanceManager::getSharedInstanceWithParameters()
+     */
+    public function getSharedInstanceWithParameters($classOrAlias, array $params, $fastHashFromHasLookup = null)
+    {
+        if ($this->hasService($classOrAlias)) {
+            return $this->getService($classOrAlias);
+        }
+
+        return parent::getSharedInstanceWithParameters($classOrAlias, $params, $fastHashFromHasLookup);
+    }
+
+	/**
+     * @see \Zend\Di\InstanceManager::hasSharedInstanceWithParameters()
+     */
+    public function hasSharedInstanceWithParameters($classOrAlias, array $params, $returnFastHashLookupKey = false)
+    {
+        if ($this->hasService($classOrAlias)) {
+            return true;
+        }
+
+        return parent::hasSharedInstanceWithParameters($classOrAlias, $params, $returnFastHashLookupKey);
     }
 }

@@ -26,8 +26,7 @@
 namespace rampage\core;
 
 use Zend\ServiceManager\ServiceManager as ZendServiceManager;
-use Zend\ServiceManager\Exception;
-use rampage\core\service\exception\CircularReferenceException;
+use Zend\ServiceManager\Exception as svcexception;
 
 /**
  * Service manager
@@ -42,7 +41,7 @@ class ServiceManager extends ZendServiceManager
         '_' => '',
         ' ' => '',
         '\\' => '.',
-        '/' => ''
+        '/' => '.'
     );
 
     /**
@@ -148,7 +147,7 @@ class ServiceManager extends ZendServiceManager
 
             do {
                 if (isset($stack[$cName])) {
-                    throw new CircularReferenceException('Circular alias reference detected: ' . implode(' -> ', $stack));
+                    throw new exception\CircularServiceReferenceException('Circular alias reference detected: ' . implode(' -> ', $stack));
                 }
 
                 $stack[$cName] = $cName;
@@ -157,7 +156,7 @@ class ServiceManager extends ZendServiceManager
             } while ($this->hasAlias($cName));
 
             if (!$this->has(array($cName, $rName))) {
-                throw new Exception\ServiceNotFoundException(sprintf('An alias "%s" was requested but no service could be found.', $name));
+                throw new svcexception\ServiceNotFoundException(sprintf('An alias "%s" was requested but no service could be found.', $name));
             }
         }
 
@@ -182,14 +181,14 @@ class ServiceManager extends ZendServiceManager
 
         // Still no instance? raise an exception
         if (!$instance && !is_array($instance)) {
-            throw new Exception\ServiceNotFoundException(sprintf(
+            throw new svcexception\ServiceNotFoundException(sprintf(
                 '%s was unable to fetch or create an instance for %s',
                 __METHOD__,
                 $name
             ));
         }
 
-        // This fixes a bug
+        // Share the resolved name
         if ($this->isShared($cName, $rName)) {
             $this->instances[$cName] = $instance;
         }

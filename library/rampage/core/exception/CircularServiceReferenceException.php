@@ -23,40 +23,14 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\orm\entity;
+namespace rampage\core\exception;
 
-use rampage\core\data\Collection as DataCollection;
-use rampage\orm\query\QueryInterface;
-use rampage\orm\entity\feature\QueryableCollectionInterface;
+use Zend\ServiceManager\Exception\ExceptionInterface as ServiceManagerException;
+use Zend\Di\Exception\ExceptionInterface as DiException;
 
 /**
- * Entity collection
+ * Circular reference
  */
-class Collection extends DataCollection implements CollectionInterface, QueryableCollectionInterface
+class CircularServiceReferenceException extends RuntimeException implements ServiceManagerException, DiException
 {
-    /**
-     * Persistence query
-     *
-     * @var \rampage\orm\query\QueryInterface
-     */
-    private $query = null;
-
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\orm\entity\QueryableCollectionInterface::getPersistenceQuery()
-     */
-    public function getPersistenceQuery()
-    {
-        return $this->query;
-    }
-
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\orm\entity\QueryableCollectionInterface::setPersistenceQuery()
-     */
-    public function setPersistenceQuery(QueryInterface $query)
-    {
-        $this->query = $query;
-        return $this;
-    }
 }

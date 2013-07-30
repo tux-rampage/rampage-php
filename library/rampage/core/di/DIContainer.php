@@ -25,7 +25,7 @@
 
 namespace rampage\core\di;
 
-use Zend\Di\Di as DependencyInjector;
+use Zend\Di\Di as DefaultDIContainer;
 use Zend\Di\DefinitionList;
 use Zend\Di\Config;
 use Zend\Di\Exception;
@@ -36,7 +36,7 @@ use Closure;
  *
  * @property \rampage\core\di\InstanceManager $instanceManager
  */
-class Di extends DependencyInjector
+class DIContainer extends DefaultDIContainer
 {
     /**
      * Enforce custom instance manager
@@ -45,22 +45,15 @@ class Di extends DependencyInjector
      */
     public function __construct(DefinitionList $definitions = null, InstanceManager $instanceManager = null, Config $config = null)
     {
+        if (!$instanceManager) {
+            $instanceManager = new InstanceManager();
+        }
+
         parent::__construct($definitions, $instanceManager, $config);
     }
 
     /**
-     * Instance manager
-     *
-     * @see \Zend\Di\Di::instanceManager()
-     * @return \rampage\core\di\InstanceManager
-     */
-    public function instanceManager()
-    {
-        return $this->instanceManager;
-    }
-
-    /**
-     * Returns the instance manager
+     * Returns the instance manager (consistency method)
      *
      * @return \rampage\core\di\InstanceManager
      */
