@@ -28,11 +28,12 @@ namespace rampage\core\di;
 use Zend\Di\InstanceManager as DefaultInstanceManager;
 use Zend\Di\Exception;
 use Zend\ServiceManager\ServiceManager;
+use Zend\ServiceManager\ServiceManagerAwareInterface;
 
 /**
  * Instance manager
  */
-class InstanceManager extends DefaultInstanceManager
+class InstanceManager extends DefaultInstanceManager implements ServiceManagerAwareInterface, ServiceEnabledInterface
 {
     /**
      * Service Manager
@@ -60,7 +61,7 @@ class InstanceManager extends DefaultInstanceManager
      *
      * @param ServiceManager $manager
      */
-    public function setServiceManager(ServiceManager$manager)
+    public function setServiceManager(ServiceManager $manager)
     {
         $this->serviceManager = $manager;
         return $this;
@@ -117,29 +118,5 @@ class InstanceManager extends DefaultInstanceManager
         }
 
         return parent::hasSharedInstance($classOrAlias);
-    }
-
-    /**
-     * @see \Zend\Di\InstanceManager::getSharedInstanceWithParameters()
-     */
-    public function getSharedInstanceWithParameters($classOrAlias, array $params, $fastHashFromHasLookup = null)
-    {
-        if ($this->hasService($classOrAlias)) {
-            return $this->getService($classOrAlias);
-        }
-
-        return parent::getSharedInstanceWithParameters($classOrAlias, $params, $fastHashFromHasLookup);
-    }
-
-	/**
-     * @see \Zend\Di\InstanceManager::hasSharedInstanceWithParameters()
-     */
-    public function hasSharedInstanceWithParameters($classOrAlias, array $params, $returnFastHashLookupKey = false)
-    {
-        if ($this->hasService($classOrAlias)) {
-            return true;
-        }
-
-        return parent::hasSharedInstanceWithParameters($classOrAlias, $params, $returnFastHashLookupKey);
     }
 }
