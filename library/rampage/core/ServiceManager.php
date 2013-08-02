@@ -26,7 +26,6 @@
 namespace rampage\core;
 
 use Zend\ServiceManager\ServiceManager as ZendServiceManager;
-use Zend\ServiceManager\Exception as svcexception;
 
 /**
  * Service manager
@@ -62,9 +61,6 @@ class ServiceManager extends ZendServiceManager
      * This does not check if a service can be instanciated by this service manager.
      * Definitions may be added at runtime so don't care about instanciability.
      *
-     * Also check for class name in package format (foo.bar.BazClass) and add the
-     * appropriate PHP name as well (foo\bar\Baz)
-     *
      * @param string $name The service to mark as shared or not shared
      * @param bool $isShared Flag if the service should be shared or not
      * @return \rampage\core\ServiceManager
@@ -78,7 +74,8 @@ class ServiceManager extends ZendServiceManager
     }
 
     /**
-     * (non-PHPdoc)
+     * Auto convert dottet class names to PHP class names
+     *
      * @see \Zend\ServiceManager\ServiceManager::setInvokableClass()
      */
     public function setInvokableClass($name, $invokableClass, $shared = null)
@@ -93,7 +90,7 @@ class ServiceManager extends ZendServiceManager
      * Do not change the class name, this would cause abstract factories to fail
      * When an alias is set to an explicit class name
      *
-     * Note: We'll NOT force users to declare each alias as invokable.
+     * Note: We'll NOT force users to declare services for the aliases. This is a huge difference to ZF2
      *
      * @see \Zend\ServiceManager\ServiceManager::setAlias()
      */
@@ -107,97 +104,5 @@ class ServiceManager extends ZendServiceManager
 
         $this->aliases[$canonical] = $class;
         return $this;
-    }
-
-    /**
-     * Check if a service name is shared
-     *
-     * @param string $name
-     * @param string $requestedName
-     * @return string
-     */
-    protected function isShared($name, $requestedName)
-    {
-        if (isset($this->shared[$name]) && ($this->shared[$name] === true)) {
-            return true;
-        }
-
-        return ($this->shareByDefault() && !isset($this->shared[$name]));
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \Zend\ServiceManager\ServiceManager::get()
-     */
-    public function get($name, $usePeeringServiceManagers = true)
-    {
-        $cName = $this->canonicalizeName($name);
-        $cOrigName = false;
-        $rName = $name;
-
-        // shared alias?
-        if (isset($this->instances[$cName])) {
-            return $this->instances[$cName];
-        }
-
-        if ($this->hasAlias($cName)) {
-            $cOrigName = $cName;
-            $rOrigName = $rName;
-            $stack = array(); // cycle check
-
-            do {
-                if (isset($stack[$cName])) {
-                    throw new exception\CircularServiceReferenceException('Circular alias reference detected: ' . implode(' -> ', $stack));
-                }
-
-                $stack[$cName] = $cName;
-                $rName = $this->aliases[$cName];
-                $cName = $this->canonicalizeName($rName);
-            } while ($this->hasAlias($cName));
-
-            if (!$this->has(array($cName, $rName))) {
-                throw new svcexception\ServiceNotFoundException(sprintf('An alias "%s" was requested but no service could be found.', $name));
-            }
-        }
-
-        if (isset($this->instances[$cName])) {
-            return $this->instances[$cName];
-        }
-
-        $instance = null;
-        $retrieveFromPeeringManagerFirst = $this->retrieveFromPeeringManagerFirst();
-
-        if ($usePeeringServiceManagers && $retrieveFromPeeringManagerFirst) {
-            $instance = $this->retrieveFromPeeringManager($name);
-        }
-
-        if (!$instance) {
-            if ($this->canCreate(array($cName, $rName))) {
-                $instance = $this->create(array($cName, $rName));
-            } elseif ($usePeeringServiceManagers && !$retrieveFromPeeringManagerFirst) {
-                $instance = $this->retrieveFromPeeringManager($name);
-            }
-        }
-
-        // Still no instance? raise an exception
-        if (!$instance && !is_array($instance)) {
-            throw new svcexception\ServiceNotFoundException(sprintf(
-                '%s was unable to fetch or create an instance for %s',
-                __METHOD__,
-                $name
-            ));
-        }
-
-        // Share the resolved name
-        if ($this->isShared($cName, $rName)) {
-            $this->instances[$cName] = $instance;
-        }
-
-        // The alias may not be shared, but the originally requested one might be
-        if ($cOrigName && $this->isShared($cOrigName, $rOrigName)) {
-            $this->instances[$cOrigName] = $instance;
-        }
-
-        return $instance;
     }
 }

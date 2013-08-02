@@ -27,9 +27,8 @@ namespace rampage\core\view\renderer;
 
 use rampage\core\view\TemplateInterface;
 use rampage\core\view\Layout;
-use rampage\core\view\cache\HtmlCache;
+use rampage\core\view\HtmlCache;
 use rampage\core\view\RenderableInterface;
-use rampage\core\view\helper\PluginManager;
 
 use rampage\core\resource\FileLocatorInterface;
 use rampage\core\exception\InvalidArgumentException;

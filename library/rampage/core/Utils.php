@@ -156,4 +156,33 @@ class Utils
 
         return gettype($var);
     }
+
+    /**
+     * @param mixed $var
+     * @return string
+     */
+    public static function varExport($var)
+    {
+        $php = '';
+
+        if (is_array($var)) {
+            $items = array();
+            foreach ($var as $k => $v) {
+                $items[] = var_export($k, true) . ' => ' . static::varExport($var);
+            }
+
+            return 'array(' . implode($items, ', ') . ')';
+        }
+
+        if (is_object($var) && ($var instanceof ExportableClassInterface)) {
+            $code = $var->exportAsPhpCode();
+            if (!is_string($code)) {
+                $code = get_class($var) . '::__set_state(' . var_export($code) . ')';
+            }
+
+            return $code;
+        }
+
+        return var_export($var, true);
+    }
 }

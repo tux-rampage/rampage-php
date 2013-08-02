@@ -25,9 +25,6 @@
 
 namespace rampage\core;
 
-use rampage\core\Utils;
-use rampage\core\pathmanager\FallbackInterface;
-
 /**
  * Path manager
  */
@@ -96,7 +93,7 @@ class PathManager
     protected function prepare($path)
     {
         foreach ($this->paths as $type => $pathValue) {
-            if ($pathValue instanceof FallbackInterface) {
+            if ($pathValue instanceof pathmanager\FallbackInterface) {
                 $pathValue = $pathValue->resolve('');
             }
 

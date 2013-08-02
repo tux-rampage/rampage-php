@@ -81,7 +81,7 @@ class Application extends MvcApplication
     public static function init($config = array())
     {
         self::registerDevelopmentErrorHandler();
-        if (!is_array($config) && (!$config instanceof \Traversable)) {
+        if (!is_array($config)) {
             $config = array();
             $config['service_manager']['path_manager'] = (string)$config;
         }
@@ -96,16 +96,6 @@ class Application extends MvcApplication
     }
 
     /**
-     * Object manager
-     *
-     * @return \rampage\core\di\ObjectManager
-     */
-    public function getObjectManager()
-    {
-        return $this->getServiceManager()->get('ObjectManager');
-    }
-
-    /**
      * (non-PHPdoc)
      * @see \Zend\Mvc\Application::bootstrap()
      */
@@ -114,7 +104,7 @@ class Application extends MvcApplication
         $serviceManager = $this->getServiceManager();
         $events = $this->getEventManager();
 
-        $events->attach(MvcEvent::EVENT_BOOTSTRAP, $serviceManager->get('rampage.resource.BootstapListener'));
+        $events->attach(MvcEvent::EVENT_BOOTSTRAP, $serviceManager->get('rampage.resources.BootstapListener'));
         $events->attach($serviceManager->get('rampage.core.view.ViewInitializer'));
 
         return parent::bootstrap();
@@ -188,7 +178,8 @@ class Application extends MvcApplication
      */
     public static function errorToException($errno, $errstr, $errfile, $errline)
     {
-        if ((error_reporting() & $errno) != $errno) {
+        $exclude = E_STRICT | E_NOTICE | E_USER_NOTICE;
+        if (((error_reporting() & $errno) != $errno) || (($exclude & $errno) == $errno)) {
             return false;
         }
 
@@ -220,6 +211,7 @@ class Application extends MvcApplication
      */
     protected function completeRequest(MvcEvent $event)
     {
+        // Reset the stop propagation flag which could have been set by a dispatch or render listener
         $event->stopPropagation(false);
         return parent::completeRequest($event);
     }

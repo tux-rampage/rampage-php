@@ -47,7 +47,7 @@ class ServiceConfig extends ServiceManagerConfig
      *
      * @var array|null
      */
-    protected $_packageConfig = null;
+    protected $packageConfig = null;
 
     /**
      * Constructor
@@ -56,22 +56,11 @@ class ServiceConfig extends ServiceManagerConfig
      */
     public function __construct(array $config = array())
     {
-        $this->invokables['SharedEventManager'] = 'rampage\core\event\SharedEventManager';
-        $this->factories['rampage.ModuleRegistry'] = 'rampage\core\service\ModuleRegistryFactory';
+        $this->invokables['SharedEventManager'] = 'rampage\core\events\SharedEventManager';
         $this->factories['AggregatedServiceLocator'] = 'rampage\core\service\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 
         parent::__construct($config);
-    }
-
-    /**
-     * Pathmanager config
-     *
-     * @return string|array|null
-     */
-    protected function getPathManagerConfig()
-    {
-        return $this->pathManagerConfig;
     }
 
     /**
@@ -80,23 +69,23 @@ class ServiceConfig extends ServiceManagerConfig
      */
     public function configureServiceManager(ZendServiceManager $serviceManager)
     {
-        $pathConfig = $this->getPathManagerConfig();
-        $pathManager = ($pathConfig instanceof PathManager)? $pathConfig : new PathManager($this->getPathManagerConfig());
-
+        $pathManager = ($this->pathManagerConfig instanceof PathManager)? $this->pathManagerConfig : new PathManager($this->pathManagerConfig);
         $serviceManager->setService('rampage.PathManager', $pathManager, true);
 
         parent::configureServiceManager($serviceManager);
 
         $serviceManager->addPeeringServiceManager($serviceManager->get('AggregatedServiceLocator'));
-        $serviceManager->addInitializer(function($instance, $serviceManager) {
-            if (!$instance instanceof ModuleManagerInterface) {
-                return;
-            }
 
-            $events = $instance->getEventManager();
-            $events->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
-            $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, new event\SharedEventsInitializer($serviceManager), 0);
-        });
+// TODO: Remove module registry
+//         $serviceManager->addInitializer(function($instance, $serviceManager) {
+//             if (!$instance instanceof ModuleManagerInterface) {
+//                 return;
+//             }
+
+//             $events = $instance->getEventManager();
+//             $events->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
+//             $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, new event\SharedEventsInitializer($serviceManager), 0);
+//         });
 
         return $this;
     }
