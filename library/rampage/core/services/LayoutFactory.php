@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -25,28 +24,42 @@
 
 namespace rampage\core\services;
 
-use rampage\core\view\console\ViewInitializer as ConsoleViewInitializer;
-use rampage\core\view\http\ViewInitializer as HttpViewInitializer;
-
-use Zend\Console\Console;
-use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use rampage\core\view\Layout;
 
 /**
- * Initializer factory
+ * Layout factory
  */
-class ViewInitializerFactory implements FactoryInterface
+class LayoutFactory implements FactoryInterface
 {
+    /**
+     * @param \rampage\core\view\Layout $layout
+     * @param array $data
+     * @return self
+     */
+    protected function addLayoutFiles(Layout $layout, array $data)
+    {
+        $config = $layout->getUpdate()->getConfig();
+        foreach ($data as $file => $priority) {
+            $config->addFile($file, $priority);
+        }
+
+        return $this;
+    }
+
     /**
      * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        if (Console::isConsole()) {
-            return new ConsoleViewInitializer();
+        $config = $serviceLocator->get('config');
+        $layout = $serviceLocator->get('di')->newInstance('rampage\core\view\Layout');
+
+        if (isset($config['rampage']['layout']['files']) && is_array($config['rampage']['layout']['files'])) {
+            $this->addFiles($layout, $config['rampage']['layout']['files']);
         }
 
-        $initializer = new HttpViewInitializer($serviceLocator);
-        return $initializer;
+        return $layout;
     }
 }

@@ -66,16 +66,6 @@ class DefaultPersistenceStrategy implements PersistenceStrategyInterface
     }
 
     /**
-     * Database adapter
-     *
-     * @return \rampage\db\Adapter
-     */
-    protected function getAdapter()
-    {
-        return $this->entityManager->getAdapter();
-    }
-
-    /**
      * @param object $object
      * @param ObjectPersistenceState $state
      */
@@ -124,6 +114,15 @@ class DefaultPersistenceStrategy implements PersistenceStrategyInterface
 
         $this->pendingToDelete->attach($object);
         return $this;
+    }
+
+    /**
+     * @param object $object
+     */
+    protected function getRepositoryByObject($object)
+    {
+        $class = get_class($object);
+        return $this->entityManager->getRepository($class);
     }
 
     /**

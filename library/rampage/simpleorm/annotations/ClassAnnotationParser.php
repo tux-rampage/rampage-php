@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\annotations;
 
-use SplObjectStorage;
+use Zend\Code\Annotation\Parser\GenericAnnotationParser;
 
 /**
- * Object queue
+ * Class Annotation parser
  */
-class ResetableObjectStorage extends SplObjectStorage
+class ClassAnnotationParser extends GenericAnnotationParser
 {
     /**
-     * Reset this object storage
+     * @see \Zend\Code\Annotation\Parser\GenericAnnotationParser::normalizeAlias()
      */
-    public function reset()
+    protected function normalizeAlias($alias)
     {
-        $this->removeAll($this);
-        return $this;
+        $parts = explode('\\', $alias);
+        $alias = array_pop($parts);
+
+        return parent::normalizeAlias($alias);
+    }
+
+	/**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->registerAnnotation('rampage\simpleorm\annotations\EntityAnnotation')
+            ->setAlias('entity', 'rampage\simpleorm\annotations\EntityAnnotation');
     }
 }

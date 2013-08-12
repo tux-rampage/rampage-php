@@ -25,50 +25,61 @@
 
 namespace rampage\core\view;
 
-use rampage\core\ServiceManager;
-use rampage\core\ObjectManagerInterface;
+use rampage\core\AbstractPluginManager;
+use rampage\core\di\DIContainerAware;
+use Zend\Di\Di as DIContainer;
+use Zend\ServiceManager\ConfigInterface;
 
 /**
  * Returns the view locator
  */
-class ViewLocator extends ServiceManager
+class ViewLocator extends AbstractPluginManager implements DIContainerAware
 {
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\ServiceManager::__construct()
+    /**
+     * @var \Zend\Di\Di
      */
-    public function __construct(ObjectManagerInterface $parent)
+    private $di = null;
+
+    /**
+     * @see \Zend\ServiceManager\AbstractPluginManager::__construct()
+     */
+    public function __construct(ConfigInterface $configuration = null)
     {
-        $this->addPeeringServiceManager($parent);
+        parent::__construct($configuration);
+
+        $this->autoAddInvokableClass = true;
+        $this->shareByDefault = false;
+
     }
 
     /**
-     * (non-PHPdoc)
-     * @see \Zend\ServiceManager\ServiceManager::retrieveFromPeeringManagerFirst()
+     * @see \rampage\core\di\DIContainerAware::setDIContainer()
      */
-    public function retrieveFromPeeringManagerFirst()
+    public function setDIContainer(DIContainer $container)
     {
-        return false;
+        $this->di = $container;
     }
 
     /**
-     * @see \Zend\ServiceManager\ServiceManager::shareByDefault()
+     * @see \Zend\ServiceManager\AbstractPluginManager::createFromInvokable()
      */
-    public function shareByDefault()
+    protected function createFromInvokable($canonicalName, $requestedName)
     {
-        return false;
+        if (!$this->di) {
+            return parent::createFromInvokable($canonicalName, $requestedName);
+        }
+
+        $class = $this->invokableClasses[$canonicalName];
+        $params = (is_array($this->creationOptions))? $this->creationOptions : array();
+
+        return $this->di->newInstance($class, $params, false);
     }
 
-
 	/**
-     * Retrieve a view instance
-     *
-     * @param string $name Name of the view (class name)
-     * @param bool $usePeeringServiceManagers Ignored - peering service managers will always be used
-     * @return \rampage\core\view\View
+     * @see \Zend\ServiceManager\AbstractPluginManager::validatePlugin()
      */
-    public function get($name, $usePeeringServiceManagers = true)
+    public function validatePlugin($plugin)
     {
-        return parent::get($name, true);
+        return ($plugin instanceof RenderableInterface);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -25,28 +24,51 @@
 
 namespace rampage\core\services;
 
-use rampage\core\view\console\ViewInitializer as ConsoleViewInitializer;
-use rampage\core\view\http\ViewInitializer as HttpViewInitializer;
-
-use Zend\Console\Console;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use rampage\core\resources\FileLocatorInterface;
+use rampage\core\resources\FileLocator;
 use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Initializer factory
+ * Factory to create filelocator instances
  */
-class ViewInitializerFactory implements FactoryInterface
+class ResourceLocatorFactory implements FactoryInterface
 {
+    /**
+     * Add resources
+     *
+     * @param ServiceLocatorInterface $serviceManager
+     * @param array|Traversable $config
+     * @return self
+     */
+    protected function addResources(FileLocatorInterface $fileLocator, $config)
+    {
+        if (!is_array($config) || !($config instanceof \Traversable)) {
+            return $this;
+        }
+
+        foreach ($config as $scope => $path) {
+            $fileLocator->addLocation($scope, $path);
+        }
+
+        return $this;
+    }
+
     /**
      * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        if (Console::isConsole()) {
-            return new ConsoleViewInitializer();
+        $config = $serviceLocator->get('Config');
+        $pathManager = $serviceLocator->get('rampage.PathManager');
+        $fileLocator = new FileLocator($pathManager);
+
+        if (!isset($config['rampage']['resources'])) {
+            $this->addResources($fileLocator, $config['rampage']['resources']);
         }
 
-        $initializer = new HttpViewInitializer($serviceLocator);
-        return $initializer;
+        return $fileLocator;
     }
+
+
 }

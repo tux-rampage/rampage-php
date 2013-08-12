@@ -25,8 +25,8 @@
 
 namespace rampage\core\view\helpers;
 
+use rampage\core\url\UrlModelLocator;
 use Zend\View\Helper\Url as DefaultUrlHelper;
-use rampage\core\model\Url as UrlModel;
 use Zend\Mvc\Router\Http\TreeRouteStack;
 
 /**
@@ -35,30 +35,30 @@ use Zend\Mvc\Router\Http\TreeRouteStack;
 class UrlHelper extends DefaultUrlHelper
 {
     /**
-     * URL model
+     * URL model locator
      *
-     * @var \rampage\core\model\Url
+     * @var \rampage\core\url\UrlModelLocator
      */
-    protected $urlModel = null;
+    protected $urlModelLocator = null;
 
     /**
      * Returns the URL model
      *
-     * @param UrlModel $model
+     * @param UrlModelLocator $modelLocator
      */
-    public function __construct(UrlModel $model)
+    public function __construct(UrlModelLocator $modelLocator)
     {
-        $this->urlModel = $model;
+        $this->urlModelLocator = $modelLocator;
     }
 
     /**
      * Url model
      *
-     * @return \rampage\core\model\Url
+     * @return \rampage\core\url\UrlModelInterface
      */
     protected function getUrlModel()
     {
-        return $this->urlModel;
+        return $this->urlModelLocator->get('base');
     }
 
     /**

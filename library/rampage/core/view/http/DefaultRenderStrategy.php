@@ -109,7 +109,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
         if ((!$result instanceof Layout)
           || (!$response instanceof Response)
           || (!$request instanceof Request)) {
-            return $this;
+            return;
         }
 
         $renderer = $this->getRenderer($event);

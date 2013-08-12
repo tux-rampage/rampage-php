@@ -26,7 +26,7 @@
 namespace rampage\gui\view\html;
 
 use rampage\core\view\Template;
-use rampage\core\resource\UrlLocatorInterface;
+use rampage\core\resources\UrlLocatorInterface;
 use rampage\core\exception\RuntimeException;
 
 /**

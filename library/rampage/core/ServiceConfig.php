@@ -27,8 +27,6 @@ namespace rampage\core;
 
 use Zend\Mvc\Service\ServiceManagerConfig;
 use Zend\ServiceManager\ServiceManager as ZendServiceManager;
-use Zend\ModuleManager\ModuleManagerInterface;
-use Zend\ModuleManager\ModuleEvent;
 
 /**
  * Custom service configuration
@@ -60,6 +58,7 @@ class ServiceConfig extends ServiceManagerConfig
         $this->factories['AggregatedServiceLocator'] = 'rampage\core\service\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 
+        parent::__construct(include __DIR__ . '/../service.config.php');
         parent::__construct($config);
     }
 
@@ -75,18 +74,6 @@ class ServiceConfig extends ServiceManagerConfig
         parent::configureServiceManager($serviceManager);
 
         $serviceManager->addPeeringServiceManager($serviceManager->get('AggregatedServiceLocator'));
-
-// TODO: Remove module registry
-//         $serviceManager->addInitializer(function($instance, $serviceManager) {
-//             if (!$instance instanceof ModuleManagerInterface) {
-//                 return;
-//             }
-
-//             $events = $instance->getEventManager();
-//             $events->attach(ModuleEvent::EVENT_LOAD_MODULES, $serviceManager->get('rampage.ModuleRegistry'), 9100);
-//             $events->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, new event\SharedEventsInitializer($serviceManager), 0);
-//         });
-
         return $this;
     }
 }

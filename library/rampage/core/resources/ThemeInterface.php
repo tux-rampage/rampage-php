@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
-
-use SplObjectStorage;
+namespace rampage\core\resources;
 
 /**
- * Object queue
+ * Theme interface
  */
-class ResetableObjectStorage extends SplObjectStorage
+interface ThemeInterface extends FileLocatorInterface
 {
     /**
-     * Reset this object storage
+     * Should return the current theme name
+     *
+     * @return string
      */
-    public function reset()
-    {
-        $this->removeAll($this);
-        return $this;
-    }
+    public function getCurrentTheme();
+
+    /**
+     * Set the current theme
+     *
+     * @param string $name
+     * @return self Must return $this to provide a fluent interface
+     */
+    public function setCurrentTheme($name);
 }

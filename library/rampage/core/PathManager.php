@@ -69,7 +69,8 @@ class PathManager
             'maps' => '{{var_dir}}/maps',
             'etc' => '{{app_dir}}/etc',
             'modules' => array('{{root_dir}}/modules'),
-            'media' => '{{public_dir}}/media'
+            'media' => '{{public_dir}}/media',
+            'public_resources' => '{{media_dir}}/media',
         );
 
         if (is_array($config) || ($config instanceof \Traversable)) {

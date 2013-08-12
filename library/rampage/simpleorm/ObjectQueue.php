@@ -30,7 +30,7 @@ namespace rampage\simpleorm;
  */
 class ObjectQueue extends ResetableObjectStorage
 {
-	/**
+    /**
      * @see SplObjectStorage::next()
      */
     public function next()

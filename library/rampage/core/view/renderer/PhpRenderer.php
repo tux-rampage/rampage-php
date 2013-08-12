@@ -30,14 +30,14 @@ use rampage\core\view\Layout;
 use rampage\core\view\HtmlCache;
 use rampage\core\view\RenderableInterface;
 
-use rampage\core\resource\FileLocatorInterface;
-use rampage\core\exception\InvalidArgumentException;
-use rampage\core\xml\exception\DependencyException;
+use rampage\core\resources\ThemeInterface;
+use rampage\core\exception\DependencyException;
 
-use ArrayObject;
 use Zend\View\Renderer\RendererInterface;
 use Zend\View\Resolver\ResolverInterface;
 use Zend\View\HelperPluginManager;
+
+use ArrayObject;
 
 /**
  * PHP File render strategy
@@ -61,23 +61,16 @@ class PhpRenderer implements RendererInterface
     /**
      * Template resolver
      *
-     * @var \rampage\core\resource\FileLocatorInterface
+     * @var \rampage\core\resources\Theme
      */
     private $templateResolver = null;
 
     /**
      * Cache instance
      *
-     * @var \rampage\core\view\cache\HtmlCache
+     * @var \rampage\core\view\HtmlCache
      */
     protected $cache = null;
-
-    /**
-     * Plugin manager
-     *
-     * @var unknown
-     */
-    private $plugins = null;
 
     /**
      * Helper plugin manager
@@ -96,43 +89,10 @@ class PhpRenderer implements RendererInterface
     /**
      * Constructor
      */
-    public function __construct(PluginManager $pluginManager)
+    public function __construct(HelperPluginManager $pluginManager)
     {
-        $this->setPluginManager($pluginManager);
+        $this->helpers = $pluginManager;
         $this->data = new ArrayObject();
-    }
-
-    /**
-     * Set helper plugin manager instance
-     *
-     * @param  string|HelperPluginManager $helpers
-     * @return PhpRenderer
-     * @throws Exception\InvalidArgumentException
-     */
-    public function setPluginManager($helpers)
-    {
-        if (is_string($helpers)) {
-            if (!class_exists($helpers)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Invalid helper helpers class provided (%s)',
-                    $helpers
-                ));
-            }
-
-            $helpers = new $helpers();
-        }
-
-        if (!$helpers instanceof HelperPluginManager) {
-            throw new InvalidArgumentException(sprintf(
-                'Helper plugin manager must extend Zend\View\HelperPluginManager; got type "%s" instead',
-                (is_object($helpers) ? get_class($helpers) : gettype($helpers))
-            ));
-        }
-
-        $helpers->setRenderer($this);
-        $this->helpers = $helpers;
-
-        return $this;
     }
 
     /**
@@ -162,12 +122,10 @@ class PhpRenderer implements RendererInterface
     }
 
     /**
-     * File locator interface
-     *
-     * @param FileLocatorInterface $locator
+     * @param ThemeInterface $locator
      * @return $this
      */
-    public function setTemplateResolver(FileLocatorInterface $locator)
+    public function setTemplateResolver(ThemeInterface $locator)
     {
         $this->templateResolver = $locator;
         return $this;
@@ -176,7 +134,7 @@ class PhpRenderer implements RendererInterface
     /**
      * Returns the template resolver
      *
-     * @return \rampage\core\resource\FileLocatorInterface
+     * @return \rampage\core\resources\ThemeInterface
      */
     protected function getTemplateResolver()
     {
@@ -194,7 +152,6 @@ class PhpRenderer implements RendererInterface
 
     /**
      * Get the Engine
-     *
      * @return \rampage\core\view\renderer\PhpRenderer
      */
     public function getEngine()

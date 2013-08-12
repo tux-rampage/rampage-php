@@ -25,17 +25,19 @@
 
 namespace rampage\core\view;
 
-use rampage\core\xml\Config;
+use rampage\core\exception\InvalidArgumentException;
+use rampage\core\resources\ThemeInterface;
+
+use rampage\core\xml\XmlConfig;
 use rampage\core\xml\mergerule\AllowSiblingsRule;
 use rampage\core\xml\mergerule\UniqueAttributeRule;
-use rampage\core\exception\InvalidArgumentException;
+
 use Zend\Stdlib\PriorityQueue;
-use rampage\core\resource\FileLocatorInterface;
 
 /**
  * Layout config
  */
-class LayoutConfig extends Config
+class LayoutConfig extends XmlConfig
 {
     /**
      * Priority list
@@ -47,29 +49,29 @@ class LayoutConfig extends Config
     /**
      * Resource locator
      *
-     * @var \rampage\core\resource\FileLocatorInterface
+     * @var \rampage\core\resources\ThemeInterface
      */
-    private $resourceLocator = null;
+    private $theme = null;
 
     /**
      * Construct
      *
      * @param \rampage\core\resource\FileLocatorInterface $resourceLocator
      */
-    public function __construct(FileLocatorInterface $resourceLocator)
+    public function __construct(ThemeInterface $theme)
     {
         $this->files = new PriorityQueue();
-        $this->resourceLocator = $resourceLocator;
+        $this->theme = $theme;
     }
 
     /**
      * Returns the resource locator
      *
-     * @return \rampage\core\resource\FileLocatorInterface
+     * @return \rampage\core\resources\ThemeInterface
      */
-    protected function getResourceLocator()
+    protected function getTheme()
     {
-        return $this->resourceLocator;
+        return $this->theme;
     }
 
     /**
@@ -103,13 +105,13 @@ class LayoutConfig extends Config
      * (non-PHPdoc)
      * @see \rampage\core\xml\Config::_init()
      */
-    protected function _init()
+    protected function loadXml()
     {
         $this->setXml('<?xml version="1.0" encoding="UTF-8"?><layout></layout>');
-        $config = new Config();
+        $config = new XmlConfig();
 
         foreach ($this->getFiles() as $file) {
-            $info = $this->getResourceLocator()->resolve('layout', $file, null, true);
+            $info = $this->getTheme()->resolve('layout', $file, null, true);
             if (!($info instanceof \SplFileInfo) || !$info->isFile() || !$info->isReadable()) {
                 continue;
             }

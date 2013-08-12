@@ -25,14 +25,14 @@
 
 namespace rampage\core\view;
 
-use rampage\core\data\Object;
+use rampage\core\data\ValueObject;
 use rampage\core\exception\RuntimeException;
 use Zend\View\Renderer\RendererInterface;
 
 /**
  * Default view implementation
  */
-class View extends Object implements LayoutViewInterface
+class View extends ValueObject implements LayoutViewInterface
 {
     /**
      * Child elements
@@ -46,7 +46,7 @@ class View extends Object implements LayoutViewInterface
      *
      * @var array
      */
-    private $_serializedChildren = array();
+    private $serializedChildren = array();
 
     /**
      * Name in layout
@@ -214,7 +214,7 @@ class View extends Object implements LayoutViewInterface
     {
         $this->layout = $layout;
 
-        if (!$this->_serializedChildren) {
+        if (!$this->serializedChildren) {
             return $this;
         }
 
@@ -222,8 +222,8 @@ class View extends Object implements LayoutViewInterface
             return $layout->getView($name);
         };
 
-        $this->children = array_filter(array_map($map, $this->_serializedChildren));
-        $this->_serializedChildren = null;
+        $this->children = array_filter(array_map($map, $this->serializedChildren));
+        $this->serializedChildren = null;
 
         return $this;
     }
@@ -307,7 +307,7 @@ class View extends Object implements LayoutViewInterface
 
 
         $this->template = $data['template'];
-        $this->_serializedChildren = (is_array($data['children']))? $data['children'] : array();
+        $this->serializedChildren = (is_array($data['children']))? $data['children'] : array();
         $this->nameInLayout = $data['name_in_layout'];
 
         $this->applyUnserializeData($data);

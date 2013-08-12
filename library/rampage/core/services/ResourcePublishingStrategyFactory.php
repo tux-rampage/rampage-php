@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\core\services;
 
-use SplObjectStorage;
+use rampage\core\resources\StaticResourcePublishingStrategy;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Object queue
+ * Factory for resource publishing strategy
  */
-class ResetableObjectStorage extends SplObjectStorage
+class ResourcePublishingStrategyFactory implements FactoryInterface
 {
     /**
-     * Reset this object storage
+     * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
-    public function reset()
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $this->removeAll($this);
-        return $this;
+        $config = $serviceLocator->get('config');
+        $pathManager = $serviceLocator->get('rampage.PathManager');
+        $strategy = new StaticResourcePublishingStrategy($pathManager->get('public', 'static'), $config);
+
+        return $strategy;
     }
 }

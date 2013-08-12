@@ -26,7 +26,7 @@
 namespace rampage\gui\view\html;
 
 use rampage\core\view\Template;
-use rampage\core\data\Object;
+use rampage\core\data\ValueObject;
 use Zend\Mvc\MvcEvent;
 
 /**
@@ -79,7 +79,7 @@ class Navigation extends Template
      */
     public function addRouteLink($id, $route, $label, array $params = array())
     {
-        $item = new Object(array(
+        $item = new ValueObject(array(
             'id' => $id,
             'type' => 'route',
             'route' => $route,
@@ -91,7 +91,11 @@ class Navigation extends Template
         return $this;
     }
 
-    public function isActive(Object $item)
+    /**
+     * @param ValueObject $item
+     * @return boolean
+     */
+    public function isActive(ValueObject $item)
     {
         if (($item->getType() != 'route') || !$this->hasMvcEvent()) {
             return false;

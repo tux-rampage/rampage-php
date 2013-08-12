@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -25,19 +24,34 @@
 
 namespace rampage\simpleorm;
 
-use SplObjectStorage;
-
 /**
- * Object queue
+ * Default entity definition
  */
-class ResetableObjectStorage extends SplObjectStorage
+class EntityDefinition implements EntityDefinitionInterface
 {
     /**
-     * Reset this object storage
+     * @var array
      */
-    public function reset()
+    private $data = array();
+
+    /**
+     * @param array $data
+     */
+    public function __construct(array $data = array())
     {
-        $this->removeAll($this);
-        return $this;
+        $this->data = $data;
+    }
+
+    /**
+     * @param string $entity
+     * @return string|boolean
+     */
+    public function getRepositoryName($entity)
+    {
+        if (!isset($this->data[$entity]['repository'])) {
+            return false;
+        }
+
+        return $this->data[$entity]['repository'];
     }
 }

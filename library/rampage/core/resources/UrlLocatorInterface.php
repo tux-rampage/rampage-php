@@ -17,27 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
-
-use SplObjectStorage;
+namespace rampage\core\resources;
 
 /**
- * Object queue
+ * Public file locator interface
  */
-class ResetableObjectStorage extends SplObjectStorage
+interface UrlLocatorInterface
 {
     /**
-     * Reset this object storage
+     * @param string $file
+     * @param string $scope
      */
-    public function reset()
-    {
-        $this->removeAll($this);
-        return $this;
-    }
+    public function getUrl($file, $scope = null);
 }

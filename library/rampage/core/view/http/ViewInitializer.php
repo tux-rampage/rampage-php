@@ -28,7 +28,8 @@ namespace rampage\core\view\http;
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\MvcEvent;
-use rampage\core\ObjectManagerInterface;
+use Zend\ServiceManager\ServiceManager;
+
 
 /**
  * View manager
@@ -36,48 +37,36 @@ use rampage\core\ObjectManagerInterface;
 class ViewInitializer implements ListenerAggregateInterface
 {
     /**
-     * Attached listeners
-     *
      * @var array
      */
     protected $listeners = array();
 
     /**
-     * Service manager
-     *
-     * @var \rampage\core\ObjectManagerInterface
+     * @var \Zend\ServiceManager\ServiceManager
      */
-    private $objectManager = null;
+    private $serviceManager = null;
+
+    /**
+     * @var string
+     */
+    protected $renderStrategy = 'rampage\core\view\http\DefaultRenderStrategy';
 
     /**
      * Construct
      *
      * @param ObjectManagerInterface $objectManager
      */
-    public function __construct(ObjectManagerInterface $objectManager)
+    public function __construct(ServiceManager $serviceManager)
     {
-        $this->setObjectManager($objectManager);
+        $this->serviceManager = $serviceManager;
     }
 
     /**
-     * Inject object manager
-     *
-     * @param \rampage\core\ObjectManagerInterface
+     * @return \Zend\ServiceManager\ServiceManager
      */
-    public function setObjectManager(ObjectManagerInterface $objectManager)
+    protected function getServiceManager()
     {
-        $this->objectManager = $objectManager;
-        return $this;
-    }
-
-    /**
-     * Object manager
-     *
-     * @return \rampage\core\ObjectManagerInterface
-     */
-    protected function getObjectManager()
-    {
-        return $this->objectManager;
+        return $this->serviceManager;
     }
 
 	/**
@@ -86,10 +75,7 @@ class ViewInitializer implements ListenerAggregateInterface
      */
     public function attach(EventManagerInterface $events)
     {
-        $objectmanager = $this->getObjectManager();
-        $this->listeners[] = $events->attach(MvcEvent::EVENT_BOOTSTRAP, $objectmanager->get('rampage.core.view.http.LayoutConfigListener'));
         $this->listeners[] = $events->attach(MvcEvent::EVENT_BOOTSTRAP, array($this, 'onBootstrap'));
-
         return $this;
     }
 
@@ -118,7 +104,6 @@ class ViewInitializer implements ListenerAggregateInterface
         /* @var $application \rampage\core\Application */
         $application = $event->getApplication();
         $eventManager = $application->getEventManager();
-
-        $eventManager->attach($this->getObjectManager()->get('rampage.core.view.http.DefaultRenderStrategy'));
+        $eventManager->attach($this->getServiceManager()->get($this->renderStrategy));
     }
 }

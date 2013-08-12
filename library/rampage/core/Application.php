@@ -104,9 +104,7 @@ class Application extends MvcApplication
         $serviceManager = $this->getServiceManager();
         $events = $this->getEventManager();
 
-        $events->attach(MvcEvent::EVENT_BOOTSTRAP, $serviceManager->get('rampage.resources.BootstapListener'));
-        $events->attach($serviceManager->get('rampage.core.view.ViewInitializer'));
-
+        $events->attach($serviceManager->get('rampage.ViewInitializer'));
         return parent::bootstrap();
     }
 

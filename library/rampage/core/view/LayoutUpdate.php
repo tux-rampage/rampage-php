@@ -63,7 +63,7 @@ class LayoutUpdate implements IteratorAggregate
      */
     public function __construct(LayoutConfig $config)
     {
-        $this->setConfig($config);;
+        $this->setConfig($config);
     }
 
     /**

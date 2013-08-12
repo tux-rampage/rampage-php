@@ -25,7 +25,7 @@
 
 namespace rampage\core\view\renderer;
 
-use rampage\core\data\Object;
+use rampage\core\data\ValueObject;
 use ArrayObject;
 
 /**
@@ -37,7 +37,7 @@ use ArrayObject;
  * @method string escapeHtml() escapeHtml(string $str)
  * @method string dateFormat() dateFormat($date, $dateType = null, $timeType = null, $locale = null, $pattern = null)
  */
-class PhtmlTemplate extends Object
+class PhtmlTemplate extends ValueObject
 {
     /**
      * View instance

@@ -1,6 +1,6 @@
 <?php
 /**
- * This is part of rampage.php
+ * This is part of @application_name@
  * Copyright (c) 2012 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,27 +17,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
+ * @package   @package_name@
  * @author    Axel Helmert
- * @copyright Copyright (c) 2013 Axel Helmert
+ * @copyright Copyright (c) 2012 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
-
-use SplObjectStorage;
+namespace rampage\core\resources;
 
 /**
- * Object queue
+ * file locator interface
  */
-class ResetableObjectStorage extends SplObjectStorage
+interface FileLocatorInterface
 {
     /**
-     * Reset this object storage
+     * Ensure the file is published
+     *
+     * Note: This files are always resolved with the type 'public'
+     *
+     * @param string $file
+     * @param string $scope
+     * @return bool|\rampage\core\resources\PublicFileInfo The published path relative to the media directory
      */
-    public function reset()
-    {
-        $this->removeAll($this);
-        return $this;
-    }
+    public function publish($file, $scope = null);
+
+    /**
+     * Resolve a file path
+     *
+     * @param string $type
+     * @param string $file
+     * @param string $scope
+     * @param bool $asFileInfo
+     * @return string|\SplFileInfo|false
+     */
+    public function resolve($type, $file, $scope = null, $asFileInfo = false);
 }

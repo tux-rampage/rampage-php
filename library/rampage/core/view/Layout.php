@@ -334,6 +334,8 @@ class Layout implements EventManagerAwareInterface, Serializable
             return false;
         }
 
+        $name = $view->getNameInLayout();
+
         if (isset($xml->data) && ($view instanceof ArrayExchangeInterface)) {
             $data = $xml->data->toPhpValue('array');
             $view->populate($data);
@@ -503,7 +505,7 @@ class Layout implements EventManagerAwareInterface, Serializable
      * @param array|\Traversable $data
      * @return boolean|\rampage\core\view\Layout
      */
-    public function createView($class, &$name, $data = null)
+    public function createView($class, $name, $data = null)
     {
         $view = $this->getViewLocator()->get($class);
         if (!$view instanceof LayoutViewInterface) {

@@ -26,7 +26,7 @@
 namespace rampage\core\view\helpers;
 
 use Zend\View\Helper\AbstractHelper;
-use rampage\core\resource\UrlLocatorInterface;
+use rampage\core\resources\UrlLocatorInterface;
 use rampage\core\exception\RuntimeException;
 
 /**

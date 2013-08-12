@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\annotations;
 
-use SplObjectStorage;
+use Zend\Code\Annotation\AnnotationInterface;
 
 /**
- * Object queue
+ * Entity annotation
  */
-class ResetableObjectStorage extends SplObjectStorage
+class EntityAnnotation implements AnnotationInterface
 {
     /**
-     * Reset this object storage
+     * @var string
      */
-    public function reset()
+    private $repository = null;
+
+    /**
+     * @return boolean|string
+     */
+    public function getRepositoryName()
     {
-        $this->removeAll($this);
+        if (!$this->repository) {
+            return false;
+        }
+
+        return $this->repository;
+    }
+
+    /**
+     * @see \Zend\Code\Annotation\AnnotationInterface::initialize()
+     */
+    public function initialize($content)
+    {
+        $this->repository = trim((string)$content);
         return $this;
     }
 }
