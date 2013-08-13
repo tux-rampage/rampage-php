@@ -22,20 +22,29 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\core;
+
+use ArrayObject;
 
 /**
- * Interface for repository classes
+ * Interface for manifest processors
+ *
+ * Implementations of this interface can be added to the ModuleManifest instance to allow parsing of additional <include> files
+ * Defined in the module manifest.
  */
-interface RepositoryInterface extends PersistenceGatewayInterface
+interface ManifestProcessorInterface
 {
     /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+     * @param string $type
+     * @return bool
      */
-    public function getHydrator();
+    public function isTypeSupported($type);
 
     /**
-     * @param string $object
+     * Load the given file into the given maifest
+     *
+     * @param string $file
+     * @param ArrayObject $manifest
      */
-    public function isObjectNew($object);
+    public function load($file, ArrayObject $manifest);
 }

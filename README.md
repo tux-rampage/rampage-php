@@ -3,10 +3,7 @@
 This framework is based on ZendFramework 2.
 Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 
-For example this offers xml based module configs and you don't have
-to provide a module class with a forced name (`Vendor\Module`).
-But you're allowed to implement your own module class of course and 
-you're not forced to follow a specific naming.
+For example this offers xml based module configs.
 
 ## License
 
@@ -36,25 +33,6 @@ Feel free to contact them for:
 2. Run composer.phar install
 3. Include "vendor/autoload.php" as usual.
 
-### Example Composer Config
-
-This is an example you may use for your composer config.
-
-```json
-{
-    "name": "foo/bar",
-    "description": "My FooBar application",
-    "license": "proprietary",
-    
-    "repositories": [
-        {"type": "vcs", "url": "https://github.com/tux-rampage/rampage-php"},
-    ],
-    
-    "require": {
-        "rampage-php/framework": "dev-master",
-    }
-}
-```
 
 # Contributing
 
@@ -79,6 +57,10 @@ xml schema definition (xsd) than a php array.
 With the provided xsd files you will have an overview which options are available and how to
 configure them correctly. The framework encapsulates the translation of the xml to the
 ZF2 config array.
+
+## Is the module's manifest.xml required?
+
+No. It is completely up to you if you'd like to use this feature or not.
 
 ## What about performance when using XML configs
 

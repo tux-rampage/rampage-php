@@ -25,17 +25,21 @@
 namespace rampage\simpleorm;
 
 /**
- * Interface for repository classes
+ * Interface for implementing persistence gateways
  */
-interface RepositoryInterface extends PersistenceGatewayInterface
+interface PersistenceGatewayInterface
 {
     /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+     * Store the given object to the persistence layer
+     *
+     * @param object $object
      */
-    public function getHydrator();
+    public function store($object);
 
     /**
-     * @param string $object
+     * Delete the given object from the persistence layer
+     *
+     * @param object $object
      */
-    public function isObjectNew($object);
+    public function delete($object);
 }

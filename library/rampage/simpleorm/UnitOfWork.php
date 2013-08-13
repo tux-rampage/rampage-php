@@ -30,7 +30,7 @@ use SplQueue;
 /**
  * Persistence strategy
  */
-class DefaultPersistenceStrategy implements PersistenceStrategyInterface
+class UnitOfWork implements UnitOfWorkInterface
 {
     /**
      * @var EntityManager
@@ -93,31 +93,38 @@ class DefaultPersistenceStrategy implements PersistenceStrategyInterface
     /**
      * @see \rampage\simpleorm\PersistenceStrategyInterface::store()
      */
-    public function store($object)
+    public function store($object, PersistenceGatewayInterface $persistenceGateway = null)
     {
         if ($this->pendingToDelete->contains($object)) {
             $this->pendingToDelete->detach($object);
         }
 
-        $this->pendingToStore->attach($object);
+        if (!$this->pendingToStore->contains($object) || ($persistenceGateway !== null)) {
+            $this->pendingToStore->attach($object, $persistenceGateway);
+        }
+
         return $this;
     }
 
     /**
      * @see \rampage\simpleorm\PersistenceStrategyInterface::delete()
      */
-    public function delete($object)
+    public function delete($object, PersistenceGatewayInterface $persistenceGateway = null)
     {
         if ($this->pendingToStore->contains($object)) {
             $this->pendingToStore->detach($object);
         }
 
-        $this->pendingToDelete->attach($object);
+        if (!$this->pendingToDelete->contains($object) || ($persistenceGateway !== null)) {
+            $this->pendingToDelete->attach($object, $persistenceGateway);
+        }
+
         return $this;
     }
 
     /**
      * @param object $object
+     * @return \rampage\simpleorm\PersistenceGatewayInterface
      */
     protected function getRepositoryByObject($object)
     {
@@ -126,12 +133,44 @@ class DefaultPersistenceStrategy implements PersistenceStrategyInterface
     }
 
     /**
+     * @param ObjectQueue $queue
+     * @param object $object
+     * @return \rampage\simpleorm\PersistenceGatewayInterface
+     */
+    private function getPersistenceGateway(ObjectQueue $queue, $object)
+    {
+        $gateway = $queue->getInfo();
+        if (!$gateway instanceof PersistenceGatewayInterface) {
+            $gateway = $this->getRepositoryByObject($object);
+        }
+
+        return $gateway;
+    }
+
+    /**
      * @see \rampage\simpleorm\PersistenceStrategyInterface::flush()
      */
     public function flush()
     {
-        // FIXME: Implement persistence commit
+        $transaction = new DatabaseTransaction($this->entityManager->getAdapter());
+        $transaction->start();
 
+        try {
+            foreach ($this->pendingToStore as $object) {
+                $this->getPersistenceGateway($this->pendingToStore, $object)->store($object);
+            }
+
+            foreach ($this->pendingToDelete as $object) {
+                $this->getPersistenceGateway($this->pendingToDelete, $object)->delete($object);
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollback();
+            throw $e;
+        }
+
+        $this->reset();
         return $this;
     }
 

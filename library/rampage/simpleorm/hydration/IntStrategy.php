@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,39 +17,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\hydration;
+
+use Zend\Stdlib\Hydrator\Strategy\StrategyInterface;
 
 /**
- * Object state
+ * Integer hydration strategy
  */
-class ObjectPersistenceState
+class IntStrategy implements StrategyInterface
 {
     /**
-     * @var array
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    private $data = array();
-
-    /**
-     * @param array $data
-     */
-    public function __construct(array $data)
+    public function extract($value)
     {
-        $this->data = $data;
+        return $this->hydrate($value);
     }
 
     /**
-     * Returns the persistence data
-     *
-     * @return array
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function getData()
+    public function hydrate($value)
     {
-        return $this->data;
+        if ($value === null) {
+            return $value;
+        }
+
+        return (int)$value;
     }
 }

@@ -26,6 +26,8 @@
 namespace rampage\core;
 
 use DOMDocument;
+use ArrayObject;
+
 use rampage\core\xml\XmlConfig;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\services\DIServiceFactory;
@@ -38,7 +40,7 @@ class ModuleManifest extends XmlConfig
     /**
      * Manifest
      *
-     * @var array
+     * @var ArrayObject
      */
     protected $manifest = null;
 
@@ -50,6 +52,11 @@ class ModuleManifest extends XmlConfig
     private $moduleDirectory = null;
 
     /**
+     * @var array
+     */
+    private $processors = array();
+
+    /**
      * (non-PHPdoc)
      * @see \rampage\core\xml\Config::__construct()
      */
@@ -57,6 +64,52 @@ class ModuleManifest extends XmlConfig
     {
         $this->moduleDirectory = rtrim($moduleDirectory, '/') . '/';
         parent::__construct($file);
+    }
+
+    /**
+     * @param ManifestProcessorInterface $processor
+     * @return \rampage\core\ModuleManifest
+     */
+    public function addIncludeProcessor(ManifestProcessorInterface $processor)
+    {
+        $this->processors[] = $processor;
+        return $this;
+    }
+
+    /**
+     * @param string $type
+     * @return \rampage\core\ManifestProcessorInterface|boolean
+     */
+    protected function getIncludeProcessor($type)
+    {
+        /* @var $processor \rampage\core\ManifestProcessorInterface */
+        foreach ($this->processors as $processor) {
+            if ($processor->isTypeSupported($type)) {
+                return $processor;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Process include directives
+     *
+     * @return self
+     */
+    protected function processIncludes()
+    {
+        foreach ($this->getXml()->xpath('/includes/include[@type != "" and @file != ""]') as $include) {
+            $processor = $this->getIncludeProcessor((string)$include['type']);
+            if (!$processor) {
+                trigger_error(sprintf('No include processor for "%s" available. Did you forget to register it?', (string)$include['type']), E_USER_WARNING);
+                continue;
+            }
+
+            $processor->load((string)$include['file'], $this->manifest);
+        }
+
+        return $this;
     }
 
     /**
@@ -741,7 +794,7 @@ class ModuleManifest extends XmlConfig
      */
     public function load()
     {
-        $this->manifest = array(
+        $this->manifest = new ArrayObject(array(
             'name' => $this->getModuleName(),
             'version' => $this->getModuleVersion(),
             'application_config' => array(),
@@ -749,7 +802,7 @@ class ModuleManifest extends XmlConfig
             'console' => array(
                 'usage' => array(),
             ),
-        );
+        ));
 
         $this->loadPackagesConfig()
              ->loadLayoutConfig()
@@ -763,6 +816,8 @@ class ModuleManifest extends XmlConfig
              ->loadConsoleConfig();
 
         $this->loadServiceManagerConfig('./view/helpers', 'view_helper_manager');
+        $this->processIncludes();
+
         return $this->manifest;
     }
 
@@ -782,6 +837,6 @@ class ModuleManifest extends XmlConfig
             return (isset($this->manifest[$key]))? $this->manifest[$key] : null;
         }
 
-        return $this->manifest;
+        return $this->manifest->getArrayCopy();
     }
 }

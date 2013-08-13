@@ -33,7 +33,7 @@ class RampagePhing
      */
     public static function init()
     {
-        // Add LUKA phing class path
+        // Add phing class path
         set_include_path(dirname(__DIR__) . '/library' . PATH_SEPARATOR . get_include_path());
         if (getenv('PHP_CLASSPATH')) {
             if (!defined('PHP_CLASSPATH')) {

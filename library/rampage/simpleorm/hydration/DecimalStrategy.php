@@ -22,20 +22,28 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\hydration;
+
+use Zend\Stdlib\Hydrator\Strategy\StrategyInterface;
 
 /**
- * Interface for repository classes
+ * Decimal hydration strategy
  */
-interface RepositoryInterface extends PersistenceGatewayInterface
+class DecimalStrategy implements StrategyInterface
 {
-    /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+	/**
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::extract()
      */
-    public function getHydrator();
+    public function extract($value)
+    {
+        return $this->hydrate($value);
+    }
 
-    /**
-     * @param string $object
+	/**
+     * @see \Zend\Stdlib\Hydrator\Strategy\StrategyInterface::hydrate()
      */
-    public function isObjectNew($object);
+    public function hydrate($value)
+    {
+        return ($value === null)? null : (float)$value;
+    }
 }

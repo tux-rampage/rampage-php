@@ -22,36 +22,11 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\exceptions;
 
 /**
- * Default entity definition
+ * Runtime exception
  */
-class EntityDefinition implements EntityDefinitionInterface
+class RuntimeException extends \RuntimeException implements ExceptionInterface
 {
-    /**
-     * @var array
-     */
-    private $data = array();
-
-    /**
-     * @param array $data
-     */
-    public function __construct(array $data = array())
-    {
-        $this->data = $data;
-    }
-
-    /**
-     * @param string $entity
-     * @return string|boolean
-     */
-    public function getRepositoryName($entity)
-    {
-        if (!isset($this->data[$entity]['repository'])) {
-            return false;
-        }
-
-        return $this->data[$entity]['repository'];
-    }
 }

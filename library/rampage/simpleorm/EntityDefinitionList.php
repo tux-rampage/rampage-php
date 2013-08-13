@@ -35,6 +35,22 @@ class EntityDefinitionList implements EntityDefinitionInterface
     private $definitions = array();
 
     /**
+     * @param array|Traversable|EntityDefinitionInterface $definitions
+     */
+    public function __construct($definitions = null)
+    {
+        if ($definitions !== null) {
+            if (!is_array($definitions) && !($definitions instanceof \Traversable)) {
+                $definitions = array($definitions);
+            }
+
+            $this->addDefinitions($definitions);
+        }
+
+        $this->addDefinition(new EntityRuntimeDefintion());
+    }
+
+    /**
      * @param EntityDefinitionInterface $definition
      * @return \rampage\simpleorm\EntityDefinitionList
      */
@@ -53,6 +69,19 @@ class EntityDefinitionList implements EntityDefinitionInterface
     }
 
     /**
+     * @param array|Traversable $definitions
+     * @return self
+     */
+    public function addDefinitions($definitions)
+    {
+        foreach ($definitions as $definition) {
+            $this->addDefinition($definition);
+        }
+
+        return $this;
+    }
+
+    /**
      * @param EntityDefinitionInterface $definition
      * @return \rampage\simpleorm\EntityDefinitionList
      */
@@ -65,6 +94,19 @@ class EntityDefinitionList implements EntityDefinitionInterface
     }
 
     /**
+     * @param string $class
+     * @return \rampage\simpleorm\EntityDefinitionInterface
+     */
+    public function getDefinition($class)
+    {
+        if (!isset($this->definitions[$class])) {
+            return null;
+        }
+
+        return $this->definitions[$class];
+    }
+
+    /**
      * @return array
      */
     public function getDefinitions()
@@ -73,6 +115,20 @@ class EntityDefinitionList implements EntityDefinitionInterface
     }
 
     /**
+     * @see \rampage\simpleorm\EntityDefinitionInterface::hasRepository()
+     */
+    public function hasRepository($entity)
+    {
+        foreach ($this->definitions as $definition) {
+            if ($definition->hasRepository($entity)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+	/**
      * @see \rampage\simpleorm\EntityDefinitionInterface::getRepositoryName()
      */
     public function getRepositoryName($entity)

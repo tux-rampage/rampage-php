@@ -25,17 +25,49 @@
 namespace rampage\simpleorm;
 
 /**
- * Interface for repository classes
+ * Default entity definition
  */
-interface RepositoryInterface extends PersistenceGatewayInterface
+class EntityArrayDefinition implements EntityDefinitionInterface
 {
     /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+     * @var array
      */
-    public function getHydrator();
+    protected $data = array();
 
     /**
-     * @param string $object
+     * @param array $data
      */
-    public function isObjectNew($object);
+    public function __construct(array $data = array())
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * @see \rampage\simpleorm\EntityDefinitionInterface::hasRepository()
+     */
+    public function hasRepository($entity)
+    {
+        return ($this->getRepositoryName($entity) != false);
+    }
+
+    /**
+     * @param string $entity
+     * @return string|boolean
+     */
+    public function getRepositoryName($entity)
+    {
+        if (!isset($this->data[$entity]['repository'])) {
+            return false;
+        }
+
+        return $this->data[$entity]['repository'];
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->data;
+    }
 }

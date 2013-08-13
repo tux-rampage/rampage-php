@@ -47,7 +47,7 @@ class ClassAnnotationParser extends GenericAnnotationParser
      */
     public function __construct()
     {
-        $this->registerAnnotation('rampage\simpleorm\annotations\EntityAnnotation')
+        $this->registerAnnotation(new EntityAnnotation())
             ->setAlias('entity', 'rampage\simpleorm\annotations\EntityAnnotation');
     }
 }

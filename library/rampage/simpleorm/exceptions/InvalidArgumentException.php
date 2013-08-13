@@ -22,20 +22,8 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\exceptions;
 
-/**
- * Interface for repository classes
- */
-interface RepositoryInterface extends PersistenceGatewayInterface
+class InvalidArgumentException extends \InvalidArgumentException implements ExceptionInterface
 {
-    /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
-     */
-    public function getHydrator();
-
-    /**
-     * @param string $object
-     */
-    public function isObjectNew($object);
 }

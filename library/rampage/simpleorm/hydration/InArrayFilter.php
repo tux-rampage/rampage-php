@@ -22,20 +22,33 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\hydration;
+
+use Zend\Stdlib\Hydrator\Filter\FilterInterface;
 
 /**
- * Interface for repository classes
+ * Hydration filter
  */
-interface RepositoryInterface extends PersistenceGatewayInterface
+class InArrayFilter implements FilterInterface
 {
     /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+     * @var array
      */
-    public function getHydrator();
+    protected $properties = array();
 
     /**
-     * @param string $object
+     * @param array $properties
      */
-    public function isObjectNew($object);
+    public function __construct(array $properties)
+    {
+        $this->properties = $properties;
+    }
+
+    /**
+     * @see \Zend\Stdlib\Hydrator\Filter\FilterInterface::filter()
+     */
+    public function filter($property)
+    {
+        return in_array($property, $this->properties);
+    }
 }

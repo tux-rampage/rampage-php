@@ -30,6 +30,16 @@ namespace rampage\simpleorm;
 interface EntityDefinitionInterface
 {
     /**
+     * This method should return if the given entity has a defined repository
+     *
+     * @param string $entity
+     * @return bool
+     */
+    public function hasRepository($entity);
+
+    /**
+     * This method should return the repository name or false if the entity is not defined
+     *
      * @param string $entity
      * @return string|bool
      */

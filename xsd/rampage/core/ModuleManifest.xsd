@@ -5,37 +5,24 @@
     <element name="RampageManifest" type="rampage:RampageManifestComplexType">
     </element>
 
-    <complexType name="ServicesType">
-        <sequence>
-            <element name="service" maxOccurs="unbounded" minOccurs="0" type="rampage:ServiceClassDefinition">
-            </element>
-            <element name="class" type="rampage:ServiceClassDefinition" maxOccurs="unbounded" minOccurs="0"></element>
-            <element name="factory" type="rampage:ServiceFactoryDefinition" maxOccurs="unbounded" minOccurs="0"></element>
-            <element name="alias" maxOccurs="unbounded" minOccurs="0">
+    <complexType name="ServiceManagerConfig">
+        <all>
+            <element name="services" maxOccurs="1" minOccurs="0">
                 <complexType>
-                    <simpleContent>
-                        <extension base="rampage:SimpleServiceDefinition">
-                            <attribute name="to" type="rampage:PHPClassName" use="required"></attribute>
-                        </extension>
-                    </simpleContent>
+                    <sequence>
+                        <element name="service" maxOccurs="unbounded" minOccurs="1" type="rampage:DiAwareServiceConfig"></element>
+                    </sequence>
+                </complexType></element>
+            <element name="factories" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="factory" maxOccurs="unbounded" minOccurs="1" type="rampage:ServiceFactory">
+                        </element>
+                    </sequence>
                 </complexType>
             </element>
-            <element name="share" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                    <simpleContent>
-                        <extension base="rampage:SimpleServiceDefinition">
-                            <attribute name="shared" type="boolean" use="optional" default="true"></attribute>
-                        </extension>
-                    </simpleContent>
-                </complexType>
-            </element>
-            <element name="initializer" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                    <attribute name="initializer" type="string" use="required"></attribute>
-                </complexType>
-            </element>
-            <element name="di" type="rampage:DiContainerConfig" maxOccurs="1" minOccurs="0"></element>
-        </sequence>
+        </all>
+        
     </complexType>
 
 
@@ -114,8 +101,8 @@
     </complexType>
 
     <complexType name="RouteDefinition">
-        <all>
-            <choice>
+        <sequence>
+            <choice maxOccurs="1" minOccurs="1">
                 <element name="standard" type="rampage:StandardRouterConfig" maxOccurs="1" minOccurs="1"></element>
 
                 <element name="literal" maxOccurs="1" minOccurs="1" type="rampage:LiteralRouteConfig"></element>
@@ -147,7 +134,7 @@
                 <element name="custom" type="rampage:CustomRouterConfig" maxOccurs="1" minOccurs="1"></element>
             </choice>
             <element name="routes" type="rampage:RoutersConfig" maxOccurs="1" minOccurs="0"></element>
-        </all>
+        </sequence>
 
         <attribute name="name" type="string" use="required"></attribute>
         <attribute name="type" use="required">
@@ -165,11 +152,10 @@
         <attribute name="mayterminate" type="boolean"></attribute>
     </complexType>
     <complexType name="RoutersConfig">
-        <all>
-            <element name="route" type="rampage:RouteDefinition"
-                maxOccurs="unbounded" minOccurs="1">
+        <sequence>
+            <element name="route" type="rampage:RouteDefinition" maxOccurs="unbounded" minOccurs="1">
             </element>
-        </all>
+        </sequence>
 
     </complexType>
 
@@ -202,13 +188,6 @@
         <attribute name="type" type="string" use="required"></attribute>
     </complexType>
 
-    <complexType name="AliasConfig">
-        <all>
-            <element name="alias" type="rampage:PackageClassAliasDefinition"
-                maxOccurs="unbounded" minOccurs="0">
-            </element>
-        </all>
-    </complexType>
 
     <complexType name="PackageClassAliasDefinition">
         <attribute name="name" type="string" use="required"></attribute>
@@ -243,9 +222,9 @@
     </complexType>
 
     <complexType name="LayoutSection">
-        <all>
+        <sequence>
             <element name="config" type="rampage:LayoutConfigDefinition" maxOccurs="unbounded" minOccurs="1"></element>
-        </all>
+        </sequence>
     </complexType>
 
     <complexType name="LayoutConfigDefinition">
@@ -256,30 +235,27 @@
 
     <complexType name="ResourcesConfig">
         <all>
-            <element name="path" maxOccurs="unbounded" minOccurs="0">
+            <element name="paths" maxOccurs="1" minOccurs="0">
                 <complexType>
-                    <attribute name="scope" type="string"
-                        use="optional">
-                    </attribute>
-                    <attribute name="type" type="string"
-                        use="optional">
-                    </attribute>
+                    <sequence>
+                        <element name="path" maxOccurs="unbounded" minOccurs="1">
+                            <complexType>
+                                <attribute name="type" type="string" use="optional"></attribute>
+                                <attribute name="scope" type="string" use="required"></attribute>
+                                <attribute name="path" type="string" use="required"></attribute>
+                            </complexType>
+                        </element>
+                    </sequence>
                 </complexType>
             </element>
-            <element name="theme" maxOccurs="unbounded" minOccurs="0">
+            <element name="themes" maxOccurs="1" minOccurs="0">
                 <complexType>
-                    <attribute name="name" type="string"
-                        use="required">
-                    </attribute>
-                    <attribute name="path" type="string"
-                        use="required">
-                    </attribute>
-                    <attribute name="fallbacks" type="string" use="optional"></attribute>
+                    <sequence>
+                        <element name="theme" type="rampage:ThemeResourceConfig" maxOccurs="unbounded" minOccurs="1"></element>
+                    </sequence>
                 </complexType>
             </element>
-            <element name="layout" type="rampage:LayoutSection"
-                maxOccurs="1" minOccurs="0">
-            </element>
+            <element name="layout" type="rampage:LayoutSection" maxOccurs="1" minOccurs="0"></element>
         </all>
     </complexType>
 
@@ -316,95 +292,54 @@
                                 </restriction>
                             </simpleType>
                         </element>
-                        <element minOccurs="0" maxOccurs="1"
-                            name="description" type="string">
-                        </element>
-                        <element minOccurs="0" maxOccurs="1"
-                            name="dependencies"
-                            type="rampage:ModuleDependencies">
-                        </element>
+                        <element minOccurs="0" maxOccurs="1" name="description" type="string"></element>
+                        <element minOccurs="0" maxOccurs="1" name="dependencies" type="rampage:ModuleDependencies"></element>
                     </all>
-                    <attribute use="required" name="name"
-                        type="string">
-                    </attribute>
-                    <attribute use="required" name="version"
-                        type="rampage:VersionNumber">
-                    </attribute>
+                    <attribute use="required" name="name" type="string"></attribute>
+                    <attribute use="required" name="version" type="rampage:VersionNumber"></attribute>
                 </complexType>
             </element>
-            <element minOccurs="0" maxOccurs="1" name="packages">
+            <element minOccurs="0" maxOccurs="1" name="classes">
                 <complexType>
                     <all>
-                        <element minOccurs="0" maxOccurs="unbounded"
-                            name="package"
-                            type="rampage:PackageDefinition">
-                        </element>
-                        <element minOccurs="0" maxOccurs="1"
-                            name="aliases" type="rampage:AliasConfig">
-                        </element>
-                        <element name="classmap"
-                            type="rampage:ClassMapDefinition"
-                            maxOccurs="unbounded" minOccurs="0">
-                        </element>
-                    </all>
-                </complexType>
-            </element>
-            <element minOccurs="0" maxOccurs="1" name="services"
-                type="rampage:ServicesType">
-            </element>
-            <element minOccurs="0" maxOccurs="1" name="router"
-                type="rampage:RoutersConfig">
-            </element>
-            <element name="console" type="rampage:ConsoleConfig"
-                maxOccurs="1" minOccurs="0">
-            </element>
-            <element minOccurs="0" maxOccurs="1" name="controllers">
-                <complexType>
-                    <all>
-                        <element minOccurs="1" maxOccurs="unbounded"
-                            name="controller">
+                        <element name="namespaces" maxOccurs="1" minOccurs="0">
                             <complexType>
-                                <annotation></annotation>
-                                <simpleContent>
-                                    <extension
-                                        base="rampage:PHPClassName">
-                                        <attribute use="required"
-                                            name="name" type="string">
-                                            <annotation></annotation>
-                                        </attribute>
-                                    </extension>
-                                </simpleContent>
+                                <sequence>
+                                    <element name="namespace" maxOccurs="unbounded" minOccurs="1">
+                                        <complexType>
+                                            <attribute name="namespace" type="string" use="required"></attribute>
+                                            <attribute name="path" type="string" use="required"></attribute>
+                                            <attribute name="relative" type="boolean" use="optional"></attribute>
+                                        </complexType>
+                                    </element>
+                                </sequence>
+                            </complexType>
+                        </element>
+                        <element name="classmaps" maxOccurs="1" minOccurs="0">
+                            <complexType>
+                                <sequence>
+                                    <element name="classmap" type="rampage:ClassMapDefinition" maxOccurs="unbounded"
+                                        minOccurs="1">
+                                    </element>
+                                </sequence>
                             </complexType>
                         </element>
                     </all>
-                    <attribute use="optional" name="namespace"
-                        type="string">
-                        <annotation></annotation>
-                    </attribute>
-                    <attribute name="prefix" type="string">
-                        <annotation></annotation>
-                    </attribute>
                 </complexType>
             </element>
+            <element minOccurs="0" maxOccurs="1" name="servicemanager" type="rampage:ServiceManagerConfig"></element>
+            <element name="dicontainer" type="rampage:DiContainerConfig" maxOccurs="1" minOccurs="0"></element>
+            <element minOccurs="0" maxOccurs="1" name="router" type="rampage:RoutersConfig"></element>
+            <element name="console" type="rampage:ConsoleConfig" maxOccurs="1" minOccurs="0"></element>
             <element minOccurs="0" maxOccurs="1" name="locale">
                 <complexType>
                     <sequence>
-                        <element minOccurs="0" maxOccurs="unbounded"
-                            name="pattern" type="rampage:patternType">
-                        </element>
+                        <element minOccurs="0" maxOccurs="unbounded" name="pattern" type="rampage:patternType"></element>
                     </sequence>
                 </complexType>
             </element>
-            <element name="view" maxOccurs="1" minOccurs="0">
-                <complexType>
-                    <sequence>
-                        <element name="helpers" type="rampage:PluginManagerConfig" maxOccurs="1" minOccurs="0"></element>
-                    </sequence>
-                </complexType>
-            </element>
-            <element minOccurs="0" maxOccurs="1" name="resources"
-                type="rampage:ResourcesConfig">
-            </element>
+            <element minOccurs="0" maxOccurs="1" name="resources" type="rampage:ResourcesConfig"></element>
+            <element name="plugins" type="rampage:PluginManagerSection" maxOccurs="1" minOccurs="0"></element>
         </all>
     </complexType>
 
@@ -413,16 +348,11 @@
     <complexType name="ConsoleConfig">
         <all>
             <element name="banner" type="string" maxOccurs="1" minOccurs="0"></element>
-            <element name="command" maxOccurs="unbounded" minOccurs="0">
+            <element name="commands" maxOccurs="1" minOccurs="0">
                 <complexType>
-                    <all>
-                        <element name="defaults" type="phptypes:ArrayType" maxOccurs="1" minOccurs="0"></element>
-                        <element name="usage" type="rampage:ConsoleUsageConfig" maxOccurs="1" minOccurs="0"></element>
-                    </all>
-                    <attribute name="name" type="string" use="required"></attribute>
-                    <attribute name="route" type="string" use="required"></attribute>
-                    <attribute name="controller" type="string" use="required"></attribute>
-                    <attribute name="action" type="string" use="optional"></attribute>
+                    <sequence>
+                        <element name="command" type="rampage:ConsoleCommandConfig" maxOccurs="unbounded" minOccurs="1"></element>
+                    </sequence>
                 </complexType>
             </element>
         </all>
@@ -460,7 +390,7 @@
             <element name="definitions" maxOccurs="1" minOccurs="0">
                 <complexType>
                     <sequence>
-                        <element name="precompiled" maxOccurs="unbounded" minOccurs="0">
+                        <element name="precompiled" maxOccurs="unbounded" minOccurs="1">
                             <complexType>
                                 <attribute name="file" type="string" use="required"></attribute>
                             </complexType>
@@ -468,23 +398,10 @@
                     </sequence>
                 </complexType>
             </element>
-            <element name="aliases" maxOccurs="1" minOccurs="0">
-                            <complexType>
-                                <sequence>
-                                    <element name="alias" maxOccurs="unbounded" minOccurs="1">
-                                        <complexType>
-                                            <attribute name="alias" type="string" use="required"></attribute>
-                                            <attribute name="class" type="string" use="required"></attribute>
-                                        </complexType>
-                                    </element>
-                                </sequence>
-                            </complexType>
-                        </element>
-            <element name="preferences" type="rampage:DiPreferencesDefinition" maxOccurs="1" minOccurs="0"></element>
             <element name="instances" maxOccurs="1" minOccurs="0">
                 <complexType>
                     <sequence>
-                        <element name="type" maxOccurs="unbounded" minOccurs="0" type="rampage:DiClassPreferences">
+                        <element name="instance" maxOccurs="unbounded" minOccurs="1" type="rampage:DiInstanceConfig">
                                     </element>
                     </sequence>
 
@@ -495,22 +412,11 @@
 
     <complexType name="DiInjectionsConfig">
         <sequence>
-            <element name="service" maxOccurs="unbounded"
-                minOccurs="0">
+            <element name="inject" maxOccurs="unbounded"
+                minOccurs="1">
                 <complexType>
-                    <attribute name="method" type="string"></attribute>
-                    <attribute name="name" type="string"
-                        use="required">
-                    </attribute>
-                </complexType>
-            </element>
-            <element name="instance" maxOccurs="unbounded"
-                minOccurs="0">
-                <complexType>
-                    <attribute name="method" type="string"></attribute>
-                    <attribute name="class" type="string"
-                        use="required">
-                    </attribute>
+                    <attribute name="method" type="string" use="required"></attribute>
+                    <attribute name="class" type="string" use="optional"></attribute>
                 </complexType>
             </element>
         </sequence>
@@ -533,22 +439,30 @@
             </element>
         </sequence>
     </complexType>
-    <complexType name="DiClassPreferences">
+    <complexType name="DiInstanceConfig">
         <all>
-            <element minOccurs="0" maxOccurs="1" name="injections"
-                type="rampage:DiInjectionsConfig">
-            </element>
+            <element minOccurs="0" maxOccurs="1" name="injections" type="rampage:DiInjectionsConfig"></element>
             <element minOccurs="0" maxOccurs="1" name="parameters">
                 <complexType>
                     <sequence>
-                        <element minOccurs="1" maxOccurs="unbounded"
-                            name="parameter" type="rampage:DiParameterItemType">
+                        <element minOccurs="1" maxOccurs="unbounded" name="parameter" type="phptypes:PHPValueType">
                         </element>
                     </sequence>
                 </complexType>
             </element>
+            <element name="aspreference" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="for" maxOccurs="unbounded" minOccurs="1">
+                            <complexType>
+                                <attribute name="class" type="string" use="required"></attribute>
+                            </complexType></element>
+                    </sequence>
+                </complexType>
+            </element>
         </all>
-        <attribute use="required" name="name" type="string"></attribute>
+        <attribute use="required" name="class" type="string"></attribute>
+        <attribute name="alias" type="string" use="optional"></attribute>
         <attribute use="optional" name="shared" type="boolean"></attribute>
     </complexType>
 
@@ -567,13 +481,24 @@
     </complexType>
 
     <complexType name="PluginManagerConfig">
-        <complexContent>
-            <extension base="rampage:ServicesType">
-                <sequence>
-                    <element name="di" type="string" minOccurs="0" maxOccurs="0"></element>
-                </sequence>
-            </extension>
-        </complexContent>
+        <complexContent></complexContent>
+        <all>
+            <element name="plugins" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="plugin" type="rampage:ServiceConfig" maxOccurs="unbounded" minOccurs="1"></element>
+                    </sequence>
+                </complexType>
+            </element>
+            <element name="factories" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="factory" type="rampage:ServiceFactory" maxOccurs="unbounded" minOccurs="1"></element>
+                    </sequence>
+                </complexType>
+            </element>
+        </all>
+        <attribute name="type" type="string" use="required"></attribute>
     </complexType>
 
     <complexType name="BaseRouteConfig">
@@ -586,5 +511,75 @@
                 <attribute use="required" name="class" type="rampage:PHPClassName"></attribute>
             </extension>
         </simpleContent>
+    </complexType>
+
+    <complexType name="DiAwareServiceConfig">
+        <complexContent>
+            <extension base="rampage:ServiceConfig">
+                <all>
+                    <element name="di" maxOccurs="1" minOccurs="0">
+                        <complexType>
+                            <sequence>
+                                <element name="provides" maxOccurs="unbounded" minOccurs="0">
+                                    <complexType>
+                                        <attribute name="class" type="string" use="required"></attribute>
+                                    </complexType>
+                                </element>
+                            </sequence>
+                            <attribute name="class" type="string" use="optional"></attribute>
+                        </complexType>
+                    </element>
+                </all>
+                <attribute name="usedi" type="boolean" use="optional"></attribute>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="ServiceConfig">
+        <all>
+            <element name="factory" maxOccurs="1" minOccurs="0" type="rampage:ServiceFactory">
+            </element>
+            <element name="aliases" maxOccurs="1" minOccurs="0">
+                <complexType>
+                    <sequence>
+                        <element name="alias" maxOccurs="unbounded" minOccurs="1">
+                            <complexType>
+                                <attribute name="name" type="string" use="required"></attribute>
+                            </complexType>
+                        </element>
+                    </sequence>
+                </complexType>
+            </element>
+        </all>
+        <attribute name="name" type="string" use="required"></attribute>
+        <attribute name="class" type="string" use="optional"></attribute>
+        <attribute name="shared" type="boolean" use="optional"></attribute>
+    </complexType>
+    <complexType name="ConsoleCommandConfig">
+        <all>
+            <element minOccurs="0" maxOccurs="1" name="defaults" type="phptypes:ArrayType"></element>
+            <element minOccurs="0" maxOccurs="1" name="usage" type="rampage:ConsoleUsageConfig"></element>
+        </all>
+        <attribute use="required" name="name" type="string"></attribute>
+        <attribute use="required" name="route" type="string"></attribute>
+        <attribute use="required" name="controller" type="string"></attribute>
+        <attribute use="optional" name="action" type="string"></attribute>
+    </complexType>
+    <complexType name="ThemeResourceConfig">
+        <attribute use="required" name="name" type="string"></attribute>
+        <attribute use="required" name="path" type="string"></attribute>
+        <attribute use="optional" name="fallbacks" type="string"></attribute>
+    </complexType>
+
+    <complexType name="PluginManagerSection">
+        <sequence>
+            <element name="pluginmanager" type="rampage:PluginManagerConfig" maxOccurs="unbounded" minOccurs="1"></element>
+        </sequence>
+    </complexType>
+    <complexType name="ServiceFactory">
+        <sequence>
+            <element minOccurs="0" maxOccurs="1" name="options" type="phptypes:ArrayType"></element>
+        </sequence>
+        <attribute use="required" name="class" type="string"></attribute>
     </complexType>
 </schema>

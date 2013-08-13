@@ -1,16 +1,30 @@
 <?php
 /**
- * LICENSE: $license_text$
+ * This is part of rampage.php
+ * Copyright (c) 2013 Axel Helmert
  *
- * @author    Axel Helmert <ah@luka.de>
- * @copyright Copyright (c) 2012 LUKA netconsult GmbH (www.luka.de)
- * @license   $license$
- * @version   $Id$
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @category  library
+ * @author    Axel Helmert
+ * @copyright Copyright (c) 2013 Axel Helmert
+ * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
 namespace rampage\simpleorm\features;
 
-use rampage\simpleorm\DefaultTableGateway;
+use rampage\simpleorm\TableGatewayRepository;
 use Zend\Db\TableGateway\Feature\AbstractFeature;
 use Zend\Db\Adapter\Driver\StatementInterface;
 use Zend\Db\Adapter\Driver\ResultInterface;
@@ -25,16 +39,16 @@ class PopulateIdFeature extends AbstractFeature
      */
     public function postInitialize()
     {
-        if (!$this->tableGateway instanceof DefaultTableGateway) {
+        if (!$this->tableGateway instanceof TableGatewayRepository) {
             return;
         }
 
         $feature = $this->tableGateway->getFeatureSet()->getFeatureByClassName('Zend\Db\TableGateway\Feature\MetadataFeature');
-        if (!$feature || !isset($metadata->sharedData['metadata']['primaryKey'])) {
+        if (!$feature || !isset($feature->sharedData['metadata']['primaryKey'])) {
             return;
         }
 
-        $this->tableGateway->setIdField($metadata->sharedData['metadata']['primaryKey']);
+        $this->tableGateway->setIdField($feature->sharedData['metadata']['primaryKey']);
     }
 
     /**
@@ -43,7 +57,7 @@ class PopulateIdFeature extends AbstractFeature
      */
     public function postInsert(StatementInterface $statement, ResultInterface $result)
     {
-        if (!($this->tableGateway instanceof DefaultTableGateway) || !is_object($this->tableGateway->getCurrentObject())) {
+        if (!($this->tableGateway instanceof TableGatewayRepository) || !is_object($this->tableGateway->getCurrentObject())) {
             return;
         }
 

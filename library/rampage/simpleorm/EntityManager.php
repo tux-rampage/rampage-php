@@ -25,21 +25,168 @@
 
 namespace rampage\simpleorm;
 
+use Zend\Db\Adapter\Adapter;
+use Zend\ServiceManager\ServiceManagerAwareInterface;
+use Zend\ServiceManager\ServiceManager;
+
 /**
  * Entity manager
  */
-class EntityManager
+class EntityManager implements ServiceManagerAwareInterface
 {
-    private $adapter = null;
-
-    private $persistenceStrategy = null;
+    /**
+     * @var \Zend\Db\Adapter\Adapter
+     */
+    protected $adapter = null;
 
     /**
-     * @var RepositoryManager
+     * @var UnitOfWorkInterface
      */
-    private $repositoryManager = null;
+    protected $unitOfWork = null;
 
+    /**
+     * @var EntityDefinitionList
+     */
+    protected $definition = null;
 
+    /**
+     * @var \Zend\ServiceManager\ServiceManager
+     */
+    protected $serviceManager = null;
 
-    // FIXME: Implement
+    /**
+     * @var repositories
+     */
+    protected $repositories = array();
+
+    /**
+     * @param Adapter $adapter
+     * @param string $definition
+     * @param UnitOfWorkInterface $unitOfWork
+     */
+    public function __construct(Adapter $adapter, EntityDefinitionInterface $definition = null, UnitOfWorkInterface $unitOfWork = null)
+    {
+        if (!$definition instanceof EntityDefinitionList) {
+            $definition = new EntityDefinitionList($definition);
+        }
+
+        $this->adapter = $adapter;
+        $this->unitOfWork = $unitOfWork? : new UnitOfWork($this);
+        $this->definition = $definition;
+    }
+
+    /**
+     * @param string $name
+     */
+    protected function createRepository($name)
+    {
+        if (!$this->serviceManager) {
+            return false;
+        }
+
+        return $this->serviceManager->get($name);
+    }
+
+    /**
+     * @see \Zend\ServiceManager\ServiceManagerAwareInterface::setServiceManager()
+     */
+    public function setServiceManager(ServiceManager $serviceManager)
+    {
+        $this->serviceManager = $serviceManager;
+        return $this;
+    }
+
+    /**
+     * @param string $entity
+     * @param RepositoryInterface $repository
+     * @return self
+     */
+    public function setRepository($entity, RepositoryInterface $repository)
+    {
+        $this->repositories[$entity] = $repository;
+        return self;
+    }
+
+    /**
+     * @param string $entity
+     * @return \rampage\simpleorm\RepositoryInterface
+     */
+    public function getRepository($entity)
+    {
+        if (is_object($entity)) {
+            $entity = get_class($entity);
+        }
+
+        $name = $this->definition->getRepositoryName($entity);
+
+        if (isset($this->repositories[$name])) {
+            return $this->repositories[$name];
+        }
+
+        $repository = $this->createRepository($name);
+        $this->setRepository($name, $repository);
+
+        return $repository;
+    }
+
+    /**
+     * @return \rampage\simpleorm\UnitOfWorkInterface
+     */
+    public function getUnitOfWork()
+    {
+        return $this->unitOfWork;
+    }
+
+    /**
+     * @return \Zend\Db\Adapter\Adapter
+     */
+    public function getAdapter()
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @param object $object
+     * @return self
+     */
+    public function persist($object)
+    {
+        if (!is_object($object)) {
+            throw new exceptions\InvalidArgumentException(sprintf('%s expects an object as parameter, %s given', __METHOD__, gettype($object)));
+        }
+
+        if (!$repository = $this->getRepository($object)) {
+            throw new exceptions\InvalidArgumentException(sprintf('Could not find a repository for "%s"', get_class($object)));
+        }
+
+        $this->unitOfWork->store($object, $repository);
+        return $this;
+    }
+
+    /**
+     * @param object $object
+     * @return self
+     */
+    public function delete($object)
+    {
+        if (!is_object($object)) {
+            throw new exceptions\InvalidArgumentException(sprintf('%s expects an object as parameter, %s given', __METHOD__, gettype($object)));
+        }
+
+        if (!$repository = $this->getRepository($object)) {
+            throw new exceptions\InvalidArgumentException(sprintf('Could not find a repository for "%s"', get_class($object)));
+        }
+
+        $this->unitOfWork->delete($object);
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    public function flush()
+    {
+        $this->unitOfWork->flush();
+        return $this;
+    }
 }

@@ -24,18 +24,12 @@
 
 namespace rampage\simpleorm;
 
-/**
- * Interface for repository classes
- */
-interface RepositoryInterface extends PersistenceGatewayInterface
-{
-    /**
-     * @return \Zend\Stdlib\Hydrator\HydratorInterface
-     */
-    public function getHydrator();
+use rampage\core\AbstractModule;
 
-    /**
-     * @param string $object
-     */
-    public function isObjectNew($object);
+/**
+ * Module
+ */
+class Module extends AbstractModule
+{
+
 }

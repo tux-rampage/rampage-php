@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,44 +17,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.simpleorm
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\exceptions;
 
 /**
- * Persistence strategy interface
+ * Exception marker interface
  */
-interface PersistenceStrategyInterface
+interface ExceptionInterface
 {
-    /**
-     * This should mark the given object for persistence
-     *
-     * @param object $object
-     */
-    public function store($object);
-
-    /**
-     * This should mark the object as deleted
-     *
-     * @param object $object
-     */
-    public function delete($object);
-
-    /**
-     * This should commit all changes to the persistence layer
-     *
-     * @return self
-     */
-    public function flush();
-
-    /**
-     * This method should reset the persistence by flushing all pending object actions
-     *
-     * @return self
-     */
-    public function reset();
 }

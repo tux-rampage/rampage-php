@@ -25,6 +25,8 @@
 namespace rampage\core\xml;
 
 use ArrayIterator;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\Di\DependencyInjectionInterface;
 
 /**
  * Simple XML extensions
@@ -327,7 +329,6 @@ class SimpleXmlElement extends \SimpleXMLElement
      */
     public function toPhpValue($type = null, $serviceLocator = null)
     {
-        /* @var $serviceLocator \rampage\core\ObjectManagerInterface */
         if (!$type) {
             $type = $this->getName();
         }
@@ -344,9 +345,11 @@ class SimpleXmlElement extends \SimpleXMLElement
                         $type = 'string';
                     }
 
-                    $current = null;
-                    if ($item->$type) {
-                        $current = $item->{$type}->toPhpValue($type, $serviceLocator);
+                    // Instance must be defined in subtag
+                    if (($type == 'instance') && !$item->{$type}) {
+                        $current = null;
+                    } else {
+                        $current = ($item->{$type})? $item->{$type}->toPhpValue($type, $serviceLocator) : $item->toPhpValue($type, $serviceLocator);
                     }
 
                     if (!isset($item['key']) && !isset($item['index'])) {
@@ -365,22 +368,22 @@ class SimpleXmlElement extends \SimpleXMLElement
                 break;
 
             case 'instance':
-                if (!is_callable(array($serviceLocator, 'get'))
-                  || !is_callable(array($serviceLocator, 'has'))) {
-                    return null;
-                }
-
                 $class = (string)$this['class'];
-                if (!$class || !$serviceLocator->has($class)) {
-                    return null;
+                $value = null;
+
+                if (($serviceLocator instanceof ServiceLocatorInterface) && ($serviceLocator->has($class))) {
+                    $value = $serviceLocator->get($class);
+                    break;
                 }
 
-                // DI/Object manager?
-                if (isset($this->options) && is_callable(array($serviceLocator, 'newInstance'))) {
-                    $options = $this->options->toPhpValue('array', $serviceLocator);
+                if ($serviceLocator instanceof DependencyInjectionInterface) {
+                    $options = array();
+                    if (isset($this->options)) {
+                        $options = $this->options->toPhpValue('array', $serviceLocator);
+                    }
+
                     $value = $serviceLocator->newInstance($class, $options);
-                } else {
-                    $value = $serviceLocator->get($class);
+                    break;
                 }
 
                 break;
