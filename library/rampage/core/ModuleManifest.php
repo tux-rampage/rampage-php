@@ -57,12 +57,18 @@ class ModuleManifest extends XmlConfig
     private $processors = array();
 
     /**
-     * (non-PHPdoc)
-     * @see \rampage\core\xml\Config::__construct()
+     * @param string $moduleDirectory Absolute path to the module directory
+     * @param string $file Absolute path tho manifext xml file
+     * @param array|Traversable Additional include processors
      */
-    public function __construct($moduleDirectory, $file)
+    public function __construct($moduleDirectory, $file, $includeProcessors = array())
     {
         $this->moduleDirectory = rtrim($moduleDirectory, '/') . '/';
+
+        foreach ($includeProcessors as $processor) {
+            $this->addIncludeProcessor($processor);
+        }
+
         parent::__construct($file);
     }
 
@@ -200,6 +206,7 @@ class ModuleManifest extends XmlConfig
 	/**
      * Map manifest config
      *
+     * @deprecated since 1.0.0
      * @param SimpleXmlElement $xml
      * @param string $nodeName
      * @param string $configName
@@ -285,45 +292,87 @@ class ModuleManifest extends XmlConfig
 
     /**
      * Load service config
+     * @return self
      */
     protected function loadServiceConfig()
     {
-        $xml = $this->getNode('./services');
-        if (!$xml instanceof SimpleXmlElement) {
-            return $this;
+        $xml = $this->getNode('./servicemanager');
+        $config = $this->createServiceManagerConfig($xml, true);
+
+        if ($config) {
+            $this->manifest['application_config']['service_manager'] = $config;
         }
-
-        $config = &$this->manifest['application_config'];
-
-        foreach ($xml->xpath("./factory[@name != '' and @class != '']") as $factory) {
-            $name = (string)$factory['name'];
-            $class = (string)$factory['class'];
-            $class = trim(strtr($class, '.', '\\'), '\\');
-            $configName = ($factory->is('abstract', false))? 'abstract_factories' : 'factories';
-            $config['service_manager'][$configName][$name] = $class;
-        }
-
-        foreach ($xml->xpath("./share[@name != '']") as $shared) {
-            $name = (string)$shared['name'];
-            $config['service_manager']['shared'][$name] = $shared->is('shared', true);;
-        }
-
-        foreach ($xml->xpath("./initializer[@initializer != '']") as $initNode) {
-            $class = (string)$initNode['initializer'];
-            $class = trim(strtr($class, '.', '\\'), '\\');
-
-            $config['service_manager']['initializers'][] = $class;
-        }
-
-        foreach ($xml->xpath('./service[@name != "" and @class != ""]') as $serviceXml) {
-            $name = (string)$serviceXml['name'];
-            $config['service_manager']['factories'][$name] = new DIServiceFactory((string)$serviceXml['class']);
-        }
-
-        $this->mapServiceManifest($xml, 'alias', 'aliases', 'to', 'service_manager')
-             ->mapServiceManifest($xml, 'class', 'invokables', 'class', 'service_manager');
 
         return $this;
+    }
+
+    /**
+     * @param string $xml
+     * @param bool $diAware
+     * @return array|bool
+     */
+    protected function createServiceManagerConfig($xml, $diAware = false)
+    {
+        if (!$xml instanceof SimpleXmlElement) {
+            return false;
+        }
+
+        $config = array();
+
+        foreach ($xml->xpath('./services/service[@name != ""') as $serviceXml) {
+            $name = (string)$serviceXml['name'];
+            $classByName = strtr($name, '.', '\\');
+            $class = strtr((string)$serviceXml['class'], '.', '\\');
+
+            if (isset($serviceXml->factory) && $serviceXml->factory['class']) {
+                // TODO: Implement factory delegate to respect options array
+                $factory = (string)$serviceXml->factory['class'];
+                $config['factories'][$name] = $factory;
+            } else if ($class) {
+                if ($diAware && $serviceXml->is('usedi')) {
+                    $config['factories'][$name] = new DIServiceFactory($class);
+                } else {
+                    $config['invokables'][$name] = $class;
+                }
+            }
+
+            if (isset($serviceXml['shared'])) {
+                $config['service_manager']['shared'][$name] = $serviceXml->is('shared');
+            }
+
+            foreach ($serviceXml->xpath('./aliases/alias[@name != ""]') as $aliasXml) {
+                $alias = (string)$aliasXml['name'];
+                $config['service_manager']['aliases'][$alias] = $name;
+            }
+
+            if (!$diAware || !isset($serviceXml->di)) {
+                continue;
+            }
+
+            $hasDiPreferences = false;
+            foreach ($serviceXml->xpath('./di/provides[@class != ""]') as $diPrefXml) {
+                $preferFor = strtr((string)$diPrefXml['class'], '.', '\\');
+                $hasDiPreferences = true;
+
+                $this->manifest['application_config']['di']['instance']['preferences'][$preferFor] = $name;
+            }
+
+            $diClass = strtr((string)$serviceXml->di['class'], '.', '\\');
+            if (!$diClass && $hasDiPreferences) {
+                $diClass = $class;
+            }
+
+            if ($diClass && ($diClass != $classByName)) {
+                $this->manifest['application_config']['di']['instance']['aliases'][$name] = $diClass;
+            }
+        }
+
+        foreach ($xml->xpath("./factories/factory[@class != '']") as $factoryXml) {
+            $factory = strtr((string)$factoryXml['class'], '.', '\\'); // TODO: Implement factory delegate to respect options
+            $config['abstract_factories'][] = $factory;
+        }
+
+        return (!empty($config))? $config : false;
     }
 
     /**
@@ -604,11 +653,11 @@ class ModuleManifest extends XmlConfig
     {
         $xml = $this->getXml();
 
-        foreach ($xml->xpath('./resources/theme[@name != "" and @path != ""]') as $node) {
+        foreach ($xml->xpath('./resources/themes/theme[@name != "" and @path != ""]') as $node) {
             $path = (string)$node['path'];
             $name = (string)$node['name'];
 
-            $this->manifest['application_config']['rampage']['themes'][$name]['paths'] = $this->getModulePath($path);
+            $this->manifest['application_config']['rampage']['themes'][$name]['path'] = $this->getModulePath($path);
 
             if (isset($node['fallbacks'])) {
                 $fallbacks = explode(',', (string)$node['fallbacks']);
@@ -628,8 +677,8 @@ class ModuleManifest extends XmlConfig
     {
         $xml = $this->getXml();
 
-        foreach ($xml->xpath("./resources/path[. != '']") as $node) {
-            $path = (string)$node;
+        foreach ($xml->xpath("./resources/paths/path[@path != '']") as $node) {
+            $path = (string)$node['path'];
             $scope = (string)$node['scope'];
             $type = (string)$node['type'];
 
@@ -637,7 +686,7 @@ class ModuleManifest extends XmlConfig
                 $scope = $this->getModuleName();
             }
 
-            $type = $type?: 'base';
+            $type = $type? : 'base';
             $this->manifest['application_config']['rampage']['resources'][$scope][$type] = $this->getModulePath($path);
         }
 
@@ -645,16 +694,14 @@ class ModuleManifest extends XmlConfig
     }
 
     /**
-     * Load packages config
-     *
-     * @return \rampage\core\modules\ManifestConfig
+     * @return self
      */
-    protected function loadPackagesConfig()
+    protected function loadClassConfig()
     {
         $xml = $this->getXml();
 
         /* @var $child \rampage\core\xml\SimpleXmlElement */
-        foreach ($xml->xpath("packages/classmap[@file != '']") as $child) {
+        foreach ($xml->xpath("classes/classmaps/classmap[@file != '']") as $child) {
             $file = $this->getModulePath((string)$child['file'], true);
 
             if ($file->isFile() && $file->isReadable()) {
@@ -663,24 +710,16 @@ class ModuleManifest extends XmlConfig
         }
 
         /* @var $child \rampage\core\xml\SimpleXmlElement */
-        foreach ($xml->xpath("packages/package[. != '' or @name != '']") as $child) {
-            $dir = (isset($child['directory']))? (string)$child['directory'] : 'src';
-            $namespace = (isset($child['name']))? (string)$child['name'] : (string)$child;
-            $namespace = trim(str_replace('.', '\\', $namespace), '\\');
-            $path = trim($dir, '/');
+        foreach ($xml->xpath('classes/namespaces/namespace[@namespace != "" and @path != ""]') as $child) {
+            $relative = $child->is('relative');
+            $dir = (string)$child['path'];
+            $namespace = strtr((string)$child['namespace'], '.', '\\');
 
-            if ($child->is('fqpath', false)) {
-                $path .= '/' . trim(str_replace('\\', '/', $namespace), '/');
+            if (!$relative) {
+                $path .= '/' . trim(strtr($namespace, '\\', '/'), '/');
             }
 
             $this->manifest['autoloader_config']['Zend\Loader\StandardAutoloader']['namespaces'][$namespace] = $this->getModulePath($path);
-        }
-
-        foreach ($xml->xpath("packages/aliases/alias[@name != '' and @class != '']") as $alias) {
-            $name = (string)$alias['name'];
-            $class = (string)$alias['class'];
-
-            $this->manifest['application_config']['packages']['aliases'][$name] = $class;
         }
 
         return $this;
@@ -804,11 +843,12 @@ class ModuleManifest extends XmlConfig
             ),
         ));
 
-        $this->loadPackagesConfig()
-             ->loadLayoutConfig()
-             ->loadResourceConfig()
-             ->loadThemeConfig()
-             ->loadServiceConfig()
+        $this->loadClassConfig();
+        $this->loadLayoutConfig();
+        $this->loadResourceConfig();
+        $this->loadThemeConfig();
+
+        $this->loadServiceConfig()
              ->loadDiConfig()
              ->loadLocaleConfig()
              ->loadControllersConfig()

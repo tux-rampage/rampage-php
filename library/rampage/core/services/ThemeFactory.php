@@ -46,11 +46,11 @@ class ThemeFactory implements FactoryInterface
         }
 
         foreach ($config as $name => $conf) {
-            if (!isset($conf['paths'])) {
+            if (!isset($conf['path'])) {
                 continue;
             }
 
-            $theme->addLocation($name, $conf['paths']);
+            $theme->addLocation($name, $conf['path']);
         }
 
         return $this;

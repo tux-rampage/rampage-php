@@ -27,6 +27,7 @@ namespace rampage\core;
 
 use Zend\Mvc\Application as MvcApplication;
 use Zend\Mvc\MvcEvent;
+use Zend\Loader\AutoloaderFactory;
 
 /**
  * Application class
@@ -78,9 +79,14 @@ class Application extends MvcApplication
      * @param array|string $config
      * @return \rampage\core\Application
      */
-    public static function init($config = array())
+    public static function init($config = null)
     {
         self::registerDevelopmentErrorHandler();
+
+        if ($config === null) {
+            $config = (is_file('application/etc/application.config.php'))? include 'application/etc/application.config.php' : array();
+        }
+
         if (!is_array($config)) {
             $config = array();
             $config['service_manager']['path_manager'] = (string)$config;
@@ -89,6 +95,14 @@ class Application extends MvcApplication
         $config = static::mergeConfig($config);
         $serviceConfig = isset($config['service_manager']) ? $config['service_manager'] : array();
         $serviceManager = new ServiceManager(new ServiceConfig($serviceConfig));
+
+        AutoloaderFactory::factory(array(
+            'rampage\core\ModuleAutoloader' => array(
+                'pathmanager' => $serviceManager->get('rampage.PathManager'),
+                'subdirectories' => array('src')
+            )
+        ));
+
         $serviceManager->setService('ApplicationConfig', $config);
         $serviceManager->get('ModuleManager')->loadModules();
 
