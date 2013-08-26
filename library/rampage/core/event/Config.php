@@ -179,7 +179,7 @@ class Config extends AggregatedXmlConfig implements ConfigInterface
                 $params = $node->options->toPhpValue('array', $objectManager);
             }
 
-            $listener = $objectManager->newInstance($class, $params);
+            $listener = $objectManager->get($class, $params);
             $eventManager->attach($id, $eventName, $listener, (int)$priority);
         }
 
