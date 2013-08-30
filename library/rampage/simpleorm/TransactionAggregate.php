@@ -24,18 +24,46 @@
 
 namespace rampage\simpleorm;
 
+use SplObjectStorage;
+
 /**
  * Transaction aggergate
  */
 class TransactionAggregate implements TransactionInterface
 {
     /**
+     * @var \SplObjectStorage
+     */
+    private $transactions;
+
+    /**
+     * @var bool
+     */
+    private $active = false;
+
+    /**
+     * Construct
+     */
+    public function __construct()
+    {
+        $this->transactions = new SplObjectStorage();
+    }
+
+    /**
      * @param TransactionInterface $tansaction
      * @return self
      */
-    public function addTransaction(TransactionInterface $tansaction)
+    public function addTransaction(TransactionInterface $transaction)
     {
-        // TODO Implement feature
+        if ($this->transactions->contains($transaction)) {
+            return $this;
+        }
+
+        if ($this->active) {
+            $transaction->start();
+        }
+
+        $this->transactions->attach($transaction);
         return $this;
     }
 
@@ -45,7 +73,15 @@ class TransactionAggregate implements TransactionInterface
      */
     public function commit()
     {
-        // TODO Auto-generated method stub
+        if (!$this->active) {
+            return $this;
+        }
+
+        foreach ($this->transactions as $transaction) {
+            $transaction->commit();
+        }
+
+        $this->active = false;
         return $this;
     }
 
@@ -55,7 +91,15 @@ class TransactionAggregate implements TransactionInterface
      */
     public function rollback()
     {
-        // TODO Auto-generated method stub
+        if (!$this->active) {
+            return $this;
+        }
+
+        foreach ($this->transactions as $transactions) {
+            $transactions->rollback();
+        }
+
+        $this->active = false;
         return $this;
     }
 
@@ -65,7 +109,15 @@ class TransactionAggregate implements TransactionInterface
      */
     public function start()
     {
-        // TODO Auto-generated method stub
+        if ($this->active) {
+            return $this;
+        }
+
+        foreach ($this->transactions as $transaction) {
+            $transaction->start();
+        }
+
+        $this->active = true;
         return $this;
     }
 }

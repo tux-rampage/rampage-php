@@ -214,21 +214,6 @@ class ModuleManifest extends XmlConfig
      */
     protected function mapServiceManifest(SimpleXmlElement $xml, $nodeName, $configName, $attribute, $key)
     {
-        if (!$xml->{$nodeName}) {
-            return $this;
-        }
-
-        foreach ($xml->{$nodeName} as $node) {
-            $value = (string)$node[$attribute];
-            $name = (string)$node['name'];
-
-            if (!$value || !$name) {
-                continue;
-            }
-
-            $this->manifest['application_config'][$key][$configName][$name] = $value;
-        }
-
         return $this;
     }
 
@@ -237,6 +222,7 @@ class ModuleManifest extends XmlConfig
      */
     protected function loadDiConfig()
     {
+        // TODO refactor
         $node = $this->getNode('./services/di');
         if ($node === null) {
             return $this;
@@ -376,6 +362,23 @@ class ModuleManifest extends XmlConfig
     }
 
     /**
+     * Plugin manager configs
+     */
+    protected function loadPluginManagerConfigs()
+    {
+        foreach ($this->getXml()->xpath('plugins/pluginmanager[@name != ""]') as $pmConfig) {
+            $key = (string)$pmConfig;
+            $config = $this->createServiceManagerConfig($pmConfig);
+
+            if ($config) {
+                $this->manifest['application_config'][$key] = $config;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Load locale config
      */
     protected function loadLocaleConfig()
@@ -387,12 +390,13 @@ class ModuleManifest extends XmlConfig
             return $this;
         }
 
-        foreach ($xml->locale->pattern as $node) {
+        foreach ($xml->xpath('locale/pattern[@pattern != ""]') as $node) {
             $dir = isset($node['basedir'])? (string)$node['basedir'] : 'locale';
+
             $config['translator']['translation_file_patterns'][] = array(
-                'type' => isset($node['type'])? (string)$node['type'] : 'gettext',
+                'type' => isset($node['type'])? (string)$node['type'] : 'php',
                 'base_dir' => $this->getModulePath($dir),
-                'pattern' => isset($node['pattern'])? (string)$node['pattern'] : '%s.mo',
+                'pattern' => isset($node['pattern'])? (string)$node['pattern'] : '%s.php',
             );
         }
 
@@ -429,19 +433,21 @@ class ModuleManifest extends XmlConfig
             return $config;
         }
 
+        $routeType = $type;
         $typeNode = $node->$type;
+
         switch ($type) {
             case 'standard':
+                $routeType = 'rampage.route.standard';
                 $config = array(
-                    'type' => 'rampage.route.standard',
                     'frontname' => (string)$typeNode['frontname'],
                     'namespace' => (string)$typeNode['namespace'],
                     'allowed_params' => array(),
                     'defaults' => $this->childToArray($typeNode, 'defaults'),
                 );
 
-                foreach ($typeNode->xpath("./parameters/allow[. != '']") as $allowedParam) {
-                    $allowedParam = (string)$allowedParam;
+                foreach ($typeNode->xpath("./parameters/allow[@name != '']") as $allowedParam) {
+                    $allowedParam = (string)$allowedParam['name'];
                     $config['allowed_params'][$allowedParam] = $allowedParam;
                 }
 
@@ -449,7 +455,6 @@ class ModuleManifest extends XmlConfig
 
             case 'literal':
                 $config = array(
-                    'type' => 'literal',
                     'route' => (string)$typeNode['route'],
                     'constraints' => $this->childToArray($typeNode, 'constraints'),
                     'defaults' => $this->childToArray($typeNode, 'defaults')
@@ -459,7 +464,6 @@ class ModuleManifest extends XmlConfig
 
             case 'segment':
                 $config = array(
-                    'type' => 'segment',
                     'route' => (string)$typeNode['route'],
                     'constraints' => $this->childToArray($typeNode, 'constraints'),
                     'defaults' => $this->childToArray($typeNode, 'defaults')
@@ -469,7 +473,6 @@ class ModuleManifest extends XmlConfig
 
             case 'regex':
                 $config = array(
-                    'type' => 'regex',
                     'spec' => (string)$typeNode['spec'],
                     'constraints' => $this->childToArray($typeNode, 'constraints'),
                     'defaults' => $this->childToArray($typeNode, 'defaults')
@@ -478,8 +481,8 @@ class ModuleManifest extends XmlConfig
                 break;
 
             case 'layout':
+                $routeType = 'rampage.route.layout';
                 $config = array(
-                    'type' => 'rampage.route.layout',
                     'route' => (string)$typeNode['route'],
                     'layout' => (string)$typeNode['layout'],
                     'handles' => array()
@@ -493,7 +496,15 @@ class ModuleManifest extends XmlConfig
                 break;
 
             case 'custom':
-                $config = $typeNode->options->toPhpValue('array');
+            default:
+                $typeNode = $node->custom;
+                $config = (isset($typeNode->options))? $typeNode->options->toPhpValue('array') : null;
+
+                if (isset($config['type'])) {
+                    $routeType = $config['type'];
+                    unset($config['type']);
+                }
+
                 break;
         }
 
@@ -509,11 +520,8 @@ class ModuleManifest extends XmlConfig
             $config['defaults']['action'] = (string)$typeNode['action'];
         }
 
-        $type = $config['type'];
-        unset($config['type']);
-
         $config = array(
-            'type' => $type,
+            'type' => $routeType,
             'options' => $config
         );
 
@@ -728,101 +736,22 @@ class ModuleManifest extends XmlConfig
     /**
      * Load controllers config
      *
+     * @deprecated
      * @return \rampage\core\modules\ManifestConfig
      */
     protected function loadControllersConfig()
     {
-        $xml = $this->getXml();
-
-        if (!isset($xml->controllers)) {
-            return $this;
-        }
-
-        foreach ($xml->controllers as $controllers) {
-            $namespace = (string)$controllers['namespace'];
-            $prefix = (string)$controllers['prefix'];
-            // $prefix = ($prefix)?: $this->getModuleName();
-
-            if ($prefix) {
-                // set the namespace accorting to the convention
-                if (!$namespace) {
-                    $namespace = trim($prefix, '.\\') . '.controllers';
-                }
-
-                $prefix = trim(strtr($prefix, array('\\' => '.')), '.') . '.';
-            }
-
-            // Format namespace
-            $namespace = trim(strtr($namespace, array('.' => '\\')), '\\') . '\\';
-
-            foreach ($controllers->xpath("./controller[@name != '']") as $node) {
-                $name = strtr((string)$node['name'], array('\\' => '.'));
-                $class = strtr((string)$node, array('.' => '\\'));
-
-                if (empty($class)) {
-                    if (strpos($name, '.') !== false) {
-                        $parts = explode('.', $name);
-                        $last = array_pop($parts);
-
-                        $parts[] = ucfirst($last) . 'Controller';
-                        $class = implode('\\', $parts);
-                    } else {
-                        $class = ucfirst($name) . 'Controller';
-                    }
-                }
-
-                $name = $prefix . $name;
-                $class = $namespace . $class;
-
-                $this->manifest['application_config']['controllers']['invokables'][$name] = $class;
-            }
-        }
-
         return $this;
     }
 
     /**
+     * @deprecated
      * @param SimpleXmlElement $xml
      * @param string $xpath
      * @param string $key
      */
     protected function loadServiceManagerConfig($xpath, $key)
     {
-        $xml = $this->getNode($xpath);
-        if (!$xml instanceof SimpleXmlElement) {
-            return $this;
-        }
-
-        $config = &$this->manifest['application_config'];
-
-        foreach ($xml->xpath("./factory[@name != '' and @class != '']") as $factory) {
-            $name = (string)$factory['name'];
-            $class = (string)$factory['class'];
-            $class = trim(strtr($class, '.', '\\'), '\\');
-            $configName = ($factory->is('abstract', false))? 'abstract_factories' : 'factories';
-            $config[$key][$configName][$name] = $class;
-        }
-
-        foreach ($xml->xpath("./share[@name != '']") as $shared) {
-            $name = (string)$shared['name'];
-            $config[$key]['shared'][$name] = $shared->is('shared', true);;
-        }
-
-        foreach ($xml->xpath("./initializer[@initializer != '']") as $initNode) {
-            $class = (string)$initNode['initializer'];
-            $class = trim(strtr($class, '.', '\\'), '\\');
-
-            $config[$key]['initializers'][] = $class;
-        }
-
-        foreach ($xml->xpath('./service[@name != "" and @class != ""]') as $serviceXml) {
-            $name = (string)$serviceXml['name'];
-            $config[$key]['factories'][$name] = new DIServiceFactory((string)$serviceXml['class']);
-        }
-
-        $this->mapServiceManifest($xml, 'alias', 'aliases', 'aliasto', $key)
-            ->mapServiceManifest($xml, 'class', 'invokables', 'class', $key);
-
         return $this;
     }
 
@@ -843,19 +772,19 @@ class ModuleManifest extends XmlConfig
             ),
         ));
 
-        $this->loadClassConfig();
-        $this->loadLayoutConfig();
-        $this->loadResourceConfig();
-        $this->loadThemeConfig();
-
-        $this->loadServiceConfig()
-             ->loadDiConfig()
+        $this->loadClassConfig()
+             ->loadLayoutConfig()
+             ->loadResourceConfig()
+             ->loadThemeConfig()
+             ->loadServiceConfig()
+             ->loadPluginManagerConfigs()
              ->loadLocaleConfig()
-             ->loadControllersConfig()
              ->loadRouteConfig()
-             ->loadConsoleConfig();
+             ->loadDiConfig();
 
-        $this->loadServiceManagerConfig('./view/helpers', 'view_helper_manager');
+//              ->loadDiConfig()
+//              ->loadConsoleConfig();
+
         $this->processIncludes();
 
         return $this->manifest;

@@ -25,6 +25,7 @@
 namespace rampage\simpleorm;
 
 use Zend\Db\Adapter\Adapter;
+use SplObjectStorage;
 
 /**
  * DB Transaction gateway
@@ -37,9 +38,21 @@ class DatabaseTransaction implements TransactionInterface
     private $connection = null;
 
     /**
-     * @var bool
+     * @var SplObjectStorage
      */
-    protected $active = false;
+    private static $stateByConnection = null;
+
+    /**
+     * @return SplObjectStorage
+     */
+    protected static function getConnectionStates()
+    {
+        if (self::$stateByConnection === null) {
+            self::$stateByConnection = new SplObjectStorage();
+        }
+
+        return self::$stateByConnection;
+    }
 
     /**
      * @param Adapter $adapter
@@ -67,12 +80,12 @@ class DatabaseTransaction implements TransactionInterface
      */
     public function start()
     {
-        if ($this->active) {
+        if ($this->isActive()) {
             return $this;
         }
 
         $this->connection->beginTransaction();
-        $this->active = true;
+        $this->setActiveFlag(true);
 
         return $this;
     }
@@ -84,12 +97,12 @@ class DatabaseTransaction implements TransactionInterface
      */
     public function commit()
     {
-        if (!$this->active) {
+        if (!$this->isActive()) {
             return $this;
         }
 
         $this->connection->commit();
-        $this->active = false;
+        $this->setActiveFlag(false);
 
         return $this;
     }
@@ -99,12 +112,12 @@ class DatabaseTransaction implements TransactionInterface
      */
     public function rollback()
     {
-        if (!$this->active) {
+        if (!$this->isActive()) {
             return $this;
         }
 
         $this->connection->rollback();
-        $this->active = false;
+        $this->setActiveFlag(false);
 
         return $this;
     }
@@ -114,6 +127,20 @@ class DatabaseTransaction implements TransactionInterface
      */
     public function isActive()
     {
-        return $this->active;
+        if (!$this->getConnectionStates()->contains($this->connection)) {
+            return false;
+        }
+
+        return $this->getConnectionStates()->offsetGet($this->connection);
+    }
+
+    /**
+     * @param bool $flag
+     * @return string
+     */
+    protected function setActiveFlag($flag)
+    {
+        $this->getConnectionStates()->attach($this->connection, (bool)$flag);
+        return $this;
     }
 }

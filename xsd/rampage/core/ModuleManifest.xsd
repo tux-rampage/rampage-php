@@ -415,8 +415,16 @@
             <element name="inject" maxOccurs="unbounded"
                 minOccurs="1">
                 <complexType>
-                    <attribute name="method" type="string" use="required"></attribute>
-                    <attribute name="class" type="string" use="optional"></attribute>
+                    <complexContent>
+                        <extension base="phptypes:ArrayType">
+                            <attribute name="method" type="string"
+                                use="required">
+                            </attribute>
+                            <attribute name="class" type="string"
+                                use="optional">
+                            </attribute>
+                        </extension>
+                    </complexContent>
                 </complexType>
             </element>
         </sequence>
@@ -445,7 +453,7 @@
             <element minOccurs="0" maxOccurs="1" name="parameters">
                 <complexType>
                     <sequence>
-                        <element minOccurs="1" maxOccurs="unbounded" name="parameter" type="phptypes:PHPValueType">
+                        <element minOccurs="1" maxOccurs="unbounded" name="parameter" type="phptypes:ArrayItemType">
                         </element>
                     </sequence>
                 </complexType>
