@@ -29,7 +29,7 @@ use Zend\Db\Adapter\Adapter;
 /**
  * DB Transaction gateway
  */
-class DatabaseTransaction
+class DatabaseTransaction implements TransactionInterface
 {
     /**
      * @var \Zend\Db\Adapter\Driver\ConnectionInterface

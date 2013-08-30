@@ -152,16 +152,28 @@ class UnitOfWork implements UnitOfWorkInterface
      */
     public function flush()
     {
-        $transaction = new DatabaseTransaction($this->entityManager->getAdapter());
+        $transaction = new TransactionAggregate();
         $transaction->start();
 
         try {
             foreach ($this->pendingToStore as $object) {
-                $this->getPersistenceGateway($this->pendingToStore, $object)->store($object);
+                $gw = $this->getPersistenceGateway($this->pendingToStore, $object);
+
+                if ($gw instanceof TransactionProviderInterface) {
+                    $transaction->addTransaction($gw->getTransaction());
+                }
+
+                $gw->store($object);
             }
 
             foreach ($this->pendingToDelete as $object) {
-                $this->getPersistenceGateway($this->pendingToDelete, $object)->delete($object);
+                $gw = $this->getPersistenceGateway($this->pendingToDelete, $object);
+
+                if ($gw instanceof TransactionProviderInterface) {
+                    $transaction->addTransaction($gw->getTransaction());
+                }
+
+                $gw->delete($object);
             }
 
             $transaction->commit();
