@@ -222,51 +222,44 @@ class ModuleManifest extends XmlConfig
      */
     protected function loadDiConfig()
     {
-        // TODO refactor
-        $node = $this->getNode('./services/di');
-        if ($node === null) {
+        $xml = $this->getNode('dicontainer');
+        if (!$xml instanceof SimpleXmlElement) {
             return $this;
         }
 
-        foreach ($node->xpath('./definitions/precompiled[@file != ""]') as $definitionNode) {
+        foreach ($xml->xpath('./definitions/precompiled[@file != ""]') as $definitionNode) {
             $this->manifest['application_config']['di']['definition']['compiler'][] = $this->getModulePath((string)$definitionNode['file']);
         }
 
         $instanceConfig = array();
 
-        foreach ($node->xpath('./aliases/alias[@alias != "" and @class != ""]') as $aliasNode) {
-            $alias = (string)$aliasNode['alias'];
-            $instanceConfig['aliases'][$alias] = (string)$aliasNode['class'];
-        }
+        foreach ($xml->xpath('./instances/instance[@class != "" or @alias != ""]') as $instanceXml) {
+            $alias = (string)$instanceXml['alias'];
+            $class = (string)$instanceXml['class'];
+            $name = $alias?: $class;
 
-        foreach ($node->xpath('./preferences/preference[@type != "" and @class != ""]') as $preference) {
-            $type = $this->formatClassName($preference['type']);
-            $preferredType = $this->formatClassName($preference['class']);
-            $instanceConfig['preferences'][$type][] = $preferredType;
-        }
-
-        foreach ($node->xpath('./instances/type[@name != ""]') as $typeNode) {
-            $name = $this->formatClassName($typeNode['name']);
-            if (in_array($name, array('preferences', 'preference', 'alias', 'aliases'))) {
-                continue;
+            if ($alias && $class) {
+                $instanceConfig['aliases'][$alias] = (string)$instanceXml['class'];
             }
 
-            if (isset($typeNode['shared'])) {
-                $instanceConfig[$name]['shared'] = $typeNode->toValue('bool', 'shared');
+            if (isset($instanceXml['shared'])) {
+                $instanceConfig[$name]['shared'] = $instanceXml->is('shared');
             }
 
-            foreach ($typeNode->xpath('./injections/instance[@method != "" and @class != ""]') as $injectService) {
-                $method = (string)$injectService['method'];
-                $param = $name . '::' . $method . ':0';
-                $instanceConfig[$name]['injections'][$method][$param] = $this->formatClassName($injectService['class']);
+            foreach ($instanceXml->xpath('./aspreference/for[@class != ""]') as $prefXml) {
+                $for = (string)$prefXml['class'];
+                $instanceConfig['preferences'][$for][] = $name;
             }
 
-            foreach ($typeNode->xpath('./parameters/parameter[@name != ""]') as $parameterNode) {
-                $paramName = (string)$parameterNode['name'];
-                $value = isset($parameterNode['class'])? $this->formatClassName((string)$parameterNode['class']) : $parameterNode->toPhpValue();
-
-                $instanceConfig[$name]['parameters'][$paramName] = $value;
+            foreach ($instanceXml->xpath('./parameters/parameter[@key !=""]') as $paramXml) {
+                $paramName = (string)$paramXml['key'];
+                $instanceConfig[$name]['parameters'][$paramName] = $paramXml->toPhpValue();
             }
+
+            // TODO: Implement injections
+//             foreach ($instanceXml->xpath('./injections/inject[@method !=""]') as $injectXml) {
+//                 $method = (string)$injectXml['method'];
+//             }
         }
 
         if (!empty($instanceConfig)) {
