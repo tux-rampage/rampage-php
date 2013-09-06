@@ -72,7 +72,7 @@ class InstanceManager extends DefaultInstanceManager implements ServiceManagerAw
      *
      * @param string $name
      */
-    protected function hasService($name)
+    public function hasService($name)
     {
         if (!$this->serviceManager) {
             return false;
@@ -87,7 +87,7 @@ class InstanceManager extends DefaultInstanceManager implements ServiceManagerAw
      * @param string $name
      * @return object
      */
-    protected function getService($name)
+    public function getService($name)
     {
         if (!$this->serviceManager) {
             throw new Exception\UndefinedReferenceException('Cannot get service without an service manager instance!');

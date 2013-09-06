@@ -28,8 +28,6 @@ namespace rampage\core\view\http;
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\MvcEvent;
-use Zend\ServiceManager\ServiceManager;
-
 
 /**
  * View manager
@@ -42,31 +40,18 @@ class ViewInitializer implements ListenerAggregateInterface
     protected $listeners = array();
 
     /**
-     * @var \Zend\ServiceManager\ServiceManager
+     * @var ListenerAggregateInterface
      */
-    private $serviceManager = null;
-
-    /**
-     * @var string
-     */
-    protected $renderStrategy = 'rampage\core\view\http\DefaultRenderStrategy';
+    protected $renderStrategy = null;
 
     /**
      * Construct
      *
      * @param ObjectManagerInterface $objectManager
      */
-    public function __construct(ServiceManager $serviceManager)
+    public function __construct(ListenerAggregateInterface $renderStrategy = null)
     {
-        $this->serviceManager = $serviceManager;
-    }
-
-    /**
-     * @return \Zend\ServiceManager\ServiceManager
-     */
-    protected function getServiceManager()
-    {
-        return $this->serviceManager;
+        $this->renderStrategy = $renderStrategy? : new DefaultRenderStrategy();
     }
 
 	/**
@@ -104,6 +89,6 @@ class ViewInitializer implements ListenerAggregateInterface
         /* @var $application \rampage\core\Application */
         $application = $event->getApplication();
         $eventManager = $application->getEventManager();
-        $eventManager->attach($this->getServiceManager()->get($this->renderStrategy));
+        $eventManager->attach($this->renderStrategy);
     }
 }

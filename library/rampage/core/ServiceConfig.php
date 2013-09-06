@@ -55,10 +55,10 @@ class ServiceConfig extends ServiceManagerConfig
     public function __construct(array $config = array())
     {
         $this->invokables['SharedEventManager'] = 'rampage\core\events\SharedEventManager';
-        $this->factories['AggregatedServiceLocator'] = 'rampage\core\service\AggregatedServicesFactory';
+        $this->factories['AggregatedServiceLocator'] = 'rampage\core\services\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 
-        parent::__construct(include __DIR__ . '/../service.config.php');
+        // parent::__construct(include __DIR__ . '/../service.config.php');
         parent::__construct($config);
     }
 
@@ -70,6 +70,7 @@ class ServiceConfig extends ServiceManagerConfig
     {
         $pathManager = ($this->pathManagerConfig instanceof PathManager)? $this->pathManagerConfig : new PathManager($this->pathManagerConfig);
         $serviceManager->setService('rampage.PathManager', $pathManager, true);
+        $serviceManager->setAllowOverride(true);
 
         parent::configureServiceManager($serviceManager);
 

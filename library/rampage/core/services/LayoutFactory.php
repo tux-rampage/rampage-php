@@ -57,7 +57,7 @@ class LayoutFactory implements FactoryInterface
         $layout = $serviceLocator->get('di')->newInstance('rampage\core\view\Layout');
 
         if (isset($config['rampage']['layout']['files']) && is_array($config['rampage']['layout']['files'])) {
-            $this->addFiles($layout, $config['rampage']['layout']['files']);
+            $this->addLayoutFiles($layout, $config['rampage']['layout']['files']);
         }
 
         return $layout;

@@ -40,6 +40,11 @@ class ControllerManager extends ZendControllerManager implements DIContainerAwar
     private $di = null;
 
     /**
+     * @var bool
+     */
+    protected $autoAddInvokableClass = true;
+
+    /**
      * @see \rampage\core\di\DIContainerAware::setDIContainer()
      */
     public function setDIContainer(Di $container)
@@ -60,4 +65,30 @@ class ControllerManager extends ZendControllerManager implements DIContainerAwar
         $invokable = $this->invokableClasses[$canonicalName];
         return $this->di->newInstance($invokable, $this->creationOptions, false);
     }
+
+    /**
+     * {@inheritdoc}
+     * @see \Zend\Mvc\Controller\ControllerManager::has()
+     */
+    public function has($name, $checkAbstractFactories = true, $usePeeringServiceManagers = false)
+    {
+        if (parent::has($name, $checkAbstractFactories, $usePeeringServiceManagers)) {
+            return true;
+        }
+
+        if (is_array($name)) {
+            return false;
+        }
+
+        $class = strtr($name, '.', '\\');
+        if ($this->autoAddInvokableClass && class_exists($class)) {
+            $this->setInvokableClass($name, $class);
+            return true;
+        }
+
+        return false;
+    }
+
+
+
 }

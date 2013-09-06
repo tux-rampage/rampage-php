@@ -5,6 +5,8 @@ return array(
     'modules' => array(),
     'module_listener_options' => array(
         'extra_config' => array(
+            'service_manager' => include __DIR__ . '/service.config.php',
+
             'controllers' => array(
                 'invokables' => array(
                     'rampage.core.layoutonly' => 'rampage\core\controllers\LayoutOnlyController',

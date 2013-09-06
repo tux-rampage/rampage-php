@@ -91,7 +91,7 @@ class DefaultRenderStrategy implements ListenerAggregateInterface
      */
     protected function getRenderer(MvcEvent $event)
     {
-        return $event->getApplication()->getServiceManager()->get('rampage.core.view.http.Renderer');
+        return $event->getApplication()->getServiceManager()->get('rampage.core.view.HttpRenderer');
     }
 
     /**

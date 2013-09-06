@@ -1,21 +1,23 @@
 <?php
 
+use rampage\core\services\DIServiceFactory;
 return array(
     'invokables' => array(
-        'rampage.core.service.DIAbstractServiceFactory' => 'rampage\core\service\DIAbstractServiceFactory',
+        'rampage.core.services.DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
         'db.profiler' => 'rampage.db.NullProfiler'
     ),
     'factories' => array(
         'Application' => 'rampage\core\services\ApplicationFactory',
-        'DependencyInjector' => 'rampage\core\services\DiFactory',
+        'DependencyInjector' => 'rampage\core\services\DIFactory',
         'ControllerLoader' => 'rampage\core\services\ControllerLoaderFactory',
-        'ViewHelperManager' => 'rampage\core\services\ViewHelperManagerFactory',
+        //'ViewHelperManager' => 'rampage\core\services\ViewHelperManagerFactory',
         'Logger' => 'rampage\core\services\LogServiceFactory',
 
         // View/Layout
         'rampage.ViewInitializer' => 'rampage\core\services\ViewInitializerFactory',
         'rampage.UserConfig' => 'rampage\core\services\UserConfigFactory',
         'rampage.Layout' => 'rampage\core\services\LayoutFactory',
+        'rampage.core.view.HttpRenderer' => 'rampage\core\services\HttpRendererFactory',
 
         // i18n
         'Locale' => 'rampage\core\services\LocaleFactory',
@@ -39,7 +41,6 @@ return array(
         // Core
         'UserConfig' => 'rampage.UserConfig',
         'rampage\core\UserConfig' => 'rampage.UserConfig',
-        'rampage.core.view.HttpRenderer' => 'rampage\core\view\renderer\PhpRenderer',
 
         // I18n
         'Zend\I18n\Translator\Translator' => 'Translator',
@@ -53,7 +54,7 @@ return array(
     ),
 
     'abstract_factories' => array(
-        'rampage\core\service\DIAbstractServiceFactory',
+        'rampage\core\services\DIAbstractServiceFactory',
     ),
 
     'shared' => array(

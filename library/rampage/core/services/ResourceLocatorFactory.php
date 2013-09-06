@@ -43,7 +43,7 @@ class ResourceLocatorFactory implements FactoryInterface
      */
     protected function addResources(FileLocatorInterface $fileLocator, $config)
     {
-        if (!is_array($config) || !($config instanceof \Traversable)) {
+        if (!is_array($config) && !($config instanceof \Traversable)) {
             return $this;
         }
 
@@ -63,7 +63,7 @@ class ResourceLocatorFactory implements FactoryInterface
         $pathManager = $serviceLocator->get('rampage.PathManager');
         $fileLocator = new FileLocator($pathManager);
 
-        if (!isset($config['rampage']['resources'])) {
+        if (isset($config['rampage']['resources'])) {
             $this->addResources($fileLocator, $config['rampage']['resources']);
         }
 

@@ -26,6 +26,7 @@
 namespace rampage\core;
 
 use Zend\ServiceManager\ServiceManager as ZendServiceManager;
+use Zend\ServiceManager\Exception;
 
 /**
  * Service manager
@@ -84,25 +85,34 @@ class ServiceManager extends ZendServiceManager
         return parent::setInvokableClass($name, $invokableClass, $shared);
     }
 
-    /**
-     * Set an alias
-     *
-     * Do not change the class name, this would cause abstract factories to fail
-     * When an alias is set to an explicit class name
-     *
-     * Note: We'll NOT force users to declare services for the aliases. This is a huge difference to ZF2
-     *
-     * @see \Zend\ServiceManager\ServiceManager::setAlias()
-     */
-    public function setAlias($alias, $class)
-    {
-        $canonical = $this->canonicalizeName($alias);
-        if ($alias == $class) {
-            unset($this->aliases[$canonical]);
-            return $this;
-        }
+//     /**
+//      * {@inheritdoc}
+//      *
+//      * Instead of the Zend service manager this will not fail when there is a factory or invokable definition
+//      * This will ALWAYS allow to supersed configurations by an alias.
+//      *
+//      * @see \Zend\ServiceManager\ServiceManager::setAlias()
+//      */
+//     public function setAlias($alias, $class)
+//     {
+//         $canonical = $this->canonicalizeName($alias);
+//         $class = $this->canonicalizeName($class);
 
-        $this->aliases[$canonical] = $class;
-        return $this;
-    }
+//         if ($canonical == $class) {
+//             unset($this->aliases[$canonical]);
+//             return $this;
+//         }
+
+//         if (isset($this->aliases[$canonical]) && !$this->allowOverride) {
+//             throw new Exception\InvalidServiceNameException(sprintf(
+//                 'An alias by the name "%s" or "%s" already exists',
+//                 $canonical,
+//                 $alias
+//             ));
+//         }
+
+//         $this->aliases[$canonical] = $class;
+
+//         return $this;
+//     }
 }

@@ -716,10 +716,10 @@ class ModuleManifest extends XmlConfig
             $namespace = strtr((string)$child['namespace'], '.', '\\');
 
             if (!$relative) {
-                $path .= '/' . trim(strtr($namespace, '\\', '/'), '/');
+                $dir .= '/' . trim(strtr($namespace, '\\', '/'), '/');
             }
 
-            $this->manifest['autoloader_config']['Zend\Loader\StandardAutoloader']['namespaces'][$namespace] = $this->getModulePath($path);
+            $this->manifest['autoloader_config']['Zend\Loader\StandardAutoloader']['namespaces'][$namespace] = $this->getModulePath($dir);
         }
 
         return $this;

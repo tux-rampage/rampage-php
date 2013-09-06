@@ -27,6 +27,7 @@ namespace rampage\core\services;
 
 use rampage\core\view\console\ViewInitializer as ConsoleViewInitializer;
 use rampage\core\view\http\ViewInitializer as HttpViewInitializer;
+use rampage\core\view\http\DefaultRenderStrategy;
 
 use Zend\Console\Console;
 use Zend\ServiceManager\ServiceLocatorInterface;
@@ -46,7 +47,7 @@ class ViewInitializerFactory implements FactoryInterface
             return new ConsoleViewInitializer();
         }
 
-        $initializer = new HttpViewInitializer($serviceLocator);
+        $initializer = new HttpViewInitializer();
         return $initializer;
     }
 }
