@@ -22,28 +22,19 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\mongodb;
+
+use Iterator;
+use Countable;
 
 /**
- * Transaction interface
+ * Resultset
  */
-interface TransactionInterface
+interface ResultSetInterface extends Iterator, Countable
 {
     /**
-     * The implementation should start the transaction
-     * @return self Should return $this for a fluent interface
+     * @param mixed $result
+     * @return self
      */
-    public function start();
-
-    /**
-     * The implementation should commit the transaction
-     * @return self Should return $this for a fluent interface
-     */
-    public function commit();
-
-    /**
-     * The implementation should rollback the transaction
-     * @return self Should return $this for a fluent interface
-     */
-    public function rollback();
+    public function initialize($result);
 }

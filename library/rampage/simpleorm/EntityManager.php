@@ -35,11 +35,6 @@ use Zend\ServiceManager\ServiceManager;
 class EntityManager implements ServiceManagerAwareInterface
 {
     /**
-     * @var \Zend\Db\Adapter\Adapter
-     */
-    protected $adapter = null;
-
-    /**
      * @var UnitOfWorkInterface
      */
     protected $unitOfWork = null;
@@ -64,13 +59,12 @@ class EntityManager implements ServiceManagerAwareInterface
      * @param string $definition
      * @param UnitOfWorkInterface $unitOfWork
      */
-    public function __construct(Adapter $adapter, EntityDefinitionInterface $definition = null, UnitOfWorkInterface $unitOfWork = null)
+    public function __construct(EntityDefinitionInterface $definition = null, UnitOfWorkInterface $unitOfWork = null)
     {
         if (!$definition instanceof EntityDefinitionList) {
             $definition = new EntityDefinitionList($definition);
         }
 
-        $this->adapter = $adapter;
         $this->unitOfWork = $unitOfWork? : new UnitOfWork($this);
         $this->definition = $definition;
     }
@@ -135,14 +129,6 @@ class EntityManager implements ServiceManagerAwareInterface
     public function getUnitOfWork()
     {
         return $this->unitOfWork;
-    }
-
-    /**
-     * @return \Zend\Db\Adapter\Adapter
-     */
-    public function getAdapter()
-    {
-        return $this->adapter;
     }
 
     /**
