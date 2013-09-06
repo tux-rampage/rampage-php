@@ -1,6 +1,5 @@
 <?php
 
-use rampage\core\services\DIServiceFactory;
 return array(
     'invokables' => array(
         'rampage.core.services.DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
