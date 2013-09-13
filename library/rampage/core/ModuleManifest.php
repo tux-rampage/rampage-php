@@ -112,7 +112,8 @@ class ModuleManifest extends XmlConfig
                 continue;
             }
 
-            $processor->load((string)$include['file'], $this->manifest);
+            $file = $this->getModulePath((string)$include['file']);
+            $processor->load($file, $this->manifest);
         }
 
         return $this;
@@ -126,8 +127,8 @@ class ModuleManifest extends XmlConfig
     public function validate($xsd = null)
     {
         if (!$xsd) {
-            $xsdPath = __DIR__ . '/../../../';
-            $xsd = $xsdPath . 'xsd/rampage/core/ModuleManifest.xsd';
+            $xsdPath = __DIR__ . '/../../../xsd/';
+            $xsd = $xsdPath . 'rampage/core/ModuleManifest.xsd';
         }
 
         try {
@@ -298,7 +299,7 @@ class ModuleManifest extends XmlConfig
 
         $config = array();
 
-        foreach ($xml->xpath('./services/service[@name != ""') as $serviceXml) {
+        foreach ($xml->xpath('./services/service[@name != ""]') as $serviceXml) {
             $name = (string)$serviceXml['name'];
             $classByName = strtr($name, '.', '\\');
             $class = strtr((string)$serviceXml['class'], '.', '\\');
@@ -308,7 +309,9 @@ class ModuleManifest extends XmlConfig
                 $factory = (string)$serviceXml->factory['class'];
                 $config['factories'][$name] = $factory;
             } else if ($class) {
-                if ($diAware && $serviceXml->is('usedi')) {
+                $useDi = (isset($serviceXml['usedi']))? $serviceXml->is('usedi') : true;
+
+                if ($diAware && $useDi) {
                     $config['factories'][$name] = new DIServiceFactory($class);
                 } else {
                     $config['invokables'][$name] = $class;
@@ -316,12 +319,12 @@ class ModuleManifest extends XmlConfig
             }
 
             if (isset($serviceXml['shared'])) {
-                $config['service_manager']['shared'][$name] = $serviceXml->is('shared');
+                $config['shared'][$name] = $serviceXml->is('shared');
             }
 
             foreach ($serviceXml->xpath('./aliases/alias[@name != ""]') as $aliasXml) {
                 $alias = (string)$aliasXml['name'];
-                $config['service_manager']['aliases'][$alias] = $name;
+                $config['aliases'][$alias] = $name;
             }
 
             if (!$diAware || !isset($serviceXml->di)) {
@@ -715,6 +718,10 @@ class ModuleManifest extends XmlConfig
             $relative = $child->is('relative');
             $dir = (string)$child['path'];
             $namespace = strtr((string)$child['namespace'], '.', '\\');
+
+            if ($dir == '.') {
+                $dir = '';
+            }
 
             if (!$relative) {
                 $dir .= '/' . trim(strtr($namespace, '\\', '/'), '/');

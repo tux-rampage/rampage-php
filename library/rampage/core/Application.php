@@ -84,7 +84,8 @@ class Application extends MvcApplication
         self::registerDevelopmentErrorHandler();
 
         if ($config === null) {
-            $config = (is_file('application/etc/application.config.php'))? include 'application/etc/application.config.php' : array();
+            $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
+            $config = (is_file("$prefix/etc/application.config.php"))? include "$prefix/etc/application.config.php" : array();
         }
 
         if (!is_array($config)) {

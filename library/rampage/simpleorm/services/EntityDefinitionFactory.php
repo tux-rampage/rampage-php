@@ -22,24 +22,28 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\simpleorm;
+namespace rampage\simpleorm\services;
 
-use rampage\core\AbstractModule;
-use rampage\core\ModuleManifest;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use rampage\simpleorm\EntityArrayDefinition;
+use rampage\simpleorm\EntityDefinitionList;
 
-/**
- * Module
- */
-class Module extends AbstractModule
+class EntityDefinitionFactory implements FactoryInterface
 {
 	/**
      * {@inheritdoc}
-     * @see \rampage\core\AbstractModule::__construct()
+     * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
-    public function __construct()
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        parent::__construct(new ModuleManifest(__DIR__, 'module.xml'));
+        $config = $serviceLocator->get('Config');
+        $definition = null;
+
+        if (isset($config['rampage']['orm']['entity_definition']) && is_array($config['rampage']['orm']['entity_definition'])) {
+            $definition = new EntityArrayDefinition($config['rampage']['orm']['entity_definition']);
+        }
+
+        return new EntityDefinitionList($definition);
     }
-
-
 }

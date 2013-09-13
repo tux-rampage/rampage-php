@@ -47,7 +47,19 @@ class EntityDefinitionList implements EntityDefinitionInterface
             $this->addDefinitions($definitions);
         }
 
-        $this->addDefinition(new EntityRuntimeDefintion());
+        if (!$this->hasDefinition('rampage\simpleorm\EntityRuntimeDefintion')) {
+            $this->addDefinition(new EntityRuntimeDefintion());
+        }
+    }
+
+    /**
+     * @param string|EntityDefinitionInterface $classOrDefinition
+     * @return bool
+     */
+    public function hasDefinition($classOrDefinition)
+    {
+        $class = (is_object($classOrDefinition))? get_class($classOrDefinition) : (string)$classOrDefinition;
+        return (isset($this->definitions[$class]));
     }
 
     /**
@@ -134,8 +146,8 @@ class EntityDefinitionList implements EntityDefinitionInterface
     public function getRepositoryName($entity)
     {
         foreach ($this->definitions as $definition) {
-            if ($name = $definition->getRepositoryName($entity)) {
-                return $name;
+            if ($definition->hasRepository($entity)) {
+                return $definition->getRepositoryName($entity);
             }
         }
 

@@ -54,6 +54,10 @@ class PathManager
             $this->set('root', getcwd());
         }
 
+        if (isset($_SERVER['APP_LOCATION'])) {
+            $this->set('app', $_SERVER['APP_LOCATION']);
+        }
+
         if (!is_array($config) && !($config instanceof \Traversable)) {
             $file = $this->prepare('{{root_dir}}/environment.conf');
             if (is_readable($file)) {

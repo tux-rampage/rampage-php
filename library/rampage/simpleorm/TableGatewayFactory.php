@@ -25,13 +25,7 @@
 namespace rampage\simpleorm;
 
 use Zend\ServiceManager\FactoryInterface;
-use Zend\Stdlib\ArraySerializableInterface;
-use Zend\Stdlib\Hydrator\ArraySerializable as ArraySerializableHydrator;
-
-use Zend\Db\TableGateway\Feature\MetadataFeature;
-use Zend\Db\ResultSet\ResultSet;
-use Zend\Db\ResultSet\ResultSetInterface;
-use Zend\Db\ResultSet\HydratingResultSet;
+use ArrayObject;
 
 /**
  * Table gateway factory
@@ -41,39 +35,37 @@ class TableGatewayFactory implements FactoryInterface
     /**
      * @var string
      */
-    private $table = null;
+    protected $table = null;
 
     /**
      * @var string|object
      */
-    private $prototype = null;
+    protected $prototype = null;
 
     /**
      * @var \Zend\Db\TableGateway\Feature\AbstractFeature|\Zend\Db\TableGateway\Feature\FeatureSet|\Zend\Db\TableGateway\Feature\AbstractFeature[]
      */
-    private $features = null;
+    protected $features = null;
+
+    /**
+     * @var string
+     */
+    protected $adapterService = 'db';
 
     /**
      * @param string $table
      * @param object|string $prototype
      * @param \Zend\Db\TableGateway\Feature\AbstractFeature|\Zend\Db\TableGateway\Feature\FeatureSet|\Zend\Db\TableGateway\Feature\AbstractFeature[] $features
      */
-    public function __construct($table, $prototype = null, $features = null)
+    public function __construct($table, $prototype = null, $features = null, $adapterService = null)
     {
         $this->table = $table;
         $this->prototype = $prototype;
-
-        if ($features === null) {
-            $features = array(
-                new MetadataFeature(),
-                new features\PopulateIdFeature(),
-                new features\SanitizeDataFeature()
-            );
-        } else if ($features === false) {
-            $features = null;
-        }
-
         $this->features = $features;
+
+        if ($adapterService) {
+            $this->adapterService = $adapterService;
+        }
     }
 
     /**
@@ -89,27 +81,11 @@ class TableGatewayFactory implements FactoryInterface
                 $class = $this->prototype;
                 $this->prototype = new $class();
             }
-
-            if ($this->prototype instanceof ResultSetInterface) {
-                $resultSetPrototype = $this->prototype;
-            } else if ($this->prototype instanceof ArraySerializableInterface) {
-                $resultSetPrototype = new ResultSet();
-                $resultSetPrototype->setArrayObjectPrototype($this->prototype);
-
-                $hydrator = new ArraySerializableHydrator();
-            } else {
-                $resultSetPrototype = new HydratingResultSet(
-                    new ReflectionMappingHydrator(),
-                    $this->prototype
-                );
-            }
+        } else {
+            $prototype = new ArrayObject();
         }
 
-        $gateway = new DefaultTableGateway($this->table, $serviceLocator->get('db'), $this->features, $resultSetPrototype);
-        if ($hydrator) {
-            $gateway->setHydrator($hydrator);
-        }
-
+        $gateway = new TableGatewayRepository($this->table, $serviceLocator->get($this->adapterService), $prototype, $this->features);
         return $gateway;
     }
 }

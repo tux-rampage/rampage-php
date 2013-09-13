@@ -24,22 +24,13 @@
 
 namespace rampage\simpleorm;
 
-use rampage\core\AbstractModule;
-use rampage\core\ModuleManifest;
-
-/**
- * Module
- */
-class Module extends AbstractModule
+interface EntityManagerAwareInterface
 {
-	/**
-     * {@inheritdoc}
-     * @see \rampage\core\AbstractModule::__construct()
+    /**
+     * Inject the entity manager
+     *
+     * @param EntityManager $entityManager
+     * @return self
      */
-    public function __construct()
-    {
-        parent::__construct(new ModuleManifest(__DIR__, 'module.xml'));
-    }
-
-
+    public function setEntityManager(EntityManager $entityManager);
 }

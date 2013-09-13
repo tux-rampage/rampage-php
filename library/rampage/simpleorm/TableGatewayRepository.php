@@ -24,31 +24,28 @@
 
 namespace rampage\simpleorm;
 
+use Zend\Db\Adapter\Adapter;
 use Zend\Db\TableGateway\TableGateway;
+use Zend\Db\TableGateway\Feature\MetadataFeature;
 use Zend\Db\ResultSet\ResultSetInterface;
+use Zend\Db\ResultSet\HydratingResultSet;
 use Zend\Db\Sql\Where;
 
 use Zend\Stdlib\Hydrator\HydratorInterface;
+use Zend\Stdlib\Hydrator\HydratorAwareInterface;
 use Zend\Stdlib\Hydrator\Reflection as ReflectionHydrator;
 use Zend\Stdlib\Hydrator\ArraySerializable as ArrayObjectHydrator;
 use Zend\Stdlib\ArraySerializableInterface;
-use Zend\EventManager\EventManagerAwareInterface;
-use Zend\EventManager\EventInterface;
 
 /**
  * Default table gateway class
  */
-class TableGatewayRepository extends TableGateway implements RepositoryInterface
+class TableGatewayRepository extends TableGateway implements RepositoryInterface, EntityManagerAwareInterface
 {
     /**
      * @var \Zend\Stdlib\Hydrator\HydratorInterface
      */
-    private $hydrator = null;
-
-    /**
-     * @var EntityManager
-     */
-    private $entityManager = null;
+    protected $hydrator = null;
 
     /**
      * @var string
@@ -61,18 +58,30 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
     private $currentObject = null;
 
     /**
+     * @var EntityManager
+     */
+    protected $entityManager = null;
+
+    /**
      * @see \Zend\Db\TableGateway\TableGateway::__construct()
      */
-    public function __construct($table, EntityManager $entityManager, $prototype, $features = null)
+    public function __construct($table, Adapter $adapter, $prototype, HydratorInterface $hydrator = null, $features = null)
     {
         if (!is_object($prototype)) {
             throw new exceptions\InvalidArgumentException(sprintf('$prototype must be an object, %s given', gettype($prototype)));
         }
 
-        $this->entityManager = $entityManager;
-        if (!$this->hydrator) {
-            $this->hydrator = ($prototype instanceof ArraySerializableInterface)? new ArrayObjectHydrator() : new hydration\MappingHydrator(new ReflectionHydrator());
+        if ($features === null) {
+            $features = array(
+                new MetadataFeature(),
+                new features\PopulateIdFeature(),
+                new features\SanitizeDataFeature()
+            );
+        } else if ($features === false) {
+            $features = null;
         }
+
+        $this->hydrator = $hydrator? : $this->createHydrator($prototype);
 
         if ($prototype instanceof ResultSetInterface) {
             $resultSetPrototype = $prototype;
@@ -80,29 +89,32 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
             $resultSetPrototype = new EntityResultSet($this->hydrator, $prototype);
         }
 
-        if ($resultSetPrototype instanceof EventManagerAwareInterface) {
-            $resultSetPrototype->getEventManager()->attach('hydrate', array($this, 'onResultHydration'));
-        }
-
-        parent::__construct($table, $entityManager->getAdapter(), $features, $resultSetPrototype);
+        parent::__construct($table, $adapter, $features, $resultSetPrototype);
     }
 
-    public function onResultHydration(EventInterface $event)
+    /**
+     * @param object $prototype
+     * @return \Zend\Stdlib\Hydrator\HydratorInterface
+     */
+    protected function createHydrator($prototype)
     {
-        $object = $event->getTarget();
-        $data = $event->getParam('data');
-
-        if (!is_object($object) || !is_array($data)) {
-            return;
+        if (($prototype instanceof HydratingResultSet) || ($prototype instanceof HydratorAwareInterface)) {
+            return $prototype->getHydrator();
+        } else if ($prototype instanceof ArraySerializableInterface) {
+            return new ArrayObjectHydrator();
         }
 
-        $state = $this->getUnitOfWork()->getObjectState($object);
-        if (!$state) {
-            $state = new ObjectPersistenceState($data);
-            $this->getUnitOfWork()->setObjectState($object, $state);
-        } else {
-            $state->setData($data);
-        }
+        return new hydration\MappingHydrator(new ReflectionHydrator());
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see \rampage\simpleorm\EntityManagerAwareInterface::setEntityManager()
+     */
+    public function setEntityManager(EntityManager $entityManager)
+    {
+        $this->entityManager = $entityManager;
+        return $this;
     }
 
     /**
@@ -112,6 +124,11 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
     public function setHydrator(HydratorInterface $hydrator)
     {
         $this->hydrator = $hydrator;
+
+        if (($this->resultSetPrototype instanceof HydratorAwareInterface) || ($this->resultSetPrototype instanceof HydratingResultSet)) {
+            $this->resultSetPrototype->setHydrator($hydrator);
+        }
+
         return $this;
     }
 
@@ -129,14 +146,6 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
     public function getEntityManager()
     {
         return $this->entityManager;
-    }
-
-    /**
-     * @return \rampage\simpleorm\UnitOfWorkInterface
-     */
-    public function getUnitOfWork()
-    {
-        return $this->entityManager->getUnitOfWork();
     }
 
     /**
@@ -190,6 +199,10 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
      */
     public function persist($object)
     {
+        if (!$this->entityManager) {
+            return $this->store($object);
+        }
+
         $this->entityManager->persist($object);
         return $this;
     }
@@ -233,20 +246,23 @@ class TableGatewayRepository extends TableGateway implements RepositoryInterface
             throw new exceptions\InvalidArgumentException(sprintf('%s expects an object, %s given.', __METHOD__, gettype($object)));
         }
 
-        $this->currentObject = $object;
+        try {
+            $this->currentObject = $object;
+            $data = $this->hydrator->extract($object);
 
-        $idField = $this->getIdField();
-        $data = $this->hydrator->extract($object);
+            if ($this->isObjectNew($object, $data)) {
+                $this->insert($data);
+                $this->currentObject = null;
+                return $this;
+            }
 
-        if ($this->isObjectNew($object, $data)) {
-            $this->insert($data);
+            $idField = $this->getIdField();
+            $this->update($data, array($idField => $data[$idField]));
             $this->currentObject = null;
-            return $this;
+        } catch (\Exception $e) {
+            $this->currentObject = null;
+            throw $e;
         }
-
-        $idField = $this->getIdField();
-        $this->update($data, array($idField => $data[$idField]));
-        $this->currentObject = null;
 
         return $this;
     }

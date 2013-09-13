@@ -25,6 +25,7 @@
                                         </restriction>
                                     </simpleType>
                                 </attribute>
+                                <attribute name="domain" type="string" use="optional"></attribute>
                             </extension>
                         </complexContent>
                     </complexType>

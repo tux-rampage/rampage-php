@@ -119,4 +119,22 @@ class InstanceManager extends DefaultInstanceManager implements ServiceManagerAw
 
         return parent::hasSharedInstance($classOrAlias);
     }
+
+    /**
+     * {@inheritdoc}
+     * @see \Zend\Di\InstanceManager::addAlias()
+     */
+    public function addAlias($alias, $class, array $parameters = array())
+    {
+        if (!preg_match('#^[a-zA-Z0-9.\\\\-_]+$#', $alias)) {
+            throw new Exception\InvalidArgumentException(
+                'Aliases must be alphanumeric and can contain dashes, dots, backslashes and underscores only.'
+            );
+        }
+
+        $this->aliases[$alias] = $class;
+        if ($parameters) {
+            $this->setParameters($alias, $parameters);
+        }
+    }
 }

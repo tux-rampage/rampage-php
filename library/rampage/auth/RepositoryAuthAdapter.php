@@ -29,6 +29,9 @@ use Zend\Authentication\Result;
 
 class RepositoryAuthAdapter extends AbstractAdapter implements UserRepositoryAwareInterface
 {
+    /**
+     * @var UserRepositoryInterface
+     */
     protected $repository = null;
 
     /**
@@ -39,7 +42,7 @@ class RepositoryAuthAdapter extends AbstractAdapter implements UserRepositoryAwa
     /**
      * @param PasswordStrategyInterface $passwordStrategy
      */
-    public function __construct(PasswordStrategyInterface $passwordStrategy = null)
+    public function __construct(UserRepositoryInterface $repository, PasswordStrategyInterface $passwordStrategy = null)
     {
         $this->passwordStrategy = $passwordStrategy? : new PasswordStrategy();
     }

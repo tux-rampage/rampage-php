@@ -70,11 +70,19 @@ class ServiceConfig extends ServiceManagerConfig
     {
         $pathManager = ($this->pathManagerConfig instanceof PathManager)? $this->pathManagerConfig : new PathManager($this->pathManagerConfig);
         $serviceManager->setService('rampage.PathManager', $pathManager, true);
+        $serviceManager->setAlias('PathManager', 'rampage.PathManager');
         $serviceManager->setAllowOverride(true);
 
         parent::configureServiceManager($serviceManager);
 
+        // Add the default delegator for the module manager
+        if (!$serviceManager->has('rampage\core\services\ModuleManagerDelegator', false, false)) {
+            $serviceManager->setInvokableClass('rampage\core\services\ModuleManagerDelegator', 'rampage\core\services\ModuleManagerDelegator');
+        }
+
+        $serviceManager->addDelegator('ModuleManager', 'rampage\core\services\ModuleManagerDelegator');
         $serviceManager->addPeeringServiceManager($serviceManager->get('AggregatedServiceLocator'));
+
         return $this;
     }
 }

@@ -28,6 +28,7 @@ use rampage\auth\UserRepositoryAwareInterface;
 use rampage\auth\UserRepositoryInterface;
 use rampage\auth\IdentityInterface;
 use Zend\Authentication\Storage\Session as SessionStorage;
+use Zend\Session\ManagerInterface as SessionManagerInterface;
 
 /**
  * Load identity from repo on demand
@@ -48,6 +49,16 @@ class RepositoryAwareStorage extends SessionStorage implements UserRepositoryAwa
     private $current = null;
 
     /**
+     * {@inheritdoc}
+     * @see \Zend\Authentication\Storage\Session::__construct()
+     */
+    public function __construct($namespace = null, $member = null, UserRepositoryInterface $repository = null, SessionManagerInterface $manager = null)
+    {
+        $this->repository = $repository;
+        parent::__construct($namespace, $member, $manager);
+    }
+
+	/**
      * {@inheritdoc}
      * @see \rampage\auth\UserRepositoryAwareInterface::setUserRepository()
      */
