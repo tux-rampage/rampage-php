@@ -141,7 +141,7 @@ class Application extends MvcApplication
             return;
         }
 
-        set_error_handler(array(__CLASS__, 'errorToException'));
+        // set_error_handler(array(__CLASS__, 'errorToException'));
         set_exception_handler(array(__CLASS__, 'handleFinalException'));
     }
 
@@ -200,6 +200,7 @@ class Application extends MvcApplication
             }
 
             $name = 'PHP ' . ucwords(str_replace('_', ' ', strtolower(substr($c, 2))));
+            break;
         }
 
         $exception = new \RuntimeException(sprintf('%s: %s in %s on line %d', $name, $errstr, $errfile, $errline), $errno);
