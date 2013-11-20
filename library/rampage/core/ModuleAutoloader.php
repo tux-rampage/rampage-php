@@ -128,7 +128,7 @@ class ModuleAutoloader implements SplAutoloader
      */
     public function setOptions($options)
     {
-        if (!is_array($options) || !($options instanceof \Traversable)) {
+        if (!is_array($options) && !($options instanceof \Traversable)) {
             return $this;
         }
 
