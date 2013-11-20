@@ -88,7 +88,4 @@ class ControllerManager extends ZendControllerManager implements DIContainerAwar
 
         return false;
     }
-
-
-
 }
