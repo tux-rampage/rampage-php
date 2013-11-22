@@ -362,8 +362,8 @@ class ModuleManifest extends XmlConfig
      */
     protected function loadPluginManagerConfigs()
     {
-        foreach ($this->getXml()->xpath('plugins/pluginmanager[@name != ""]') as $pmConfig) {
-            $key = (string)$pmConfig;
+        foreach ($this->getXml()->xpath('plugins/pluginmanager[@type != ""]') as $pmConfig) {
+            $key = (string)$pmConfig['type'];
             $config = $this->createServiceManagerConfig($pmConfig);
 
             if ($config) {

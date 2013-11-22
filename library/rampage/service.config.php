@@ -14,6 +14,7 @@ return array(
 
         // View/Layout
         'rampage.ViewInitializer' => 'rampage\core\services\ViewInitializerFactory',
+        'rampage.ViewLocator' => 'rampage\core\services\ViewLocatorFactory',
         'rampage.UserConfig' => 'rampage\core\services\UserConfigFactory',
         'rampage.Layout' => 'rampage\core\services\LayoutFactory',
         'rampage.core.view.HttpRenderer' => 'rampage\core\services\HttpRendererFactory',
@@ -30,6 +31,8 @@ return array(
     'aliases' => array(
         // Layout
         'rampage\core\view\Layout' => 'rampage.Layout',
+        'rampage\core\view\ViewLocator' => 'rampage.ViewLocator',
+        'Zend\View\HelperPluginManager' => 'ViewHelperManager',
 
         // Resources
         'rampage\core\PathManager' => 'rampage.PathManager',

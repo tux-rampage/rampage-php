@@ -23,10 +23,9 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\gui\views;
 
 use rampage\core\view\Template;
-use rampage\core\data\ValueObject;
 use Zend\Mvc\MvcEvent;
 
 /**
@@ -37,7 +36,7 @@ class Navigation extends Template
     /**
      * Navigation items
      *
-     * @var array
+     * @var NavigationItem[]
      */
     protected $items = array();
 
@@ -58,11 +57,7 @@ class Navigation extends Template
      */
     public function getMvcEvent()
     {
-        if (!$this->getLayout()->getData()->offsetExists('mvc_event')) {
-            return null;
-        }
-
-        $event = $this->getLayout()->getData()->offsetGet('mvc_event');
+        $event = $this->getLayout()->getData()->get('mvc_event');
         if (!$event instanceof MvcEvent) {
             return null;
         }
@@ -79,38 +74,45 @@ class Navigation extends Template
      */
     public function addRouteLink($id, $route, $label, array $params = array())
     {
-        $item = new ValueObject(array(
-            'id' => $id,
-            'type' => 'route',
-            'route' => $route,
-            'label' => $label,
-            'options' => $params
-        ));
-
-        $this->items[$id] = $item;
+        $this->items[$id] = new NavigationItem($id, $route, $label, $params);
         return $this;
     }
 
     /**
-     * @param ValueObject $item
+     * @return null|string
+     */
+    protected function getCurrentRouteName()
+    {
+        if (!$this->hasMvcEvent()) {
+            return null;
+        }
+
+        $match = $this->getMvcEvent()->getRouteMatch();
+        $name = ($match)? $match->getMatchedRouteName() : null;
+
+        return $name;
+    }
+
+    /**
+     * @param NavigationItem $item
      * @return boolean
      */
-    public function isActive(ValueObject $item)
+    public function isActive(NavigationItem $item, $partial = true)
     {
-        if (($item->getType() != 'route') || !$this->hasMvcEvent()) {
+        $current = $this->getCurrentRouteName();
+        if (!$current || ($item->getType() != NavigationItem::TYPE_ROUTE)) {
             return false;
         }
 
-        $event = $this->getMvcEvent();
-        // TODO: Failsafe ...
-        $result = ($item->getRoute() == $event->getRouteMatch()->getMatchedRouteName());
+        $result = ($item->getRoute() == $current) || ($partial && (strpos($current, $item->getRoute() . '/') === 0));
         return $result;
     }
+
 
     /**
      * Returns all items
      *
-     * @return array
+     * @return NavigationItem[]
      */
     public function getItems()
     {

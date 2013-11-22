@@ -82,6 +82,7 @@ class Application extends MvcApplication
     public static function init($config = null)
     {
         self::registerDevelopmentErrorHandler();
+        self::registerExceptionHandler();
 
         if ($config === null) {
             $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
@@ -145,6 +146,19 @@ class Application extends MvcApplication
         }
 
         set_error_handler(array(__CLASS__, 'errorToException'));
+    }
+
+    /**
+     * Register development error handler throwing exceptions
+     *
+     * @param string $force
+     */
+    public static function registerExceptionHandler($force = false)
+    {
+        if (!$force && (!isset($_SERVER['RAMPAGE_DEVELOPMENT']) || !$_SERVER['RAMPAGE_DEVELOPMENT'])) {
+            return;
+        }
+
         set_exception_handler(array(__CLASS__, 'handleFinalException'));
     }
 
@@ -174,8 +188,8 @@ class Application extends MvcApplication
 
         echo '<html><head><title>Application Error</title></head><body style="background: #000; color: #fff;">';
 
-        if (is_readable(__DIR__ . '/failure.jpg')) {
-            echo '<img style="float: left;" src="data:image/jpeg;base64,' . base64_encode(file_get_contents(__DIR__ . '/failure.jpg')) . '" />';
+        if (is_readable(getcwd() . '/failure.jpg')) {
+            echo '<img style="float: left;" src="data:image/jpeg;base64,' . base64_encode(file_get_contents(getcwd() . '/failure.jpg')) . '" />';
         }
 
         echo '<h1 style="color: #f00;">Application Failure</h1>';

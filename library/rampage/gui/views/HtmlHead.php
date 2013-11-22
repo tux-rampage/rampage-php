@@ -23,7 +23,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\gui\view\html;
+namespace rampage\gui\views;
 
 use rampage\core\view\Template;
 use rampage\core\resources\UrlLocatorInterface;
@@ -32,7 +32,7 @@ use rampage\core\exception\RuntimeException;
 /**
  * Html header view
  */
-class Head extends Template
+class HtmlHead extends Template
 {
     /**
      * Javascript
@@ -86,7 +86,7 @@ class Head extends Template
      *
      * @return string
      */
-	public function getTitlePrefix()
+    public function getTitlePrefix()
     {
         return (string)$this->get('title_prefix');
     }
@@ -115,7 +115,7 @@ class Head extends Template
      * Add a title fragment
      *
      * @param string $title
-     * @return \rampage\gui\view\html\Head
+     * @return \rampage\gui\view\html\HtmlHead
      */
     public function addTitle($title)
     {
@@ -146,14 +146,21 @@ class Head extends Template
         return implode(' ' . $this->getTitleSeparator() . ' ', $fragments);
     }
 
-	/**
+    /**
      * Add a javascript
      *
      * @param string $file
      */
     public function addJs($file)
     {
-        $this->js[$file] = $file;
+        try {
+            $url = $this->getUrlLocator()->getUrl($file);
+            $this->js[$file] = $url;
+        } catch (RuntimeException $e) {
+            trigger_error(sprintf('Failed to resolve js url for "%s": %s', $file, (string)$e), E_USER_WARNING);
+        }
+
+        return $this;
     }
 
     /**
@@ -161,50 +168,37 @@ class Head extends Template
      *
      * @param string $file
      */
-    public function addCss($file, $media = null)
+    public function addCss($file, $media = null, $condition = null)
     {
-        $this->css[$file] = array($file, $media);
+        try {
+            $url = $this->getUrlLocator()->getUrl($file);
+            $item = new LinkItem($url, $media);
+
+            if ($condition) {
+                $item->setStyleCondition($condition);
+            }
+
+            $this->css[$file] = $item;
+        } catch (RuntimeException $e) {
+            trigger_error(sprintf('Failed to resolve css url for "%s": %s', $file, (string)$e), E_USER_WARNING);
+        }
+
+        return $this;
     }
 
     /**
-     * Render CSS html
+     * @return \rampage\gui\views\LinkItem[]
      */
-    public function cssHtml()
+    public function getCssItems()
     {
-        $html = array();
-
-        foreach ($this->css as $css) {
-            try {
-                @list($file, $media) = $css;
-                $url = $this->getUrlLocator()->getUrl($file);
-            } catch (RuntimeException $e) {
-                continue;
-            }
-
-            $media = ($media)?: 'screen';
-            $html[] = '<link rel="stylesheet" type="text/css" href="' . $url . '" media="' . $media . '" />';
-        }
-
-        return implode("\n", $html);
+        return $this->css;
     }
 
     /**
-     * Returns Javascript HTML
+     * @return string[]
      */
-    public function jsHtml()
+    public function getJsItems()
     {
-        $html = array();
-
-        foreach ($this->js as $file) {
-            try {
-                $url = $this->getUrlLocator()->getUrl($file);
-            } catch (RuntimeException $e) {
-                continue;
-            }
-
-            $html[] = '<script type="text/javascript" src="' . $url . '"></script>';
-        }
-
-        return implode("\n", $html);
+        return $this->js;
     }
 }

@@ -69,7 +69,7 @@ class View extends ValueObject implements LayoutViewInterface
      */
     private $renderer = null;
 
-    /**
+	/**
      * Check if data exists in layout
      *
      * @param string $name

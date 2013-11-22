@@ -49,7 +49,7 @@ class ViewLocator extends AbstractPluginManager implements DIContainerAware
 
         $this->autoAddInvokableClass = true;
         $this->shareByDefault = false;
-
+        $this->allowOverride = true;
     }
 
     /**

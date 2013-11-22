@@ -33,7 +33,7 @@ use Zend\Uri\Http as HttpUri;
 /**
  * URL Model
  */
-class BaseUrl
+class BaseUrl implements UrlModelInterface
 {
     /**
      * HTTP request

@@ -128,7 +128,7 @@ class Layout implements EventManagerAwareInterface, Serializable
     /**
      * Data
      *
-     * @return \ArrayObject
+     * @return DataContainer
      */
     public function getData()
     {
@@ -507,8 +507,15 @@ class Layout implements EventManagerAwareInterface, Serializable
      */
     public function createView($class, $name, $data = null)
     {
+        $class = strtr($class, '.', '\\');
+        if (!$this->getViewLocator()->has($class) && !class_exists($class)) {
+            trigger_error(sprintf('Cannot locate view "%s"', $class), E_USER_NOTICE);
+            return false;
+        }
+
         $view = $this->getViewLocator()->get($class);
         if (!$view instanceof LayoutViewInterface) {
+            trigger_error(sprintf('Invalid view type "%s" (%s)', $class, get_class($view)), E_USER_NOTICE);
             return false;
         }
 
