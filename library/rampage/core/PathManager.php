@@ -44,7 +44,11 @@ class PathManager
      */
     public function __construct($config = null)
     {
+        $skipLocalFile = false;
+        $local = null;
+
         if ($config && is_string($config) && !is_dir($config) && is_readable($config)) {
+            $skipLocalFile = true;
             $config = parse_ini_file($config, false);
         } else if (is_string($config) && is_dir($config) && !$this->has('root')) {
             $this->set('root', $config);
@@ -58,11 +62,9 @@ class PathManager
             $this->set('app', $_SERVER['APP_LOCATION']);
         }
 
-        if (!is_array($config) && !($config instanceof \Traversable)) {
-            $file = $this->prepare('{{root_dir}}/environment.conf');
-            if (is_readable($file)) {
-                $config = parse_ini_file($file, false);
-            }
+        $file = $this->prepare('{{root_dir}}/environment.conf');
+        if (!$skipLocalFile && is_readable($file)) {
+            $local = parse_ini_file($file, false);
         }
 
         $defaults = array(
@@ -79,6 +81,13 @@ class PathManager
 
         if (is_array($config) || ($config instanceof \Traversable)) {
             foreach ($config as $type => $path) {
+                $this->set($type, $path);
+                unset($defaults[$type]);
+            }
+        }
+
+        if (is_array($local) || ($local instanceof \Traversable)) {
+            foreach ($local as $type => $path) {
                 $this->set($type, $path);
                 unset($defaults[$type]);
             }
