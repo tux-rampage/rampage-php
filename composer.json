@@ -1,52 +1,46 @@
 {
-	"name" : "rampage-php/framework",
-	"description" : "Rampage PHP Framework based on Zend Framework 2",
-	"type" : "library",
-	"authors" : [{
-			"name" : "Axel H.",
-			"email" : "rampagephp@linux-rampage.org",
-			"role" : "developer"
-		}
-	],
-	"keywords" : [
-		"framework",
-		"zf2",
-		"rampage"
-	],
-	"homepage" : "https://github.com/tux-rampage/rampage-php",
-	"license" : [
-		"GPL-3.0"
-	],
-	"require" : {
-		"php" : ">= 5.3.3",
-		"zendframework/zendframework" : "~2.2"
-	},
-	"autoload" : {
-		"psr-0" : {
-			"rampage\\" : "library"
-		},
-		"classmap" : [ "library/" ]
-	},
-	"support" : {
-		"source" : "https://github.com/tux-rampage/rampage-php",
-		"issues" : "https://github.com/tux-rampage/rampage-php/issues",
-		"wiki" : "https://github.com/tux-rampage/rampage-php/wiki"
-	},
-	"repositories" : [{
-			"type" : "composer",
-			"url" : "https://packages.zendframework.com/"
-		}
-	],
-	"extra" : {
-		"branch-alias" : {
-			"dev-master" : "1.0.x-dev"
-		}
-	},
-	"bin" : [
-		"tools/generate-di.php"
-	],
-	"suggest" : {
-		"rampage-php/dev-tools" : "Integration of DB profiling for Zend Developer Tools",
-		"rampage-php/composer-module-installer" : "Allow installing application modules via composer"
-	}
+  "name" : "rampage-php/framework",
+  "description" : "Rampage PHP Framework based on Zend Framework 2",
+  "require" : {
+    "php" : ">= 5.3.3",
+    "zendframework/zend-mvc" : ">= 2.2",
+    "zendframework/zend-di" : ">= 2.2",
+    "zendframework/zend-i18n" : ">= 2.2",
+    "zendframework/zend-modulemanager" : ">= 2.2",
+    "zendframework/zend-authentication" : ">= 2.2"
+  },
+  "require-dev" : {
+    "zendframework/zend-code" : ">= 2.2"
+  },
+  "authors" : [ {
+    "name" : "Axel H.",
+    "email" : "rampagephp@linux-rampage.org",
+    "role" : "developer"
+  } ],
+  "keywords" : [ "framework", "zf2", "rampage" ],
+  "support" : {
+    "source" : "https://github.com/tux-rampage/rampage-php",
+    "issues" : "https://github.com/tux-rampage/rampage-php/issues",
+    "wiki" : "https://github.com/tux-rampage/rampage-php/wiki"
+  },
+  "extra" : {
+    "branch-alias" : {
+      "dev-master" : "1.0.x-dev"
+    }
+  },
+  "autoload" : {
+    "psr-0" : {
+      "rampage\\" : "library"
+    },
+    "classmap" : [ "library/" ]
+  },
+  "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
+  "suggest" : {
+    "zendframework/zend-json" : "ZF2 JSON en-/decoding",
+    "zendframework/zend-console" : "ZF2 Console handling",
+    "zendframework/session" : "ZF2 Session Handling"
+  },
+  "type" : "library",
+  "license" : [ "GPL-3.0" ],
+  "homepage" : "https://github.com/tux-rampage/rampage-php"
 }
