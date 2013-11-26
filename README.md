@@ -3,11 +3,19 @@
 This framework is based on ZendFramework 2.
 Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 
-For example this offers xml based module configs.
+## Key Features
+
+* Tight integration between Di and ServiceManager
+* XML based module configurations (XSD provided)
+* Support of XML based complex Layouts
+* Powerful resource locators for module resource files (i.e. js and css)
+* Advanced url locators/helpers
+* Auth framework (wip)
+* Cascading themes support
 
 ## License
 
-This framework is licensed under the terms of the GNU General Public License v3  
+This framework is licensed under the terms of the GNU General Public License v3
 You can view the license terms in the LICENSE.md file or under [http://www.gnu.org/licenses/gpl-3.0-standalone.html](http://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
 ## Business Support
@@ -65,6 +73,6 @@ No. It is completely up to you if you'd like to use this feature or not.
 ## What about performance when using XML configs
 
 Since loading a php array is faster than processig xml and it'll benefit from bytecode caches,
-there is an option to pre-compile the xml definitions of your modules to a static array definition 
+there is an option to pre-compile the xml definitions of your modules to a static array definition
 which is preferred when it exists.
 
