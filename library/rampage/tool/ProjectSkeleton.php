@@ -46,8 +46,34 @@ class ProjectSkeleton
      */
     public function __construct($directory = null)
     {
-        $this->directory = $directory? : getcwd();
         $this->options = new OptionsContainer();
+
+        $this->setDirectory($directory? : getcwd());
+        $this->addComponent(new DirectoryLayoutComponent())
+            ->addComponent(new BootstrapGeneratorComponent())
+            ->addComponent(new ModuleSkeletonComponent());
+    }
+
+    /**
+     * @param string $dir
+     * @return self
+     */
+    public function setDirectory($dir)
+    {
+        if (substr($dir, -1) !== '/') {
+            $dir .= '/';
+        }
+
+        $this->directory = $dir;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDirectory()
+    {
+        return $this->directory;
     }
 
     /**
@@ -86,6 +112,16 @@ class ProjectSkeleton
     {
         $this->components[] = $component;
         return $this;
+    }
+
+    /**
+     * @param string $dir
+     * @return boolean
+     */
+    public function createDirectory($dir)
+    {
+        $path = $this->directory . '/' . $dir;
+        return mkdir($path, 0775, true);
     }
 
     /**

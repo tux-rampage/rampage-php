@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
@@ -24,13 +25,36 @@
 
 namespace rampage\tool;
 
-require_once 'vendor/autoload.php';
+use RuntimeException;
 
-$options = array();
-$skeleton = new ProjectSkeleton();
+/**
+ * Creates the project directory layout
+ */
+class DirectoryLayoutComponent implements SkeletonComponentInterface
+{
+    protected $directories = array(
+        'application',
+        'application/config/conf.d',
+        'application/modules',
+        'etc',
+        'var'
+    );
 
-if (isset($_SERVER['argv'][1])) {
-    $options['module-name'] = $_SERVER['argv'][1];
+    /**
+     * @see \rampage\tool\SkeletonComponentInterface::create()
+     */
+    public function create(ProjectSkeleton $skeleton)
+    {
+
+        $public = $skeleton->getOptions()->getPublicDirectory();
+
+        $this->directories[] = $public;
+        $this->directories[] = $public . '/media';
+
+        foreach ($this->directories as $dir) {
+            if (!$skeleton->createDirectory($dir)) {
+                throw new RuntimeException('Failed to create directory: ' . $dir);
+            }
+        }
+    }
 }
-
-$skeleton->create($options);
