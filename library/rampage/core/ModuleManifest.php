@@ -645,6 +645,19 @@ class ModuleManifest extends XmlConfig
             $this->manifest['application_config']['rampage']['layout']['files'][$file] = $priority;
         }
 
+        $map = array(
+            'layout' => './layout[@template != ""]/@template',
+            'exception_template' => './layout/error[@type = "exception" and @template != ""]/@template',
+            'not_found_template' => './layout/error[@type = "not-found" and @template != ""]/@template'
+        );
+
+        foreach ($map as $var => $xpath) {
+            $value = $xml->xpath($xpath)->current();
+            if ($value) {
+                $this->manifest['application_config']['view_manager'][$var] = (string)$value;
+            }
+        }
+
         return $this;
     }
 

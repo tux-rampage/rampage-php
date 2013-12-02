@@ -9,6 +9,7 @@ return array(
         'Application' => 'rampage\core\services\ApplicationFactory',
         'DependencyInjector' => 'rampage\core\services\DIFactory',
         'ControllerLoader' => 'rampage\core\services\ControllerLoaderFactory',
+        'ViewResolver' => 'rampage\core\services\ViewResolverFactory',
         //'ViewHelperManager' => 'rampage\core\services\ViewHelperManagerFactory',
         'Logger' => 'rampage\core\services\LogServiceFactory',
 
