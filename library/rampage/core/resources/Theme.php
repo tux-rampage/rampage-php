@@ -170,7 +170,7 @@ class Theme extends FileLocator implements ThemeInterface
             return false;
         }
 
-        $themePath = $scope . '/' . ltrim($file, '/');
+        $themePath = ($scope)? $scope . '/' . ltrim($file, '/') : ltrim($file, '/');
         $path = parent::resolve($type, $themePath, $this->current, true);
 
         if (($path === false) || !$path->isFile()) {

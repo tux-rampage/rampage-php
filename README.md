@@ -7,7 +7,6 @@ Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 
 * Tight integration between Di and ServiceManager
 * XML based module configurations (XSD provided)
-* Support of XML based complex Layouts
 * Powerful resource locators for module resource files (i.e. js and css)
 * Advanced url locators/helpers
 * Auth framework (wip)
