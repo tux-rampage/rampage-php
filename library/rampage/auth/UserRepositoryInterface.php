@@ -30,8 +30,18 @@ namespace rampage\auth;
 interface UserRepositoryInterface
 {
     /**
+     * Fetch an identity by it's name
+     *
      * @param string $identity
-     * @return object
+     * @return IdentityInterface|null
      */
     public function findOneByIdentity($identity);
+
+    /**
+     * This method persists the given entity
+     *
+     * @param IdentityInterface $identity
+     * @return self
+     */
+    public function persist(IdentityInterface $identity);
 }

@@ -33,11 +33,11 @@ class PasswordStrategy implements PasswordStrategyInterface
     protected $salt = null;
 
     /**
-     * @param int $algorythm The algorythm to use
      * @param int $cost The crypt expensiveness (rounds)
      * @param string $salt The salt to use when crypting passwords
+     * @param int $algorythm The algorythm to use
      */
-    public function __construct($algorythm = null, $cost = null, $salt = null)
+    public function __construct($cost = null, $salt = null, $algorythm = null)
     {
         if ($algorythm) {
             $this->algorythm = $algorythm;
