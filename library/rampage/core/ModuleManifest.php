@@ -198,7 +198,7 @@ class ModuleManifest extends XmlConfig
      * @param bool $asFileInfo
      * @return string|\SplFileInfo
      */
-    private function getModulePath($file, $asFileInfo = false)
+    public function getModulePath($file, $asFileInfo = false)
     {
         $path = $this->moduleDirectory . ltrim($file, '/');
         if ($asFileInfo) {

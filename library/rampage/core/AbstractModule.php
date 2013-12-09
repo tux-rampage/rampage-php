@@ -71,8 +71,12 @@ abstract class AbstractModule
      * @param string $staticFile
      * @return array
      */
-    protected function fetchConfigArray($staticFile)
+    protected function fetchConfigArray($staticFile = null)
     {
+        if ($staticFile === null) {
+            $staticFile = $this->manifest->getModulePath('conf/module.config.php');
+        }
+
         if (is_readable($staticFile)) {
             return include $staticFile;
         }
@@ -85,8 +89,12 @@ abstract class AbstractModule
      * @return array
      * @return \rampage\core\mixed
      */
-    protected function fetchAutoloadConfigArray($staticFile)
+    protected function fetchAutoloadConfigArray($staticFile = null)
     {
+        if ($staticFile === null) {
+            $staticFile = $this->manifest->getModulePath('conf/autoload.config.php');
+        }
+
         if (is_readable($staticFile)) {
             return include $staticFile;
         }
