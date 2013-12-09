@@ -61,12 +61,16 @@ class ModuleManifest extends XmlConfig
      * @param string $file Absolute path tho manifext xml file
      * @param array|Traversable Additional include processors
      */
-    public function __construct($moduleDirectory, $file, $includeProcessors = array())
+    public function __construct($moduleDirectory, $file = null, $includeProcessors = array())
     {
         $this->moduleDirectory = rtrim($moduleDirectory, '/') . '/';
 
         foreach ($includeProcessors as $processor) {
             $this->addIncludeProcessor($processor);
+        }
+
+        if ($file === null) {
+            $file = $this->moduleDirectory . 'module.xml';
         }
 
         parent::__construct($file);

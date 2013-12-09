@@ -15,6 +15,7 @@ use Traversable;
 use Zend\ServiceManager\DelegatorFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ModuleManager\ModuleManager;
+use Zend\ModuleManager\ModuleEvent;
 
 /**
  * Does not really create a delegator, but ensures the module definition is loaded as
@@ -61,6 +62,9 @@ class ModuleManagerDelegator implements DelegatorFactoryInterface
             }
         }
 
+        $event = new EventConfigModuleListener($serviceLocator);
+
+        $instance->getEventManager()->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, $event);
         $instance->setModules($existing);
         return $instance;
     }
