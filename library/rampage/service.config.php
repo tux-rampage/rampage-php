@@ -2,23 +2,17 @@
 
 return array(
     'invokables' => array(
-        'rampage.core.services.DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
-        'db.profiler' => 'rampage.db.NullProfiler'
+        'rampage\core\services\DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
+        'rampage\core\services\ViewResolverDelegator' => 'rampage\core\services\ViewResolverDelegator',
     ),
     'factories' => array(
         'Application' => 'rampage\core\services\ApplicationFactory',
         'DependencyInjector' => 'rampage\core\services\DIFactory',
         'ControllerLoader' => 'rampage\core\services\ControllerLoaderFactory',
-        'ViewResolver' => 'rampage\core\services\ViewResolverFactory',
-        //'ViewHelperManager' => 'rampage\core\services\ViewHelperManagerFactory',
         'Logger' => 'rampage\core\services\LogServiceFactory',
 
         // View/Layout
-        'rampage.ViewInitializer' => 'rampage\core\services\ViewInitializerFactory',
-        'rampage.ViewLocator' => 'rampage\core\services\ViewLocatorFactory',
         'rampage.UserConfig' => 'rampage\core\services\UserConfigFactory',
-        'rampage.Layout' => 'rampage\core\services\LayoutFactory',
-        'rampage.core.view.HttpRenderer' => 'rampage\core\services\HttpRendererFactory',
 
         // i18n
         'Locale' => 'rampage\core\services\LocaleFactory',
@@ -34,8 +28,6 @@ return array(
     ),
     'aliases' => array(
         // Layout
-        'rampage\core\view\Layout' => 'rampage.Layout',
-        'rampage\core\view\ViewLocator' => 'rampage.ViewLocator',
         'Zend\View\HelperPluginManager' => 'ViewHelperManager',
 
         // Resources
@@ -56,16 +48,16 @@ return array(
         'Di' => 'DependencyInjector',
         'Zend\Di\Di' => 'DependencyInjector',
         'rampage\core\di\DIContainer' => 'DependencyInjector',
-        'DiAbstractServiceFactory' => 'rampage.core.services.DIAbstractServiceFactory',
+        'DiAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
+    ),
+
+    'delegators' => array(
+        'ViewResolver' => array(
+            'rampage\core\services\ViewResolverDelegator'
+        ),
     ),
 
     'abstract_factories' => array(
         'rampage\core\services\DIAbstractServiceFactory',
     ),
-
-    'shared' => array(
-        'rampage.core.view.ViewIntializer' => false,
-        'rampage.core.view.renderer.PhpRenderer' => false,
-        'rampage.core.view.HttpRenderer' => false,
-    )
 );

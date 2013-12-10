@@ -1,7 +1,7 @@
 <?php
 /**
  * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,42 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
- * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\view;
+namespace rampage\core\services;
 
-/**
- * Simple template view
- */
-class Template extends View implements TemplateInterface
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ServiceManager\DelegatorFactoryInterface;
+use Zend\View\Resolver\AggregateResolver;
+
+class ViewResolverDelegator implements DelegatorFactoryInterface
 {
     /**
-     * Template
-     *
-     * @var string
+     * @see \Zend\ServiceManager\DelegatorFactoryInterface::createDelegatorWithName()
      */
-    private $template = null;
-
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\core\view\TemplateInterface::getTemplate()
-     */
-    public function getTemplate()
+    public function createDelegatorWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName, $callback)
     {
-        return $this->template;
-    }
+        /* @var $resolver \Zend\View\Resolver\AggregateResolver */
+        $resolver = call_user_func($callback);
+        if ($resolver instanceof AggregateResolver) {
+            $resolver->attach($serviceLocator->get('rampage\core\view\TemplateLocator'), 100);
+        }
 
-    /**
-     * (non-PHPdoc)
-     * @see \rampage\core\view\TemplateInterface::setTemplate()
-     */
-    public function setTemplate($template)
-    {
-        $this->template = ($template === null)?: (string)$template;
-        return $this;
+        return $resolver;
     }
 }

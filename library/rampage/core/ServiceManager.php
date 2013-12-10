@@ -26,7 +26,6 @@
 namespace rampage\core;
 
 use Zend\ServiceManager\ServiceManager as ZendServiceManager;
-use Zend\ServiceManager\Exception;
 
 /**
  * Service manager

@@ -85,7 +85,12 @@ class Application extends MvcApplication
         self::registerExceptionHandler();
 
         if ($config === null) {
-            $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
+            if (defined('APPLICATION_DIR')) {
+                $prefix = APPLICATION_DIR;
+            } else {
+                $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
+            }
+
             $config = (is_file("$prefix/etc/application.config.php"))? include "$prefix/etc/application.config.php" : array();
         }
 
@@ -96,6 +101,7 @@ class Application extends MvcApplication
 
         $config = static::mergeConfig($config);
         $serviceConfig = isset($config['service_manager']) ? $config['service_manager'] : array();
+        $listeners = isset($config['listeners'])? $config['listeners'] : array();
         $serviceManager = new ServiceManager(new ServiceConfig($serviceConfig));
 
         AutoloaderFactory::factory(array(
@@ -109,19 +115,6 @@ class Application extends MvcApplication
         $serviceManager->get('ModuleManager')->loadModules();
 
         return $serviceManager->get('Application')->bootstrap();
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see \Zend\Mvc\Application::bootstrap()
-     */
-    public function bootstrap()
-    {
-        $serviceManager = $this->getServiceManager();
-        $events = $this->getEventManager();
-
-        $events->attach($serviceManager->get('rampage.ViewInitializer'));
-        return parent::bootstrap();
     }
 
     /**

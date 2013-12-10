@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rampage:RampageManifest xmlns:phptypes="http://www.linux-rampage.org/PHPTypes" xmlns:rampage="http://www.tux-rampage.org/ModuleManifest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.tux-rampage.org/ModuleManifest ../../../../../../xsd/rampage/core/ModuleManifest.xsd ">
-    <module>
-        <version>1.0.0</version>
-        <label>Test</label>
-    </module>
-</rampage:RampageManifest>

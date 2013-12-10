@@ -67,6 +67,5 @@ class ServiceConfigTest extends TestCase
         $sm = new ServiceManager($this->_instance);
         $this->assertInstanceOf('rampage\core\event\SharedEventManager', $sm->get('sharedeventmanager'));
         $this->assertInstanceOf('rampage\core\PathManager', $sm->get('rampage.PathManager'));
-        $this->assertTrue($sm->has('rampage.ModuleRegistry', false, false));
     }
 }

@@ -28,7 +28,6 @@ namespace rampage\test;
 use rampage\core\ServiceManager;
 use rampage\core\Application;
 use rampage\core\ServiceConfig;
-use rampage\core\ModuleRegistry;
 
 /**
  * Abstract integration test case
@@ -61,18 +60,6 @@ class IntegrationTestCase extends AbstractTestCase
 
         $serviceManager->setAllowOverride(true);
         $serviceManager->setService('ApplicationConfig', $config);
-
-        if ($modules instanceof ModuleRegistry) {
-            // Use the specified module registry
-            $serviceManager->setService('rampage.ModuleRegistry', $modules);
-        } else if ($modules !== null) {
-            // Load modules from config file
-            $serviceManager->get('rampage.ModuleRegistry')->setModuleConfig($modules);
-        } else if ($modules === false) {
-            // Disable all modules
-            $serviceManager->get('rampage.ModuleRegistry')->setModuleConfig(array());
-        }
-
         $serviceManager->get('ModuleManager')->loadModules();
 
         $this->serviceManager = $serviceManager;

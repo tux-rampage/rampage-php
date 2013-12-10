@@ -7,19 +7,6 @@ return array(
         'extra_config' => array(
             'service_manager' => include __DIR__ . '/service.config.php',
 
-            'controllers' => array(
-                'invokables' => array(
-                    'rampage.core.layoutonly' => 'rampage\core\controllers\LayoutOnlyController',
-                )
-            ),
-
-            'route_manager' => array(
-                'invokables' => array(
-                    'rampage.route.standard' => 'rampage\core\routers\http\StandardRoute',
-                    'rampage.route.layout' => 'rampage\core\routers\http\LayoutRoute',
-                )
-            ),
-
             'controller_plugins' => array(
                 'factories' => array(
                     'url' => 'rampage\core\controllers\UrlPluginFactory'
