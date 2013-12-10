@@ -30,7 +30,7 @@ use Zend\View\Helper\Url as DefaultUrlHelper;
 use Zend\Mvc\Router\Http\TreeRouteStack;
 
 /**
- * URL helper
+ * Advanced URL helper to build FQ URLs
  */
 class UrlHelper extends DefaultUrlHelper
 {
@@ -45,10 +45,16 @@ class UrlHelper extends DefaultUrlHelper
      * Returns the URL model
      *
      * @param UrlModelLocator $modelLocator
+     * @param DefaultUrlHelper $parent The URL helper to proxy
      */
-    public function __construct(UrlModelLocator $modelLocator)
+    public function __construct(DefaultUrlHelper $wrappedHelper, UrlModelLocator $modelLocator)
     {
         $this->urlModelLocator = $modelLocator;
+
+        // copy dependencies
+        $this->routeMatch = $wrappedHelper->routeMatch;
+        $this->router = $wrappedHelper->router;
+        $this->view = $wrappedHelper->view;
     }
 
     /**
@@ -59,16 +65,6 @@ class UrlHelper extends DefaultUrlHelper
     protected function getUrlModel()
     {
         return $this->urlModelLocator->get('base');
-    }
-
-    /**
-     * Route match
-     *
-     * @return \Zend\Mvc\Router\RouteMatch
-     */
-    protected function getRouteMatch()
-    {
-        return $this->routeMatch;
     }
 
     /**
@@ -97,7 +93,7 @@ class UrlHelper extends DefaultUrlHelper
 
         $url = parent::__invoke($name, $params, $options, $reuseMatchedParams);
         $urlOptions = (is_array($options))? $options : array();
-        $match = $this->getRouteMatch();
+        $match = $this->routeMatch;
 
         // Restore original base url
         if ($this->router instanceof TreeRouteStack) {

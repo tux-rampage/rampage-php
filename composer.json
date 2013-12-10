@@ -7,10 +7,13 @@
     "zendframework/zend-di" : ">= 2.2",
     "zendframework/zend-i18n" : ">= 2.2",
     "zendframework/zend-modulemanager" : ">= 2.2",
-    "zendframework/zend-authentication" : ">= 2.2"
+    "zendframework/zend-authentication" : ">= 2.2",
+    "zendframework/zend-config" : ">= 2.2"
   },
   "require-dev" : {
-    "zendframework/zend-code" : ">= 2.2"
+    "zendframework/zend-code" : ">= 2.2",
+    "phpunit/phpunit" : "3.7.*",
+    "doctrine/common" : "~2.4"
   },
   "authors" : [ {
     "name" : "Axel H.",
@@ -41,6 +44,6 @@
     "zendframework/session" : "ZF2 Session Handling"
   },
   "type" : "library",
-  "license" : [ "GPL-3.0" ],
+  "license" : "GPL-3.0",
   "homepage" : "https://github.com/tux-rampage/rampage-php"
 }

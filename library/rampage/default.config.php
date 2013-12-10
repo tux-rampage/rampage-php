@@ -29,9 +29,9 @@ return array(
             'view_helpers' => array(
                 'factories' => array(
                     'resourceurl' => new DIPluginServiceFactory('rampage\core\view\helpers\ResourceUrlHelper'),
-                    'url' => new DIPluginServiceFactory('rampage\core\view\helpers\UrlHelper'),
                     'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
-                )
+                    'url' => 'rampage\core\view\helpers\UrlHelperFactory',
+                ),
             ),
 
             'di' => include __DIR__ . '/di.config.php',

@@ -28,6 +28,9 @@ return array(
         'rampage.ResourceLocator' => 'rampage\core\services\ResourceLocatorFactory',
         'rampage.Theme' => 'rampage\core\services\ThemeFactory',
         'rampage.ResourcePublishingStrategy' => 'rampage\core\services\ResourcePublishingStrategyFactory',
+
+        // Doctrine
+        'doctrine.cache.filesystem' => 'rampage\core\services\DoctrineFilesystemCacheFactory',
     ),
     'aliases' => array(
         // Layout

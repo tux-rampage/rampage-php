@@ -10,12 +10,15 @@
 namespace rampage\core\services;
 
 use rampage\core\PathManager;
-use Traversable;
+use rampage\core\modules\EventConfigModuleListener;
 
 use Zend\ServiceManager\DelegatorFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
+
 use Zend\ModuleManager\ModuleManager;
 use Zend\ModuleManager\ModuleEvent;
+
+use Traversable;
 
 /**
  * Does not really create a delegator, but ensures the module definition is loaded as
