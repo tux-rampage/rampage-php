@@ -121,6 +121,11 @@ class ProjectSkeleton
     public function createDirectory($dir)
     {
         $path = $this->directory . '/' . $dir;
+
+        if (is_dir($path)) {
+            return true;
+        }
+
         return mkdir($path, 0775, true);
     }
 
