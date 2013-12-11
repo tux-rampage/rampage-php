@@ -49,10 +49,17 @@ class TemplateLocator implements ViewResolverInterface
      */
     public function resolve($name, RendererInterface $renderer = null)
     {
-        @list($scope, $path) = explode('/', $name, 2);
-        $file = $this->theme->resolve('template', $path . '.phtml', $scope, true);
+        $name .= '.phtml';
+        $file = $this->theme->resolve('template', $name, false, true);
 
-        if (!($file instanceof \SplFileInfo) || !$file->isFile() || !$file->isReadable()) {
+        if ($file !== false) {
+            return $file;
+        }
+
+        @list($scope, $path) = explode('/', $name, 2);
+        $file = $this->theme->resolve('template', $path, $scope, true);
+
+        if (($file === false) || !$file->isFile() || !$file->isReadable()) {
             return false;
         }
 

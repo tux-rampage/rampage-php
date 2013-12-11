@@ -200,7 +200,7 @@ class FileLocator implements FileLocatorInterface
      */
     public function resolve($type, $file, $scope = null, $asFileInfo = false)
     {
-        if (!$scope && (strpos($file, '::') !== false)) {
+        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
             list($scope, $file) = explode('::', $file, 2);
         }
 
