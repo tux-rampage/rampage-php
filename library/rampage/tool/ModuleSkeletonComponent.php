@@ -135,7 +135,7 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
         $generator->addMethodFromGenerator($construct)
             ->addMethodFromGenerator($getConfig);
 
-        $this->writeContent('Module.php', $generator->generate());
+        $this->writeContent('Module.php', "<?php\n" . $generator->generate());
         return $this;
     }
 
