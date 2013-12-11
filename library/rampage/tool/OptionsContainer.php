@@ -67,7 +67,7 @@ class OptionsContainer extends ArrayObject
     /**
      * @see ArrayObject::exchangeArray()
      */
-    public function exchangeArray(array $input)
+    public function exchangeArray($input)
     {
         foreach ($input as $key => $value) {
             $key = $this->canonicalizeKey($key);
