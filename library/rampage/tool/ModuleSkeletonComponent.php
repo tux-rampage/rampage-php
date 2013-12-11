@@ -125,12 +125,12 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
         $construct = new MethodGenerator();
         $construct->setName('__construct')
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-            ->setSourceContent('parent::__construct(new ModuleManifest(__DIR__, __DIR__ . \'/module.xml\'));');
+            ->setSourceContent('parent::__construct(new ModuleManifest(__DIR__));');
 
         $getConfig = new MethodGenerator();
         $getConfig->setName('getConfig')
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-            ->setSourceContent('return $this->fetchConfigArray(__DIR__ . \'/etc/conf/config.php\');');
+            ->setSourceContent('return $this->fetchConfigArray();');
 
         $generator->addMethodFromGenerator($construct)
             ->addMethodFromGenerator($getConfig);
