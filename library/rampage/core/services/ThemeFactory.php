@@ -58,48 +58,15 @@ class ThemeFactory implements FactoryInterface
 
     /**
      * @param Theme $theme
-     * @param UserConfigInterface $userConfig
-     * @return Theme
+     * @param array $config
+     * @return self
      */
-    protected function prepareThemeFallbacks(Theme $theme, UserConfigInterface $userConfig, $config)
+    protected function prepareThemeFallbacks(Theme $theme, $config)
     {
-        $name = $userConfig->getConfigValue('design.theme.name');
-        if (!$name) {
-            return;
-        }
-
         $config = new DesignConfig($config);
-        $theme->setCurrentTheme($name);
+        $theme->setDesignConfig($config);
 
-        // Build fallback paths
-        // fb1 -> fb2 -> ... -> fbX
-
-        $fallbacks = $config->getFallbackThemes($name);
-        $fallback = null;
-        $last = null;
-
-        foreach ($fallbacks as $fallbackName) {
-            $current = clone $theme;
-            $current->setCurrentTheme($fallbackName);
-
-            // Define first as fallback path entry
-            if (!$fallback) {
-                $fallback = $current;
-            }
-
-            // build the fallback path
-            if ($last) {
-                $last->setFallback($current);
-            }
-
-            $last = $current;
-        }
-
-        if ($fallback) {
-            $theme->setFallback($fallback);
-        }
-
-        return $theme;
+        return $this;
     }
 
     /**
@@ -113,15 +80,17 @@ class ThemeFactory implements FactoryInterface
         $fallback = $serviceLocator->get('rampage.ResourceLocator');
 
         $theme = new Theme($pathManager, $fallback);
+        $name = $userConfig->getConfigValue('design.theme.name');
 
         if (isset($config['rampage']['themes'])) {
             $this->addThemes($theme, $config['rampage']['themes']);
         }
 
-        if ($userConfig instanceof UserConfigInterface) {
-            $this->prepareThemeFallbacks($theme, $userConfig, $config);
+        if ($name) {
+            $theme->setCurrentTheme($name);
         }
 
+        $this->prepareThemeFallbacks($theme, $config);
         return $theme;
     }
 }

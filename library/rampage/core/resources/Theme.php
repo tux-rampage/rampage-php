@@ -48,6 +48,16 @@ class Theme extends FileLocator implements ThemeInterface
     protected $current = '__default__';
 
     /**
+     * @var DesignConfig
+     */
+    protected $designConfig = null;
+
+    /**
+     * @var string[]
+     */
+    protected $fallbackThemes = null;
+
+    /**
      * Constructor
      *
      * @service rampage.resource.FileLocator $fallback force
@@ -56,6 +66,16 @@ class Theme extends FileLocator implements ThemeInterface
     {
         parent::__construct($pathManager);
         $this->setFallback($fallback);
+    }
+
+    /**
+     * @param DesignConfig $config
+     * @return self
+     */
+    public function setDesignConfig(DesignConfig $config)
+    {
+        $this->designConfig = $config;
+        return $this;
     }
 
     /**
@@ -80,10 +100,12 @@ class Theme extends FileLocator implements ThemeInterface
     {
         $name = (string)$name;
         if ($name == '') {
-            $name = 'default';
+            $name = '__default__';
         }
 
         $this->current = $name;
+        $this->fallbackThemes = null;
+
         return $this;
     }
 
@@ -95,6 +117,23 @@ class Theme extends FileLocator implements ThemeInterface
     public function getCurrentTheme()
     {
         return $this->current;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFallbackThemes()
+    {
+        if ($this->fallbackThemes !== null) {
+            return $this->fallbackThemes;
+        }
+
+        if (!$this->designConfig instanceof DesignConfig) {
+            return array();
+        }
+
+        $this->fallbackThemes = $this->designConfig->getFallbackThemes($this->getCurrentTheme());
+        return $this->fallbackThemes;
     }
 
     /**
@@ -118,7 +157,7 @@ class Theme extends FileLocator implements ThemeInterface
      */
     public function publish($file, $scope = null)
     {
-        if (!$scope && (strpos($file, '::') !== false)) {
+        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
             @list($scope, $file) = explode('::', $file, 2);
         }
 
@@ -157,6 +196,22 @@ class Theme extends FileLocator implements ThemeInterface
     }
 
     /**
+     * @param string $type
+     * @param string $theme
+     * @param string $path
+     * @return SplFileInfo|false
+     */
+    private function findThemeFile($type, $theme, $path)
+    {
+        $path = parent::resolve($type, $path, $theme, true);
+        if (($path !== false) && !$path->isFile()) {
+            return false;
+        }
+
+        return $path;
+    }
+
+    /**
      * Internal resolve theme file
      *
      * @param string $type
@@ -166,18 +221,17 @@ class Theme extends FileLocator implements ThemeInterface
      */
     protected function resolveThemeFile($type, $file, $scope, $asFileInfo = false)
     {
-        if (!isset($this->locations[$this->current])) {
-            return false;
-        }
-
         $themePath = ($scope)? $scope . '/' . ltrim($file, '/') : ltrim($file, '/');
-        $path = parent::resolve($type, $themePath, $this->current, true);
+        $path = false;
+        $stack = $this->getFallbackThemes();
 
-        if (($path === false) || !$path->isFile()) {
-            return false;
+        array_unshift($stack, $this->getCurrentTheme());
+
+        while (($path === false) && ($theme = array_shift($stack))) {
+            $path = $this->findThemeFile($type, $theme, $themePath);
         }
 
-        if (!$asFileInfo) {
+        if (!$asFileInfo && ($path !== false)) {
             $path = $path->getPathname();
         }
 
@@ -190,7 +244,7 @@ class Theme extends FileLocator implements ThemeInterface
      */
     public function resolve($type, $file, $scope = null, $asFileInfo = false)
     {
-        if (!$scope && (strpos($file, '::') !== false)) {
+        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
             list($scope, $file) = explode('::', $file, 2);
         }
 
