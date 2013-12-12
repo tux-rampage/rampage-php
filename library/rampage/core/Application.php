@@ -91,7 +91,7 @@ class Application extends MvcApplication
                 $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
             }
 
-            $config = (is_file("$prefix/etc/application.config.php"))? include "$prefix/etc/application.config.php" : array();
+            $config = (is_file("$prefix/config/application.config.php"))? include "$prefix/config/application.config.php" : array();
         }
 
         if (!is_array($config)) {
