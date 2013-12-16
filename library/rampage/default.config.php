@@ -19,6 +19,9 @@ return array(
                     'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
                     'url' => 'rampage\core\view\helpers\UrlHelperFactory',
                 ),
+                'aliases' => array(
+                    '__' => 'translateargs'
+                )
             ),
 
             'di' => include __DIR__ . '/di.config.php',

@@ -91,7 +91,7 @@ class RepositoryAwareStorage extends SessionStorage implements UserRepositoryAwa
         }
 
         $current = $this->read();
-        return ($current !== null);
+        return ($current === null);
     }
 
 	/**
@@ -110,7 +110,7 @@ class RepositoryAwareStorage extends SessionStorage implements UserRepositoryAwa
         }
 
         $this->current = $this->repository->findOneByIdentity($id);
-        return $this;
+        return $this->current;
     }
 
     /**

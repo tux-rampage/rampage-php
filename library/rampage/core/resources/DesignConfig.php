@@ -44,8 +44,7 @@ class DesignConfig
     public function __construct($data = array())
     {
         if (!isset($data['rampage']['themes'])
-          && (!is_array($data['rampage']['themes'])
-          || !($data['rampage']['themes'] instanceof ArrayAccess))) {
+          || (!is_array($data['rampage']['themes']) && !($data['rampage']['themes'] instanceof ArrayAccess))) {
             return;
         }
 
