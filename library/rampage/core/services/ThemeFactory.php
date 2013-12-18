@@ -27,7 +27,6 @@ namespace rampage\core\services;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use rampage\core\resources\Theme;
-use rampage\core\UserConfigInterface;
 use rampage\core\resources\DesignConfig;
 
 class ThemeFactory implements FactoryInterface
@@ -86,7 +85,11 @@ class ThemeFactory implements FactoryInterface
             $this->addThemes($theme, $config['rampage']['themes']);
         }
 
-        if ($name) {
+        if ($name || isset($config['rampage']['default_theme'])) {
+            if (!$name) {
+                $name = $config['rampage']['default_theme'];
+            }
+
             $theme->setCurrentTheme($name);
         }
 

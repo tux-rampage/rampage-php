@@ -105,8 +105,10 @@ class UrlLocator implements UrlLocatorInterface
      */
     protected function resolve($filename, $scope, $theme)
     {
-        if (isset($this->locations[$theme][$scope][$filename])) {
-            return $this->locations[$theme][$scope][$filename];
+        $scopeIndex = ($scope === false)? '' : $scope;
+
+        if (isset($this->locations[$theme][$scopeIndex][$filename])) {
+            return $this->locations[$theme][$scopeIndex][$filename];
         }
 
         $info = $this->getTheme()->publish($filename, $scope);
@@ -115,7 +117,7 @@ class UrlLocator implements UrlLocatorInterface
             throw new RuntimeException(sprintf('Failed to locate "%s::%s" in theme "%s"', $scope, $filename, $theme));
         }
 
-        $this->locations[$theme][$scope][$filename] = $info;
+        $this->locations[$theme][$scopeIndex][$filename] = $info;
         return $info;
     }
 
@@ -124,7 +126,7 @@ class UrlLocator implements UrlLocatorInterface
      */
     protected function getPublicFileInfo($file, $scope = null)
     {
-        if (!$scope && (strpos($file, '::') !== false)) {
+        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
             @list($scope, $file) = explode('::', $file, 2);
         }
 
