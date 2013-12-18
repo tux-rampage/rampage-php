@@ -53,7 +53,7 @@ class TemplateLocator implements ViewResolverInterface
         $file = $this->theme->resolve('template', $name, false, true);
 
         if ($file !== false) {
-            return $file;
+            return $file->getPathname();
         }
 
         @list($scope, $path) = explode('/', $name, 2);
