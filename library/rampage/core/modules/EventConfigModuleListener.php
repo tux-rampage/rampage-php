@@ -83,7 +83,7 @@ class EventConfigModuleListener
             foreach ($listeners as $listener) {
                 $priority = 1;
 
-                if (isset($listener['listener'])) {
+                if (is_array($listener) && isset($listener['listener'])) {
                     $priority = (isset($listener['priority']))? (int)$listener['priority'] : 1;
                     $listener = $listener['listener'];
                 }
