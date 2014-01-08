@@ -1,6 +1,6 @@
 <?php
 /**
- * This is part of rampage-php
+ * This is part of rampage.php
  * Copyright (c) 2013 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,36 +22,30 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\ui;
+namespace rampage\ui\services;
 
-use IteratorAggregate;
-use ArrayIterator;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ServiceManager\AbstractPluginManager;
+use rampage\ui\ToastViewHelper;
 
-/**
- * Container for toast elements
- */
-class ToastContainer implements IteratorAggregate
+class ToastViewHelperFactory implements FactoryInterface
 {
-    /**
-     * @var array
-     */
-    protected $items = array();
+    protected $container = 'rampage\ui\ToastContainer';
 
     /**
      * {@inheritdoc}
-     * @see IteratorAggregate::getIterator()
+     * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
-    public function getIterator()
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return new ArrayIterator($this->items);
-    }
+        if ($serviceLocator instanceof AbstractPluginManager) {
+            $serviceLocator = $serviceLocator->getServiceLocator();
+        }
 
-    /**
-     * @param Toast $toast
-     * @return self
-     */
-    public function add(Toast $toast)
-    {
-        $this->items[] = $toast;
+        $container = ($serviceLocator->has($this->container))? $serviceLocator->get($this->container) : null;
+        $plugin = new ToastViewHelper($container);
+
+        return $plugin;
     }
 }

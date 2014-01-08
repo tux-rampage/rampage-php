@@ -33,9 +33,12 @@ class ToastControllerPlugin extends AbstractControllerPlugin
      */
     protected $container = null;
 
-    public function __construct()
+    /**
+     * @param ToastContainer $container
+     */
+    public function __construct(ToastContainer $container = null)
     {
-        $this->container = new ToastContainer();
+        $this->container = $container? : new ToastContainer();
     }
 
     /**

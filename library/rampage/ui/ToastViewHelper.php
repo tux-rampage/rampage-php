@@ -37,9 +37,12 @@ class ToastViewHelper extends AbstractHelper
      */
     protected $container = null;
 
-    public function __construct()
+    /**
+     * @param ToastContainer $container
+     */
+    public function __construct(ToastContainer $container = null)
     {
-        $this->container = new ToastContainer();
+        $this->container = $container? : new ToastContainer();
     }
 
     /**
@@ -72,9 +75,12 @@ class ToastViewHelper extends AbstractHelper
      * @param int $displayTime
      * @return self
      */
-    public function __invoke($toast, $displayTime = null, $class = null)
+    public function __invoke($toast = null, $displayTime = null, $class = null)
     {
-        $this->toast($toast, $displayTime, $class);
+        if ($toast !== null) {
+            $this->toast($toast, $displayTime, $class);
+        }
+
         return $this;
     }
 
