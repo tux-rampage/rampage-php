@@ -40,7 +40,6 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
      * @var array
      */
     protected $directories = array(
-        'resource/layout',
         'resource/public',
         'resource/template',
         'src',
@@ -125,12 +124,12 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
         $construct = new MethodGenerator();
         $construct->setName('__construct')
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-            ->setSourceContent('parent::__construct(new ModuleManifest(__DIR__));');
+            ->setBody('parent::__construct(new ModuleManifest(__DIR__));');
 
         $getConfig = new MethodGenerator();
         $getConfig->setName('getConfig')
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
-            ->setSourceContent('return $this->fetchConfigArray();');
+            ->setBody('return $this->fetchConfigArray();');
 
         $generator->addMethodFromGenerator($construct)
             ->addMethodFromGenerator($getConfig);
