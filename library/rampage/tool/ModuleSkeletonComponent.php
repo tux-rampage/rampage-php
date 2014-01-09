@@ -117,6 +117,7 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
         $generator = new ClassGenerator();
         $generator->setNamespaceName($this->getNamespace())
             ->setName('Module')
+            ->setImplementedInterfaces(array('ConfigProviderInterface'))
             ->addUse('rampage\core\AbstractModule')
             ->addUse('rampage\core\ModuleManifest')
             ->addUse('Zend\ModuleManager\Feature\ConfigProviderInterface');
