@@ -31,6 +31,7 @@ use ArrayObject;
 use rampage\core\xml\XmlConfig;
 use rampage\core\xml\SimpleXmlElement;
 use rampage\core\services\DIServiceFactory;
+use rampage\core\services\LazyFactoryDelegate;
 
 /**
  * Manifest config
@@ -309,9 +310,14 @@ class ModuleManifest extends XmlConfig
             $class = strtr((string)$serviceXml['class'], '.', '\\');
 
             if (isset($serviceXml->factory) && $serviceXml->factory['class']) {
-                // TODO: Implement factory delegate to respect options array
                 $factory = (string)$serviceXml->factory['class'];
-                $config['factories'][$name] = $factory;
+
+                if (isset($serviceXml->factory->options)) {
+                    $options = $serviceXml->factory->options->toPhpValue('array');
+                    $config['factories'][$name] = new LazyFactoryDelegate($factory, $options);
+                } else {
+                    $config['factories'][$name] = $factory;
+                }
             } else if ($class) {
                 $useDi = (isset($serviceXml['usedi']))? $serviceXml->is('usedi') : true;
 
