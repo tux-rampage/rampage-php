@@ -26,6 +26,11 @@ namespace rampage\ui;
 
 use Zend\Mvc\Controller\Plugin\AbstractPlugin as AbstractControllerPlugin;
 
+/**
+ * Allows triggering toast messages
+ *
+ * This plugin will allow triggering toast messages on HTML pages
+ */
 class ToastControllerPlugin extends AbstractControllerPlugin
 {
     /**
@@ -33,9 +38,25 @@ class ToastControllerPlugin extends AbstractControllerPlugin
      */
     protected $container = null;
 
-    public function __construct()
+    /**
+     * @param ToastContainer $container
+     */
+    public function __construct(ToastContainer $container = null)
     {
-        $this->container = new ToastContainer();
+        $this->container = $container? : new ToastContainer();
+    }
+
+    /**
+     * Add a toast message
+     *
+     * @param Toast|string $message
+     * @param string $displayTime
+     * @param string $additionalClass
+     * @return self
+     */
+    public function __invoke($toast, $displayTime = null, $class = null)
+    {
+        return $this->toast($toast, $displayTime, $class);
     }
 
     /**
@@ -49,14 +70,20 @@ class ToastControllerPlugin extends AbstractControllerPlugin
     }
 
     /**
-     * @param string $message
+     * Add a toast message
+     *
+     * @param string|Toast $toast
      * @param string $displayTime
-     * @param string $additionalClass
+     * @param string $class
      * @return self
      */
-    public function __invoke($message, $displayTime = null, $additionalClass = null)
+    public function toast($toast, $displayTime = null, $class = null)
     {
-        // TODO: Implement toast
+        if (!$toast instanceof Toast) {
+            $toast = new Toast($toast, $displayTime, $class);
+        }
+
+        $this->container->add($toast);
         return $this;
     }
 }

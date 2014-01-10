@@ -35,7 +35,7 @@ class ToastContainer implements IteratorAggregate
     /**
      * @var array
      */
-    protected static $items = array();
+    protected $items = array();
 
     /**
      * {@inheritdoc}
@@ -43,7 +43,7 @@ class ToastContainer implements IteratorAggregate
      */
     public function getIterator()
     {
-        return new ArrayIterator(self::$items);
+        return new ArrayIterator($this->items);
     }
 
     /**
@@ -52,6 +52,23 @@ class ToastContainer implements IteratorAggregate
      */
     public function add(Toast $toast)
     {
-        self::$items[] = $toast;
+        $this->items[] = $toast;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $result = array();
+
+        foreach ($this->items as $toast) {
+            $result[] = array(
+                'message' => $toast->getMessage(),
+                'options' => $toast->getOptions()
+            );
+        }
+
+        return $result;
     }
 }
