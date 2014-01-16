@@ -54,4 +54,21 @@ class ToastContainer implements IteratorAggregate
     {
         $this->items[] = $toast;
     }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $result = array();
+
+        foreach ($this->items as $toast) {
+            $result[] = array(
+                'message' => $toast->getMessage(),
+                'options' => $toast->getOptions()
+            );
+        }
+
+        return $result;
+    }
 }

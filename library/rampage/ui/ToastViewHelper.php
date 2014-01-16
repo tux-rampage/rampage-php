@@ -28,7 +28,9 @@ use Zend\View\Helper\AbstractHelper;
 use Zend\Json\Json;
 
 /**
- * Toast helper
+ * Allows triggering toast messages
+ *
+ * This helper will allow triggering toast messages on HTML pages
  */
 class ToastViewHelper extends AbstractHelper
 {
@@ -43,6 +45,27 @@ class ToastViewHelper extends AbstractHelper
     public function __construct(ToastContainer $container = null)
     {
         $this->container = $container? : new ToastContainer();
+    }
+
+    /**
+     * Add a toast message
+     *
+     * @param string $toast
+     * @param int $displayTime
+     * @return self
+     */
+    public function __invoke($toast, $displayTime = null, $class = null)
+    {
+        $this->toast($toast, $displayTime, $class);
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->render();
     }
 
     /**
@@ -71,23 +94,11 @@ class ToastViewHelper extends AbstractHelper
     }
 
     /**
-     * @param string $toast
-     * @param int $displayTime
-     * @return self
+     * Render the javascript code
+     *
+     * @return string
      */
-    public function __invoke($toast = null, $displayTime = null, $class = null)
-    {
-        if ($toast !== null) {
-            $this->toast($toast, $displayTime, $class);
-        }
-
-        return $this;
-    }
-
-    /**
-     * render
-     */
-    public function __toString()
+    public function render()
     {
         $codeFormat = '$.toast(%s, %s);';
         $items = array();
@@ -98,9 +109,9 @@ class ToastViewHelper extends AbstractHelper
         }
 
         if (!empty($items)) {
-            $js = '<script type="">//<![CDATA['."\n"
-                . 'jQuery(function($) {'
-                . implode("\n", $items)
+            $js = '<script type="text/javascript">//<![CDATA['."\n"
+                . 'jQuery(function($) {' . "\n"
+                . implode("\n", $items) . "\n"
                 . "});\n" . '//]]></script>';
         }
 
