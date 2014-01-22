@@ -53,7 +53,7 @@ the ability to use subnamespaces as well and map them to a dot-separated directo
 Let's assume your application module should be namespaced "acme\myapp".
 Now let's create the application layout with this modulename::
 
-    php vendor/rampage-app-skeleton.php acme.myapp
+    php vendor/bin/rampage-app-skeleton.php acme.myapp
 
 This will create:
 
