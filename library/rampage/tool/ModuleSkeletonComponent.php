@@ -28,6 +28,7 @@ namespace rampage\tool;
 use RuntimeException;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
+use Zend\Code\Generator\DocBlockGenerator;
 
 class ModuleSkeletonComponent implements SkeletonComponentInterface
 {
@@ -115,25 +116,40 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
     public function createModulePhp()
     {
         $generator = new ClassGenerator();
+        $docBlock = new DocBlockGenerator();
+
         $generator->setNamespaceName($this->getNamespace())
+            ->setDocBlock($docBlock->setShortDescription('Module entry point'))
             ->setName('Module')
-            ->setImplementedInterfaces(array('ConfigProviderInterface'))
+            ->setExtendedClass('AbstractModule')
+            ->setImplementedInterfaces(array('ConfigProviderInterface', 'AutoloaderProviderInterface'))
             ->addUse('rampage\core\AbstractModule')
             ->addUse('rampage\core\ModuleManifest')
-            ->addUse('Zend\ModuleManager\Feature\ConfigProviderInterface');
+            ->addUse('Zend\ModuleManager\Feature\ConfigProviderInterface')
+            ->addUse('Zend\ModuleManager\Feature\AutoloaderProviderInterface');
 
         $construct = new MethodGenerator();
         $construct->setName('__construct')
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
             ->setBody('parent::__construct(new ModuleManifest(__DIR__));');
 
+        $docBlock = new DocBlockGenerator();
         $getConfig = new MethodGenerator();
         $getConfig->setName('getConfig')
+            ->setDocBlock($docBlock->setShortDescription('{@inheritdoc}'))
             ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
             ->setBody('return $this->fetchConfigArray();');
 
+        $docBlock = new DocBlockGenerator();
+        $getAutoloaderConfig = new MethodGenerator();
+        $getAutoloaderConfig->setName('getAutoloaderConfig')
+            ->setDocBlock($docBlock->setShortDescription('{@inheritdoc}'))
+            ->setVisibility(MethodGenerator::VISIBILITY_PUBLIC)
+            ->setBody('return $this->fetchAutoloadConfigArray();');
+
         $generator->addMethodFromGenerator($construct)
-            ->addMethodFromGenerator($getConfig);
+            ->addMethodFromGenerator($getConfig)
+            ->addMethodFromGenerator($getAutoloaderConfig);
 
         $this->writeContent('Module.php', "<?php\n" . $generator->generate());
         return $this;
@@ -147,8 +163,7 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
         $xml = <<<__XML__
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns="http://www.linux-rampage.org/ModuleManifest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.linux-rampage.org/ModuleManifest http://www.linux-rampage.org/ModuleManifest ">
-    <module name="{$this->getModuleName()}" version="1.0.0">
-    </module>
+    <module name="{$this->getModuleName()}" />
 
     <!-- This might be optional for example when you're using composer autoload dumps -->
     <!--
@@ -190,10 +205,6 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
     -->
 
     <resources>
-        <layout>
-            <config scope="{$this->getModuleName()}" file="layout.xml" />
-        </layout>
-
         <paths>
             <path scope="{$this->getModuleName()}" path="resource" />
         </paths>
