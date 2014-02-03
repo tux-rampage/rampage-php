@@ -55,6 +55,10 @@ Now let's create the application layout with this modulename::
 
     php vendor/bin/rampage-app-skeleton.php acme.myapp
 
+For windows this command should be::
+
+    .\vendor\bin\rampage-app-skeleton.php acme.myapp
+
 This will create:
 
 * a ``public`` directory which will contain the webserver root.
