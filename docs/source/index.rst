@@ -8,16 +8,14 @@ Reference Guide to rampage-php
 
 Welcome to the reference guide to rampage-php.
 
-.. toctree::
-   :hidden:
-   reference/overview
-   reference/quickstart
-
 Overview
 ========
 
-* :doc:`reference/overview`
-* :doc:`reference/quickstart`
+.. toctree::
+   :maxdepth: 2
+
+   reference/overview
+   reference/quickstart
 
 Indices and tables
 ==================
