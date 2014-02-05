@@ -480,6 +480,7 @@ class ModuleManifest extends XmlConfig
             case 'regex':
                 $config = array(
                     'spec' => (string)$typeNode['spec'],
+                    'regex' => (string)$typeNode['regex'],
                     'constraints' => $this->childToArray($typeNode, 'constraints'),
                     'defaults' => $this->childToArray($typeNode, 'defaults')
                 );
