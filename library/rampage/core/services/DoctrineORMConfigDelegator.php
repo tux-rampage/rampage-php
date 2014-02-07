@@ -43,7 +43,10 @@ class DoctrineORMConfigDelegator implements DelegatorFactoryInterface
 
         if ($config instanceof Configuration) {
             $pathManager = $serviceLocator->get('PathManager');
-            $config->setProxyDir($pathManager->get('var', 'doctrine/proxies'));
+            $dir = $config->getProxyDir();
+            $dir = (strpos($dir, 'data/') === 0)? substr($dir, 0, 5) : 'doctrine/proxies';
+
+            $config->setProxyDir($pathManager->get('var', $dir));
         }
 
         return $config;

@@ -52,12 +52,21 @@ class DIAbstractServiceFactory extends DIServiceFactory implements AbstractFacto
     public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
         try {
-            $this->getDiContainer($serviceLocator);
+            $di = $this->getDiContainer($serviceLocator);
         } catch (\Exception $e) {
             return false;
         }
 
-        return (bool)preg_match(self::SERVICE_NAME_REGEX, $requestedName);
+        if (!preg_match(self::SERVICE_NAME_REGEX, $requestedName)) {
+            return false;
+        }
+
+        $class = str_replace('.', '\\', $requestedName);
+        if (class_exists($class) || $di->instanceManager()->hasAlias($class)) {
+            return true;
+        }
+
+        return false;
     }
 
 	/**

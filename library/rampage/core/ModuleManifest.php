@@ -480,6 +480,7 @@ class ModuleManifest extends XmlConfig
             case 'regex':
                 $config = array(
                     'spec' => (string)$typeNode['spec'],
+                    'regex' => (string)$typeNode['regex'],
                     'constraints' => $this->childToArray($typeNode, 'constraints'),
                     'defaults' => $this->childToArray($typeNode, 'defaults')
                 );
@@ -586,7 +587,7 @@ class ModuleManifest extends XmlConfig
             $this->manifest['console']['banner'] = $banner;
         }
 
-        foreach ($xml->xpath('./console/command[@name != "" and @route != "" and @controller != ""]') as $node) {
+        foreach ($xml->xpath('./console/commands/command[@name != "" and @route != "" and @controller != ""]') as $node) {
             $name = (string)$node['name'];
             $config = array(
                 'route' => (string)$node['route'],
@@ -803,7 +804,8 @@ class ModuleManifest extends XmlConfig
              ->loadPluginManagerConfigs()
              ->loadLocaleConfig()
              ->loadRouteConfig()
-             ->loadDiConfig();
+             ->loadDiConfig()
+             ->loadConsoleConfig();
 
 //              ->loadDiConfig()
 //              ->loadConsoleConfig();

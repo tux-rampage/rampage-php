@@ -54,9 +54,12 @@ class ToastViewHelper extends AbstractHelper
      * @param int $displayTime
      * @return self
      */
-    public function __invoke($toast, $displayTime = null, $class = null)
+    public function __invoke($toast = null, $displayTime = null, $class = null)
     {
-        $this->toast($toast, $displayTime, $class);
+        if ($toast !== null) {
+            $this->toast($toast, $displayTime, $class);
+        }
+
         return $this;
     }
 
