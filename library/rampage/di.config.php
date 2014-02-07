@@ -9,6 +9,9 @@ return array(
         'class' => array()
     ),
     'instance' => array(
+        'aliases' => array(
+            'rampage.ResourcePublishingStrategy' => 'rampage\core\resources\StaticResourcePublishingStrategy',
+        ),
         'preferences' => array(
             'Zend\Di\DependencyInjectionInterface' => 'rampage\core\di\DIContainer',
             'rampage\core\resources\FileLocatorInterface' => 'rampage\core\resources\FileLocator',
@@ -17,6 +20,7 @@ return array(
 
             'rampage\core\url\UrlConfigInterface' => 'rampage\core\UserConfig',
             'rampage\core\UserConfigInterface' => 'rampage\core\UserConfig',
+            'rampage\core\resources\PublishingStrategyInterface' => 'rampage.ResourcePublishingStrategy'
         ),
     )
 );

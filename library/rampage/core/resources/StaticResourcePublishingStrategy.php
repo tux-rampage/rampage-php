@@ -27,15 +27,22 @@ namespace rampage\core\resources;
 
 use rampage\core\exception;
 use rampage\core\PathManager;
+use rampage\core\url\UrlModelLocator;
 
 use DirectoryIterator;
 use SplFileInfo;
 
+use Zend\Log\LoggerAwareInterface;
+use Zend\Log\LoggerInterface;
+
 /**
  * Static resource publishing strategy
  */
-class StaticResourcePublishingStrategy
+class StaticResourcePublishingStrategy implements PublishingStrategyInterface, LoggerAwareInterface
 {
+    const SCOPE_THEME = 'theme';
+    const SCOPE_RESOURCE = 'resource';
+
     /**
      * @var string
      */
@@ -47,6 +54,16 @@ class StaticResourcePublishingStrategy
     protected $config = array();
 
     /**
+     * @var UrlModelLocator
+     */
+    protected $urlManager = null;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger = null;
+
+    /**
      * @param ModuleRegistry $moduleRegistry
      * @param PathManager $pathManager
      */
@@ -54,6 +71,38 @@ class StaticResourcePublishingStrategy
     {
         $this->targetDir = $targetDir;
         $this->config = $config;
+    }
+
+    /**
+     * @see \Zend\Log\LoggerAwareInterface::setLogger()
+     * @return self
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+	/**
+     * @param UrlModelLocator $urlManager
+     * @return self
+     */
+    public function setUrlManager(UrlModelLocator $urlManager)
+    {
+        $this->urlManager = $urlManager;
+        return $this;
+    }
+
+    /**
+     * @return \rampage\core\url\UrlModelInterface
+     */
+    protected function getUrlModel()
+    {
+        if ($this->urlManager && $this->urlManager->has('static')) {
+            return $this->urlManager->get('static');
+        }
+
+        return false;
     }
 
     /**
@@ -147,7 +196,10 @@ class StaticResourcePublishingStrategy
      */
     protected function log($message)
     {
-        echo $message, "\n";
+        if ($this->logger) {
+            $this->logger->info($message);
+        }
+
         return $this;
     }
 
@@ -170,7 +222,7 @@ class StaticResourcePublishingStrategy
                 continue;
             }
 
-            $segments = array($targetDir, 'resource', $scope);
+            $segments = array($targetDir, self::SCOPE_RESOURCE, $scope);
             $path = implode('/', array_filter($segments));
 
             $this->copyDir($sourceDir, $path, $filter);
@@ -197,13 +249,57 @@ class StaticResourcePublishingStrategy
                 continue;
             }
 
-            $segments = array($targetDir, 'theme', $name);
+            $segments = array($targetDir, self::SCOPE_THEME, $name);
             $path = implode('/', array_filter($segments));
 
             $this->copyDir($sourceDir, $path, $filter);
         }
 
         return $this;
+    }
+
+    /**
+     * @param array $segments
+     * @return string
+     */
+    protected function findStaticFile(array $segments)
+    {
+        $path = implode('/', array_filter($segments));
+        $info = new SplFileInfo($this->targetDir . '/' . $path);
+
+        if ($info->isFile()) {
+            return $path;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $file
+     * @param string $scope
+     * @param array $themes
+     */
+    public function find($file, $scope, array $themes)
+    {
+        $result = false;
+
+        foreach ($themes as $theme) {
+            $result = $this->findStaticFile(array(self::SCOPE_THEME, $theme, $scope, $file));
+
+            if ($result) {
+                break;
+            }
+        }
+
+        if (($result === false) && $scope) {
+            $result = $this->findStaticFile(array(self::SCOPE_RESOURCE, $scope, $file));
+        }
+
+        if ($urlModel = $this->getUrlModel()) {
+            $result = $urlModel->getUrl($result);
+        }
+
+        return $result;
     }
 
     /**
@@ -223,4 +319,5 @@ class StaticResourcePublishingStrategy
 
         return $this;
     }
+
 }

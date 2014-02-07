@@ -17,34 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @category  library
+ * @package   rampage.core
  * @author    Axel Helmert
  * @copyright Copyright (c) 2013 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\services;
-
-use rampage\core\resources\StaticResourcePublishingStrategy;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+namespace rampage\core\resources;
 
 /**
- * Factory for resource publishing strategy
+ * Interface for resource publishing strategies
  */
-class ResourcePublishingStrategyFactory implements FactoryInterface
+interface PublishingStrategyInterface
 {
     /**
-     * @see \Zend\ServiceManager\FactoryInterface::createService()
+     * @param string $file
+     * @param string|false $scope
+     * @param string $theme
+     * @return string|HttpUri
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
-    {
-        $config = $serviceLocator->get('config');
-        $pathManager = $serviceLocator->get('rampage.PathManager');
-        $urlManager = $serviceLocator->get('UrlManager');
-        $strategy = new StaticResourcePublishingStrategy($pathManager->get('public', 'static'), $config);
+    public function find($file, $scope, $theme);
 
-        $strategy->setUrlManager($urlManager);
-
-        return $strategy;
-    }
+    /**
+     * @param string $dir
+     * @param string $filter
+     */
+    public function publish($dir = null);
 }

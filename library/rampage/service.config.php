@@ -1,5 +1,6 @@
 <?php
 
+use rampage\core\services\DIServiceFactory;
 return array(
     'invokables' => array(
         'rampage\core\services\DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
@@ -22,6 +23,7 @@ return array(
         'rampage.ResourceLocator' => 'rampage\core\services\ResourceLocatorFactory',
         'rampage.Theme' => 'rampage\core\services\ThemeFactory',
         'rampage.ResourcePublishingStrategy' => 'rampage\core\services\ResourcePublishingStrategyFactory',
+        'UrlManager' => new DIServiceFactory('rampage\core\url\UrlModelLocator'),
 
         // Doctrine
         'doctrine.cache.filesystem' => 'rampage\core\services\DoctrineFilesystemCacheFactory',
@@ -34,7 +36,7 @@ return array(
         'rampage\core\PathManager' => 'rampage.PathManager',
         'rampage\core\resources\Theme' => 'rampage.Theme',
         'rampage\core\resources\FileLocator' => 'rampage.ResourceLocator',
-        'rampage\core\resources\StaticResourcePublishingStrategy' => 'rampage.ResourcePublishingStrategy',
+        'rampage\core\url\UrlModelLocator' => 'UrlManager',
 
         // Core
         'UserConfig' => 'rampage.UserConfig',

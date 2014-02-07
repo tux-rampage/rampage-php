@@ -43,4 +43,11 @@ interface ThemeInterface extends FileLocatorInterface
      * @return self Must return $this to provide a fluent interface
      */
     public function setCurrentTheme($name);
+
+    /**
+     * Returns an array with the fallback theme names
+     *
+     * @return string[]
+     */
+    public function getFallbackThemes();
 }
