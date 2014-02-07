@@ -40,6 +40,7 @@ class ResourcesController extends AbstractActionController
      */
     public function indexAction()
     {
+        // FIXME: Implement resource lookup
     }
 
     public function publishAction()

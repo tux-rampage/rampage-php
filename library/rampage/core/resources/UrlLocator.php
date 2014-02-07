@@ -134,7 +134,7 @@ class UrlLocator implements UrlLocatorInterface
 
         if ($url == false) {
             $urlHelper = $this->helpers->get('url');
-            $url = $urlHelper('resources', array(
+            $url = $urlHelper('rampage.core.resources', array(
                 'theme' => $theme,
                 'scope' => ($scope? : '__theme__'),
                 'file' => $filename
