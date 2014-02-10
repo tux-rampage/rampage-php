@@ -1,6 +1,9 @@
 <?php
 
+namespace rampage\core;
+
 use rampage\core\services\DIPluginServiceFactory;
+
 return array(
     'modules' => array(),
     'module_listener_options' => array(
@@ -15,20 +18,10 @@ return array(
 
             'router' => array(
                 'routes' => array(
-                    'rampage.core.resources' => array(
-                        'type' => 'regex',
-                        'options' => array(
-                            'regex' => '/_res/(?<theme>[a-zA-z0-9_.-]+)/(?<scope>[a-zA-z0-9_.-]+)/(?<file>.+)$',
-                            'spec' => '/_res/%theme%/%scope%/%file%',
-                            'defaults' => array(
-                                'controller' => 'rampage.cli.resources',
-                                'action' => 'index',
-                                'theme' => '',
-                                'scope' => '',
-                                'file' => ''
-                            )
-                        )
-                    )
+                    'rampage.core.resources' => new resources\ResourceRoute('_res',array(
+                        'controller' => 'rampage.cli.resources',
+                        'action' => 'index'
+                    ))
                 ),
             ),
 

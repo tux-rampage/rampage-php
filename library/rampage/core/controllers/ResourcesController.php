@@ -25,14 +25,18 @@
 
 namespace rampage\core\controllers;
 
-use Zend\Mvc\Controller\AbstractActionController;
 use rampage\core\resources\PublishingStrategyInterface;
 use rampage\core\exception\RuntimeException;
-use Zend\Console\Console;
 use rampage\core\Logger;
 use rampage\core\ConsoleLogWriter;
-use Zend\Log\LoggerAwareInterface;
 
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\Log\LoggerAwareInterface;
+use Zend\Console\Console;
+
+/**
+ * Resources controller
+ */
 class ResourcesController extends AbstractActionController
 {
     /**
@@ -40,9 +44,18 @@ class ResourcesController extends AbstractActionController
      */
     public function indexAction()
     {
-        // FIXME: Implement resource lookup
+        $theme = $this->params('theme');
+        $scope = $this->params('scope');
+        $file = $this->params('file');
+
+        // TODO: Implement file resolver
+        die('TODO: Implement ' . __METHOD__);
     }
 
+    /**
+     * @throws RuntimeException
+     * @throws \BadMethodCallException
+     */
     public function publishAction()
     {
         $strategy = $this->getServiceLocator()->get('rampage.ResourcePublishingStrategy');
