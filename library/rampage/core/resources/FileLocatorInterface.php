@@ -31,17 +31,6 @@ namespace rampage\core\resources;
 interface FileLocatorInterface
 {
     /**
-     * Ensure the file is published
-     *
-     * Note: This files are always resolved with the type 'public'
-     *
-     * @param string $file
-     * @param string $scope
-     * @return bool|\rampage\core\resources\PublicFileInfo The published path relative to the media directory
-     */
-    public function publish($file, $scope = null);
-
-    /**
      * Resolve a file path
      *
      * @param string $type

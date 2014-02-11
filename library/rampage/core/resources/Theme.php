@@ -152,50 +152,6 @@ class Theme extends FileLocator implements ThemeInterface
     }
 
     /**
-     * @inheritdoc
-     * @see \rampage\core\resource\FileLocatorInterface::publish()
-     */
-    public function publish($file, $scope = null)
-    {
-        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
-            @list($scope, $file) = explode('::', $file, 2);
-        }
-
-        $relative = $this->findStaticPublicFile($file, $scope, array('static/theme', $this->getCurrentTheme()));
-        if ($relative !== false) {
-            return new PublicFileInfo($relative);
-        }
-
-        $parts = array('themes', $this->getCurrentTheme(), $scope, $file);
-        $relative = implode('/', array_filter($parts));
-        $source = $this->resolveThemeFile('public', $file, $scope, true);
-        $target = new SplFileInfo($this->getPathManager()->get('media', $relative));
-
-        if ($target->isFile() && (($source !== false) && ($source->getMTime() <= $target->getMTime()))) {
-            return new PublicFileInfo($relative, 'media');
-        }
-
-        if (($source === false) || !$source->isFile() || !$source->isReadable()) {
-            if ($this->fallback) {
-                return $this->fallback->publish($file, $scope);
-            }
-
-            return false;
-        }
-
-        $dir = $target->getPathInfo();
-        if (!$dir->isDir() && !@mkdir($dir->getPathname(), 0777, true)) {
-            return false;
-        }
-
-        if (!@copy($source->getPathname(), $target->getPathname())) {
-            return false;
-        }
-
-        return new PublicFileInfo($relative, 'media');
-    }
-
-    /**
      * @param string $type
      * @param string $theme
      * @param string $path
