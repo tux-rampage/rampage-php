@@ -1,0 +1,8 @@
+@CHARSET "UTF-8";
+
+.toast {
+    color: #ddd; background-color: #333; background-color: rgba(0,0,0,0.8);
+    border: solid 1px #999; border-radius: 4px;
+    width: 600px; padding: 5px; cursor: pointer;
+}
+.toast-error { color: #700000; border-color: #700000; background-color: #faa; background-color: rgba(255,125,125,0.8); }

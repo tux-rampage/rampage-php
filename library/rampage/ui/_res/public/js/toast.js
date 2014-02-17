@@ -37,6 +37,13 @@
         }
     }
 
+    // Update toast position on resize
+    $(window).resize(function() {
+        if (currentToast) {
+            currentToast.updateSize();
+        }
+    });
+
     function Toast(content, options)
     {
         this.dismissed = false;
@@ -69,8 +76,34 @@
             });
 
             $('body').append(this.element);
-            $(this.element).fadeIn(400);
+
+            this.updateSize();
+            $(this.element).css({ 'position': 'fixed' })
+                .fadeIn(400);
+
             this.timeout = window.setTimeout(function() { self.dismiss(null, false); }, this.options.displayTime * 1000);
+        },
+
+        updateSize: function()
+        {
+            var element = $(this.element);
+            var viewport = $(window);
+
+            var vpH = viewport.height();
+            var elH = element.height();
+            var top = (vpH - (elH + $.toast.margin))
+
+            if (top < 20) {
+                top = 20;
+            }
+
+            var style = {
+                'left': ((viewport.width() - element.width()) / 2) + 'px',
+                'top': top + 'px'
+            }
+
+            console.info(style);
+            element.css(style);
         },
 
         dismiss: function(event, clearTimeout) {
@@ -100,8 +133,10 @@
         _nextToast();
     };
 
+    $.toast.margin = 100;
+    $.toast.position = 'bottom';
     $.toast.defaults = { options: {
-        displayTime: 3
+        displayTime: 5
     }};
 
     $.fn.extend({
