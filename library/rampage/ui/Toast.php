@@ -51,6 +51,14 @@ class Toast extends ArrayObject
      */
     public function __toString()
     {
+        return $this->getMessage();
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessage()
+    {
         return (string)$this->message;
     }
 
