@@ -49,8 +49,6 @@ class FileLocator implements FileLocatorInterface
     protected $types = array(
         'public',
         'template',
-        'layout',
-        'db',
     );
 
     /**
@@ -111,7 +109,7 @@ class FileLocator implements FileLocatorInterface
 
             if (!isset($path['base'])) {
                 if (!isset($this->locations[$scope]['base'])) {
-                    throw new InvalidArgumentException('Invalid resource path: No base dir specified');
+                    continue;
                 }
 
                 $path['base'] = $this->locations[$scope]['base'];
@@ -121,6 +119,7 @@ class FileLocator implements FileLocatorInterface
         }
 
         unset($path['base']);
+
         foreach ($path as $type => $extraPath) {
             $this->locations[$scope][$type] = $extraPath;
         }
