@@ -25,8 +25,9 @@
 
 namespace rampage\core\resources;
 
-use SplFileInfo;
 use rampage\core\PathManager;
+use SplFileInfo;
+use InvalidArgumentException;
 
 /**
  * Theme implementation

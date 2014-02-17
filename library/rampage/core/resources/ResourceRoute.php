@@ -46,7 +46,7 @@ class ResourceRoute extends Regex
         parent::__construct('/' . $path . '/(?<theme>[a-zA-z0-9_.-]+)/(?<scope>[a-zA-z0-9_.-]+)/(?<file>.+)', $path, $defaults);
     }
 
-	/**
+    /**
      * {@inheritdoc}
      * @see \Zend\Mvc\Router\Http\Regex::assemble()
      */

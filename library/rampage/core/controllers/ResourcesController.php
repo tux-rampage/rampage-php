@@ -197,13 +197,13 @@ class ResourcesController extends AbstractActionController
             throw new \BadMethodCallException('This action is only available in HTTP context.');
         }
 
-        $theme = $this->params('theme');
+        $themeName = $this->params('theme');
         $scope = $this->params('scope');
         $file = $this->params('file');
         $file = $this->normalizePath($file);
 
         // validate path
-        if (($theme == '..') || ($scope == '..') || !$file) {
+        if (($themeName == '..') || ($scope == '..') || !$file) {
             return $this->notFoundAction();
         }
 
@@ -214,7 +214,7 @@ class ResourcesController extends AbstractActionController
         }
 
         // Resolve the file from theme
-        $theme->setCurrentTheme($theme);
+        $theme->setCurrentTheme($themeName);
         $info = $theme->resolve('public', $file, $scope, true);
 
         if (($info === false) || !$info->isFile() || !$info->isReadable()) {
@@ -227,12 +227,13 @@ class ResourcesController extends AbstractActionController
         }
 
         $eTag = $this->getETag($info);
-        $modified = new DateTime($info->getMTime());
+        $modified = new DateTime();
         $lastMod = new LastModified();
         $expires = new Expires();
         $maxAge = 60 * 60 * 24; // 1day
 
-        $lastMod->setDate($lastMod);
+        $modified->setTimestamp($info->getMTime());
+        $lastMod->setDate($modified);
         $expires->date()->modify('+1 day');
 
         $response = new StreamResponse();
