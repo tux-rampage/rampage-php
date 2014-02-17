@@ -27,6 +27,7 @@ namespace rampage\ui;
 
 use Zend\ModuleManager\Feature\ViewHelperProviderInterface;
 use Zend\ModuleManager\Feature\ControllerPluginProviderInterface;
+use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
@@ -35,7 +36,8 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  * This module provides some UI components
  */
 class Module implements ViewHelperProviderInterface,
-    ControllerPluginProviderInterface
+    ControllerPluginProviderInterface,
+    ConfigProviderInterface
 {
     /**
      * @var ToastContainer
@@ -55,6 +57,21 @@ class Module implements ViewHelperProviderInterface,
     }
 
     /**
+     * @see \Zend\ModuleManager\Feature\ConfigProviderInterface::getConfig()
+     */
+    public function getConfig()
+    {
+        return array(
+            'rampage' => array(
+                'resources' => array(
+                    'rampage.ui' => __DIR__ . '/_res'
+                )
+            )
+        );
+    }
+
+
+    /**
      * @see \Zend\ModuleManager\Feature\ControllerPluginProviderInterface::getControllerPluginConfig()
      */
     public function getControllerPluginConfig()
@@ -63,6 +80,7 @@ class Module implements ViewHelperProviderInterface,
             'factories' => array(
                 'toast' => function(ServiceLocatorInterface $serviceManager) {
                     $plugin = new ToastControllerPlugin($this->getToastContainer());
+                    return $plugin;
                 }
             ),
         );
@@ -77,6 +95,7 @@ class Module implements ViewHelperProviderInterface,
             'factories' => array(
                 'toast' => function(ServiceLocatorInterface $serviceManager) {
                     $helper = new ToastViewHelper($this->getToastContainer());
+                    return $helper;
                 },
             ),
         );
