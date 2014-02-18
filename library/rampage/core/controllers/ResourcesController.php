@@ -185,7 +185,7 @@ class ResourcesController extends AbstractActionController
         }
 
         $isModified = ($info->getMTime() > $ifModified->date()->getTimestamp());
-        return $isModified;
+        return !$isModified;
     }
 
     /**
