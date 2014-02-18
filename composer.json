@@ -12,7 +12,8 @@
     "zendframework/zend-view" : ">= 2.2",
     "zendframework/zend-json" : ">= 2.2",
     "zendframework/zend-console" : ">= 2.2",
-    "zendframework/zend-log" : ">= 2.2"
+    "zendframework/zend-log" : ">= 2.2",
+    "zendframework/zend-http" : ">=2.2"
   },
   "require-dev" : {
     "zendframework/zend-code" : ">= 2.2",
@@ -24,12 +25,12 @@
     "email" : "rampagephp@linux-rampage.org",
     "role" : "developer"
   } ],
-  "keywords" : [ "framework", "zf2", "rampage" ],
   "support" : {
     "source" : "https://github.com/tux-rampage/rampage-php",
     "issues" : "https://github.com/tux-rampage/rampage-php/issues",
     "wiki" : "https://github.com/tux-rampage/rampage-php/wiki"
   },
+  "keywords" : [ "framework", "zf2", "rampage" ],
   "extra" : {
     "branch-alias" : {
       "dev-master" : "1.0.x-dev"
@@ -41,12 +42,12 @@
     },
     "classmap" : [ "library/" ]
   },
-  "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
   "suggest" : {
     "zendframework/zend-console" : "ZF2 Console handling",
     "zendframework/session" : "ZF2 Session Handling"
   },
-  "type" : "library",
+  "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
   "license" : "GPL-3.0",
+  "type" : "library",
   "homepage" : "https://github.com/tux-rampage/rampage-php"
 }
