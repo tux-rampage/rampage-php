@@ -24,15 +24,13 @@
 
 namespace rampage\ui\services;
 
-use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\AbstractPluginManager;
 use rampage\ui\ToastViewHelper;
 
-class ToastViewHelperFactory implements FactoryInterface
-{
-    protected $container = 'rampage\ui\ToastContainer';
 
+class ToastViewHelperFactory extends AbstractToastPluginFactory
+{
     /**
      * {@inheritdoc}
      * @see \Zend\ServiceManager\FactoryInterface::createService()
@@ -43,7 +41,7 @@ class ToastViewHelperFactory implements FactoryInterface
             $serviceLocator = $serviceLocator->getServiceLocator();
         }
 
-        $container = ($serviceLocator->has($this->container))? $serviceLocator->get($this->container) : null;
+        $container = $this->getContainer($serviceLocator);
         $plugin = new ToastViewHelper($container);
 
         return $plugin;

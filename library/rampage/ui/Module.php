@@ -28,7 +28,6 @@ namespace rampage\ui;
 use Zend\ModuleManager\Feature\ViewHelperProviderInterface;
 use Zend\ModuleManager\Feature\ControllerPluginProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * ZF2 Module Entryclass
@@ -78,10 +77,7 @@ class Module implements ViewHelperProviderInterface,
     {
         return array(
             'factories' => array(
-                'toast' => function(ServiceLocatorInterface $serviceManager) {
-                    $plugin = new ToastControllerPlugin($this->getToastContainer());
-                    return $plugin;
-                }
+                'toast' => new services\ToastControllerPluginFactory($this->getToastContainer())
             ),
         );
     }
@@ -93,10 +89,7 @@ class Module implements ViewHelperProviderInterface,
     {
         return array(
             'factories' => array(
-                'toast' => function(ServiceLocatorInterface $serviceManager) {
-                    $helper = new ToastViewHelper($this->getToastContainer());
-                    return $helper;
-                },
+                'toast' => new services\ToastViewHelperFactory($this->getToastContainer()),
             ),
         );
     }
