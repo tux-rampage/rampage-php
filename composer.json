@@ -7,7 +7,6 @@
     "zendframework/zend-di" : ">= 2.2",
     "zendframework/zend-i18n" : ">= 2.2",
     "zendframework/zend-modulemanager" : ">= 2.2",
-    "zendframework/zend-authentication" : ">= 2.2",
     "zendframework/zend-config" : ">= 2.2",
     "zendframework/zend-view" : ">= 2.2",
     "zendframework/zend-json" : ">= 2.2",
@@ -44,7 +43,8 @@
   },
   "suggest" : {
     "zendframework/zend-console" : "ZF2 Console handling",
-    "zendframework/session" : "ZF2 Session Handling"
+    "zendframework/session" : "ZF2 Session Handling",
+    "rampage-php/auth" : "Authentication framework for rampage-php"
   },
   "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
   "license" : "GPL-3.0",
