@@ -91,16 +91,32 @@
 
             var vpH = viewport.height();
             var elH = element.height();
-            var top = (vpH - (elH + $.toast.margin))
+            var top = 0;
+            var margin = ($.type($.toast.margin) == 'function')? $.toast.margin() : $.toast.margin;
 
-            if (top < 20) {
-                top = 20;
+            switch ($.toast.position) {
+                case 'top':
+                    top = margin;
+                    if ((elH + top) > vpH) {
+                        top = $.toast.minTopMargin;
+                    }
+
+                    break;
+
+                case 'bottom': // break intentionally omitted
+                default:
+                    top = (vpH - (elH + margin));
+                    break;
+            }
+
+            if (top < $.toast.minTopMargin) {
+                top = $.toast.minTopMargin;
             }
 
             var style = {
                 'left': ((viewport.width() - element.width()) / 2) + 'px',
                 'top': top + 'px'
-            }
+            };
 
             console.info(style);
             element.css(style);
@@ -133,7 +149,20 @@
         _nextToast();
     };
 
-    $.toast.margin = 100;
+    $.toast.margin = function() {
+        var vpH = $(window).height();
+        console.log('Viewport: ' + vpH);
+
+        if (vpH < 500) {
+            return 40;
+        } else if (vpH < 800) {
+            return 100;
+        }
+
+        return 200;
+    };
+
+    $.toast.minTopMargin = 10;
     $.toast.position = 'bottom';
     $.toast.defaults = { options: {
         displayTime: 5
