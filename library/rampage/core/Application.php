@@ -26,8 +26,6 @@
 namespace rampage\core;
 
 use Zend\Mvc\Application as MvcApplication;
-use Zend\Mvc\MvcEvent;
-use Zend\Loader\AutoloaderFactory;
 
 /**
  * Application class
@@ -35,42 +33,39 @@ use Zend\Loader\AutoloaderFactory;
 class Application extends MvcApplication
 {
     /**
-     * Load default config
-     *
-     * @return array
-     */
-    protected static function getDefaultconfig()
-    {
-        return include dirname(__DIR__) . '/default.config.php';
-    }
-
-    /**
      * Merge config
      *
      * Merge the given config with the default config
      *
      * @param array $config
      */
-    public static function mergeConfig(array $config, array &$result = null)
+    protected static function addCoreModule(array &$config)
     {
-        if ($result === null) {
-            $result = static::getDefaultconfig();
+        if (!isset($config['modules'])) {
+            $config['modules'] = array('rampage.core');
         }
 
-        foreach ($config as $key => $value) {
-            if (!is_array($value)) {
-                $result[$key] = $value;
-                continue;
-            }
+        if (!in_array('rampage.core', $config['modules'])) {
+            array_unshift($config['modules'], 'rampage.core');
+        }
+    }
 
-            if (!isset($result[$key]) || !is_array($result[$key])) {
-                $result[$key] = array();
-            }
-
-            static::mergeConfig($value, $result[$key]);
+    /**
+     * Try to load application config
+     */
+    protected static function loadAppConfig()
+    {
+        if (defined('APPLICATION_DIR')) {
+            $prefix = APPLICATION_DIR;
+        } else {
+            $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
         }
 
-        return $result;
+        if (is_file("$prefix/config/application.config.php")) {
+            return include "$prefix/config/application.config.php";
+        }
+
+        return array();
     }
 
     /**
@@ -85,36 +80,19 @@ class Application extends MvcApplication
         self::registerExceptionHandler();
 
         if ($config === null) {
-            if (defined('APPLICATION_DIR')) {
-                $prefix = APPLICATION_DIR;
-            } else {
-                $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
-            }
-
-            $config = (is_file("$prefix/config/application.config.php"))? include "$prefix/config/application.config.php" : array();
+            $config = static::loadAppConfig();
         }
 
-        if (!is_array($config)) {
-            $config = array();
-            $config['service_manager']['path_manager'] = (string)$config;
-        }
+        static::addCoreModule($config);
 
-        $config = static::mergeConfig($config);
         $serviceConfig = isset($config['service_manager']) ? $config['service_manager'] : array();
         $listeners = isset($config['listeners'])? $config['listeners'] : array();
         $serviceManager = new ServiceManager(new ServiceConfig($serviceConfig));
 
-        AutoloaderFactory::factory(array(
-            'rampage\core\ModuleAutoloader' => array(
-                'pathmanager' => $serviceManager->get('rampage.PathManager'),
-                'subdirectories' => array('src')
-            )
-        ));
-
         $serviceManager->setService('ApplicationConfig', $config);
         $serviceManager->get('ModuleManager')->loadModules();
 
-        return $serviceManager->get('Application')->bootstrap();
+        return $serviceManager->get('Application')->bootstrap($listeners);
     }
 
     /**
@@ -222,17 +200,5 @@ class Application extends MvcApplication
         }
 
         throw $exception;
-    }
-
-    /**
-     * Complete the request
-     *
-     * @see \Zend\Mvc\Application::completeRequest()
-     */
-    protected function completeRequest(MvcEvent $event)
-    {
-        // Reset the stop propagation flag which could have been set by a dispatch or render listener
-        $event->stopPropagation(false);
-        return parent::completeRequest($event);
     }
 }

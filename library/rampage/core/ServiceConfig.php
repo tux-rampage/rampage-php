@@ -58,7 +58,6 @@ class ServiceConfig extends ServiceManagerConfig
         $this->factories['AggregatedServiceLocator'] = 'rampage\core\services\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 
-        // parent::__construct(include __DIR__ . '/../service.config.php');
         parent::__construct($config);
     }
 

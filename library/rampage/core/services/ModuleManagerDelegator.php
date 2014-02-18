@@ -9,16 +9,15 @@
 
 namespace rampage\core\services;
 
-use rampage\core\PathManager;
-use rampage\core\modules\EventConfigModuleListener;
+use rampage\core\ModuleManagerListenerAggregate;
 
 use Zend\ServiceManager\DelegatorFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
-
 use Zend\ModuleManager\ModuleManager;
-use Zend\ModuleManager\ModuleEvent;
+use Zend\Loader\AutoloaderFactory;
 
 use Traversable;
+
 
 /**
  * Does not really create a delegator, but ensures the module definition is loaded as
@@ -26,13 +25,16 @@ use Traversable;
 class ModuleManagerDelegator implements DelegatorFactoryInterface
 {
     /**
-     * @param string $name
-     * @return string
+     * Register module autoloader
      */
-    protected function formatModuleName($name)
+    private function registerAutoloader(ServiceLocatorInterface $serviceLocator)
     {
-        $name = strtr($name, '.', '\\');
-        return $name;
+        AutoloaderFactory::factory(array(
+            'rampage\core\ModuleAutoloader' => array(
+                'pathmanager' => $serviceLocator->get('PathManager'),
+                'subdirectories' => array('src')
+            )
+        ));
     }
 
     /**
@@ -43,32 +45,16 @@ class ModuleManagerDelegator implements DelegatorFactoryInterface
     {
         /* @var $instance \Zend\ModuleManager\ModuleManager */
         $instance = call_user_func($callback);
-        $pathManager = $serviceLocator->has('PathManager')? $serviceLocator->get('PathManager') : null;
 
-        if ((!$pathManager instanceof PathManager) || (!$instance instanceof ModuleManager)) {
+        if (!$instance instanceof ModuleManager) {
             return $instance;
         }
 
-        $existing = array_map(array($this, 'formatModuleName'), $instance->getModules());
-        $modconf = $pathManager->get('etc', 'modules.conf.php');
-        $modules = (is_file($modconf))? include $modconf : null;
+        $this->registerAutoloader($serviceLocator);
 
-        if (is_array($modules) || ($modules instanceof Traversable)) {
-            foreach ($modules as $moduleName) {
-                $moduleName = $this->formatModuleName($moduleName);
+        $listenerAggregate = new ModuleManagerListenerAggregate($serviceLocator);
+        $instance->getEventManager()->attachAggregate($listenerAggregate);
 
-                if (in_array($moduleName, $existing)) {
-                    continue;
-                }
-
-                $existing[] = $moduleName;
-            }
-        }
-
-        $event = new EventConfigModuleListener($serviceLocator);
-
-        $instance->getEventManager()->attach(ModuleEvent::EVENT_LOAD_MODULES_POST, $event);
-        $instance->setModules($existing);
         return $instance;
     }
 }

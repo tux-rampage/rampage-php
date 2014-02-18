@@ -5,7 +5,6 @@ return array(
         'runtime' => array(
             'enabled' => true
         ),
-        'compiler' => (is_readable(__DIR__ . '/di.compiled.php'))? array(__DIR__ . '/di.compiled.php') : array(),
         'class' => array()
     ),
     'instance' => array(
