@@ -43,7 +43,7 @@
   },
   "suggest" : {
     "zendframework/zend-console" : "ZF2 Console handling",
-    "zendframework/session" : "ZF2 Session Handling",
+    "zendframework/zend-session" : "ZF2 Session Handling",
     "rampage-php/auth" : "Authentication framework for rampage-php"
   },
   "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
