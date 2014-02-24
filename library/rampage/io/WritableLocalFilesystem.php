@@ -45,15 +45,4 @@ class WritableLocalFilesystem extends LocalFilesystem
         // TODO Auto-generated method stub
 
     }
-
-    /**
-     * @see \rampage\io\LocalFilesystem::resource()
-     */
-    public function resource($path, $mode = null)
-    {
-        $mode = $mode? : 'r';
-        $path = $this->preparePath($path);
-
-        return fopen($path, $mode);
-    }
 }

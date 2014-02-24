@@ -24,25 +24,16 @@
 namespace rampage\io;
 
 use ArrayAccess;
-use IteratorAggregate;
+use RecursiveIterator;
 
 /**
  * Filesystem interface
  */
-interface FilesystemInterface extends ArrayAccess, IteratorAggregate
+interface FilesystemInterface extends ArrayAccess, RecursiveIterator
 {
     /**
-     * Returns a stream resource for the given path
-     *
-     * @param string $path
-     * @param string $flags The flags accepted by fopen
-     * @return resource|bool The stream resource or false
-     */
-    public function resource($path);
-
-    /**
      * @param string $path Relative path to the file/directory to open
-     * @return \SplFileInfo
+     * @return FileInfoInterface
      */
     public function info($path);
 }

@@ -24,8 +24,9 @@
 namespace rampage\io;
 
 use SplFileInfo;
-use SplFileObject;
+use FilesystemIterator;
 use RuntimeException;
+use LogicException;
 
 /**
  * Local filesystem implementation
@@ -38,11 +39,29 @@ class LocalFilesystem implements FilesystemInterface
     protected $baseDir = null;
 
     /**
+     * Current path for iterator
+     */
+    protected $path = null;
+
+    /**
+     * @var FileInfoInterface
+     */
+    protected $current = null;
+
+    /**
+     * @var FilesystemIterator
+     */
+    protected $innerIterator = null;
+
+    /**
      * @param string $path
      */
-    protected function __construct($path)
+    protected function __construct($baseDir)
     {
-        $this->baseDir = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->baseDir = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->innerIterator = new FilesystemIterator($this->baseDir);
+
+        $this->rewind();
     }
 
     /**
@@ -84,39 +103,113 @@ class LocalFilesystem implements FilesystemInterface
     }
 
     /**
-     * @see IteratorAggregate::getIterator()
-     */
-    public function getIterator()
-    {
-        return new LocalFilesystemIterator($this->baseDir);
-    }
-
-    /**
      * @see \rampage\io\FilesystemInterface::info()
      */
     public function info($path)
     {
-        $path = $this->preparePath($path);
-        $info = new SplFileInfo($path);
+        $normalized = $this->normalizePath($path);
+        $info = new SplFileInfo($this->preparePath($path));
 
-        if (!$info->isFile() || !$info->isDir() || !$info->isLink()) {
-            return false;
-        }
-
-        return $info;
+        return new WrappedFileInfo($normalized, $this, $info);
     }
 
     /**
-     * @see \rampage\io\FilesystemInterface::resource()
+     * @return boolean
      */
-    public function resource($path)
+    protected function accept()
     {
-        $info = $this->info($path);
-        if ($info === false) {
-            throw new RuntimeException(sprintf('Failed to open "%s": File not found.', $path));
+        return in_array($this->innerIterator->current()->getFilename(), array('.', '..'));
+    }
+
+    /**
+     * @see RecursiveIterator::current()
+     * @return FileInfoInterface
+     */
+    public function current()
+    {
+        if (!$this->current && $this->valid()) {
+            $info = $this->innerIterator->current();
+            $path = $this->normalizePath($this->path . '/' . $info->getFilename());
+
+            return new WrappedFileInfo($path, $this, $info);
         }
 
-        return fopen($info->getPathname(), 'r');
+        return $this->current;
+    }
+
+    /**
+     * @see RecursiveIterator::getChildren()
+     */
+    public function getChildren()
+    {
+        if (!$this->hasChildren()) {
+            return null;
+        }
+
+        $children = clone $this;
+
+        $children->path = $this->current()->getRelativePath();
+        $children->innerIterator = new FilesystemIterator($this->preparePath($children->path));
+        $children->rewind();
+
+        return $children;
+    }
+
+    /**
+     * @see RecursiveIterator::hasChildren()
+     */
+    public function hasChildren()
+    {
+        $hasChildren = ($this->valid() && $this->current()->isDir());
+        return $hasChildren;
+    }
+
+    /**
+     * @see RecursiveIterator::key()
+     */
+    public function key()
+    {
+        if (!$this->valid()) {
+            return false;
+        }
+
+        return $this->current()->getRelativePath();
+    }
+
+    /**
+     * @see RecursiveIterator::next()
+     */
+    public function next()
+    {
+        do {
+            $this->current = null;
+            $this->innerIterator->next();
+        } while ($this->valid() && !$this->accept());
+
+        return $this;
+    }
+
+    /**
+     * @see RecursiveIterator::rewind()
+     */
+    public function rewind()
+    {
+        $this->current = null;
+        $this->innerIterator->rewind();
+
+        while ($this->valid() && !$this->accept()) {
+            $this->innerIterator->next();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @see RecursiveIterator::valid()
+     */
+    public function valid()
+    {
+        return $this->innerIterator->valid();
     }
 
     /**
@@ -125,7 +218,7 @@ class LocalFilesystem implements FilesystemInterface
     public function offsetExists($offset)
     {
         $info = $this->info($offset);
-        return ($info !== false);
+        return $info->exists();
     }
 
     /**
@@ -141,7 +234,7 @@ class LocalFilesystem implements FilesystemInterface
      */
     public function offsetSet($offset, $value)
     {
-        throw new RuntimeException('Cannot write to readonly filesystem');
+        throw new LogicException('Cannot write to readonly filesystem');
     }
 
     /**
@@ -149,6 +242,6 @@ class LocalFilesystem implements FilesystemInterface
      */
     public function offsetUnset($offset)
     {
-        throw new RuntimeException('Cannot delete from readonly filesystem');
+        throw new LogicException('Cannot delete from readonly filesystem');
     }
 }
