@@ -53,6 +53,7 @@ class WrappedFileInfo implements FileInfoInterface
         $this->filesystem = $filesystem;
         $this->wrapped = $wrapped;
     }
+
     /**
      * @see \rampage\io\FileInfoInterface::exists()
      */
@@ -92,6 +93,15 @@ class WrappedFileInfo implements FileInfoInterface
     {
         return $this->wrapped->getMTime();
     }
+
+    /**
+     * @see \rampage\io\FileInfoInterface::getPathname()
+     */
+    public function getPathname()
+    {
+        return $this->wrapped->getPathname();
+    }
+
 
     /**
      * @see \rampage\io\FileInfoInterface::getRelativePath()
@@ -161,7 +171,7 @@ class WrappedFileInfo implements FileInfoInterface
             throw new \InvalidArgumentException('Bad open mode for read-only filesystem: "%s"');
         }
 
-        return $this->wrapped->openFile($mode);
+        return new FileObject($this->filesystem, $this->getRelativePath(), $this->getPathname(), $mode);
     }
 
     /**

@@ -41,6 +41,13 @@ interface FileInfoInterface
     public function getRelativePath();
 
     /**
+     * Returns the full qualified path to the file
+     *
+     * @return string
+     */
+    public function getPathname();
+
+    /**
      * Returns the filesystem instance
      *
      * @return FilesystemInterface
@@ -97,7 +104,7 @@ interface FileInfoInterface
      * Open the file
      *
      * @param string $mode Open mode as accepted by fopen
-     * @return \SplFileObject
+     * @return \SplFileObject|FileInfoInterface
      */
     public function open($mode = null);
 
@@ -108,5 +115,4 @@ interface FileInfoInterface
      * @return resource The resource on success, false on error
      */
     public function resource($mode = null);
-
 }
