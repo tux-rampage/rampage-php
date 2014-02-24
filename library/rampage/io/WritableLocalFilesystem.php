@@ -23,26 +23,37 @@
 
 namespace rampage\io;
 
-use ArrayAccess;
-use IteratorAggregate;
-
 /**
- * Filesystem interface
+ * Writable local filesystem
  */
-interface FilesystemInterface extends ArrayAccess, IteratorAggregate
+class WritableLocalFilesystem extends LocalFilesystem
 {
     /**
-     * Returns a stream resource for the given path
-     *
-     * @param string $path
-     * @param string $flags The flags accepted by fopen
-     * @return resource|bool The stream resource or false
+     * @see \rampage\io\LocalFilesystem::offsetSet()
      */
-    public function resource($path);
+    public function offsetSet($offset, $value)
+    {
+        // TODO Auto-generated method stub
+
+    }
 
     /**
-     * @param string $path Relative path to the file/directory to open
-     * @return \SplFileInfo
+     * @see \rampage\io\LocalFilesystem::offsetUnset()
      */
-    public function info($path);
+    public function offsetUnset($offset)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    /**
+     * @see \rampage\io\LocalFilesystem::resource()
+     */
+    public function resource($path, $mode = null)
+    {
+        $mode = $mode? : 'r';
+        $path = $this->preparePath($path);
+
+        return fopen($path, $mode);
+    }
 }
