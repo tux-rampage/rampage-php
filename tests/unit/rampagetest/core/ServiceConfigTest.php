@@ -39,7 +39,7 @@ class ServiceConfigTest extends TestCase
      *
      * @var \rampage\core\ServiceConfig
      */
-    private $_instance = null;
+    private $instance = null;
 
 	/**
 	 * (non-PHPdoc)
@@ -47,7 +47,7 @@ class ServiceConfigTest extends TestCase
      */
     protected function setUp()
     {
-        $this->_instance = new ServiceConfig();
+        $this->instance = new ServiceConfig();
     }
 
 	/**
@@ -56,7 +56,7 @@ class ServiceConfigTest extends TestCase
      */
     protected function tearDown()
     {
-        $this->_instance = null;
+        $this->instance = null;
     }
 
     /**
@@ -64,8 +64,8 @@ class ServiceConfigTest extends TestCase
      */
     public function testDefaultServices()
     {
-        $sm = new ServiceManager($this->_instance);
-        $this->assertInstanceOf('rampage\core\event\SharedEventManager', $sm->get('sharedeventmanager'));
+        $sm = new ServiceManager($this->instance);
         $this->assertInstanceOf('rampage\core\PathManager', $sm->get('rampage.PathManager'));
+        $this->assertInstanceOf('rampage\core\PathManager', $sm->get('PathManager'));
     }
 }

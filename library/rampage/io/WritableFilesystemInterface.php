@@ -1,7 +1,7 @@
 <?php
 /**
- * This is part of @application_name@
- * Copyright (c) 2012 Axel Helmert
+ * This is part of rampage-php
+ * Copyright (c) 2014 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @category  library
- * @package   @package_name@
  * @author    Axel Helmert
- * @copyright Copyright (c) 2012 Axel Helmert
+ * @copyright Copyright (c) 2014 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampagetest;
+namespace rampage\io;
 
-use Zend\Loader\StandardAutoloader;
+interface WritableFilesystemInterface extends FilesystemInterface
+{
+    /**
+     * Create a new directory
+     *
+     * @param string $path The directory path
+     * @return self
+     */
+    public function mkdir($path);
 
-// Include path
-require_once __DIR__ . '/../../vendor/autoload.php';
-define('RAMPAGE_TEST_DIR', __DIR__);
-
-// PSR-4 autoloader
-$loader = new StandardAutoloader(array(
-    StandardAutoloader::LOAD_NS => array(
-        'reampagetest\\' => __DIR__ . '/rampagetest/'
-    )
-));
-
-$loader->register();
+    /**
+     * Delete the given file or directory
+     *
+     * @param string $path
+     * @param string $recursive
+     * @return self
+     */
+    public function delete($path, $recursive = false);
+}

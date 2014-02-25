@@ -23,18 +23,131 @@
 
 namespace rampage\io;
 
+use SplFileObject;
+use SplFileInfo;
+use RuntimeException;
+
 /**
  * Writable local filesystem
  */
-class WritableLocalFilesystem extends LocalFilesystem
+class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesystemInterface
 {
     /**
+     * @var int
+     */
+    protected $dirMode = 0775;
+
+    /**
+     * {@inheritdoc}
+     * @see \rampage\io\LocalFilesystem::__construct()
+     */
+    public function __construct($baseDir, $dirMode = null)
+    {
+        if ($dirMode !== null) {
+            $this->dirMode = $dirMode;
+        }
+
+        parent::__construct($baseDir);
+    }
+
+	/**
+     * {@inheritdoc}
+     * @see \rampage\io\WritableFilesystemInterface::delete()
+     */
+    public function delete($path, $recursive = false)
+    {
+        if ($path instanceof FileInfoInterface) {
+            $path = $path->getRelativePath();
+        }
+
+        $info = $this->info($path);
+        if (!$info->exists()) {
+            return $this;
+        }
+
+        if (!$info->isDir()) {
+            if (!unlink($info->getPathname())) {
+                throw new RuntimeException(sprintf(
+                    'Failed to delete file "%s": %s',
+                    $path, $this->getLastPhpError()
+                ));
+            }
+        }
+
+        if (!$recursive) {
+            $iterator = $this->createChildIterator($info->getRelativePath());
+
+            foreach ($iterator as $child) {
+                $this->delete($child->getRelativePath(), $recursive);
+            }
+        }
+
+        if (!rmdir($info->getPathname())) {
+            throw new RuntimeException(sprintf(
+                'Failed to remove directory "%s": %s',
+                $path, $this->getLastPhpError()
+            ));
+        }
+
+        return $this;
+    }
+
+	/**
+     * {@inheritdoc}
+     * @see \rampage\io\WritableFilesystemInterface::mkdir()
+     */
+    public function mkdir($path)
+    {
+        if (!mkdir($this->preparePath($path), $this->dirMode, true)) {
+            throw new RuntimeException(sprintf(
+                'Failed to create directory "%s": %s',
+                $path, $this->getLastPhpError()
+            ));
+        }
+
+        return $this;
+    }
+
+	/**
      * @see \rampage\io\LocalFilesystem::offsetSet()
      */
     public function offsetSet($offset, $value)
     {
-        // TODO Auto-generated method stub
+        $target = $this->info($offset);
 
+        if (($value instanceof SplFileInfo) && !($value instanceof SplFileObject)) {
+            $value = fopen($value->getPathname(), 'r');
+        }
+
+        if (is_resource($value)) {
+            $stream = $target->resource('w');
+            stream_copy_to_stream($value, $stream);
+
+            fflush($stream);
+            fclose($stream);
+
+            return $this;
+        }
+
+        $file = $target->open('w');
+        $file->ftruncate(0);
+
+        if ($value instanceof SplFileObject) {
+            $value->fseek(0, SEEK_SET);
+
+            while (!$value->eof()) {
+                $file->fwrite($value->fgets());
+            }
+        } else {
+            $file->fwrite($value);
+        }
+
+        $file->fflush();
+
+        $file = null;
+        unset($file);
+
+        return $this;
     }
 
     /**
@@ -42,7 +155,7 @@ class WritableLocalFilesystem extends LocalFilesystem
      */
     public function offsetUnset($offset)
     {
-        // TODO Auto-generated method stub
-
+        $this->delete($offset);
+        return $this;
     }
 }

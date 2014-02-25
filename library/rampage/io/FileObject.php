@@ -29,6 +29,9 @@ class FileObject extends SplFileObject implements FileInfoInterface
 {
     const CLASSNAME = __CLASS__;
 
+    /**
+     * @var unknown
+     */
     protected $relativePath = null;
 
     protected $filesystem = null;
@@ -51,6 +54,23 @@ class FileObject extends SplFileObject implements FileInfoInterface
     }
 
     /**
+     * @return boolean
+     */
+    protected function isReadonly()
+    {
+        return !($this->filesystem instanceof WritableFilesystemInterface);
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see SplFileObject::isWritable()
+     */
+    public function isWritable()
+    {
+        return !$this->isReadonly() && parent::isWritable();
+    }
+
+	/**
      * @see \rampage\io\FileInfoInterface::exists()
      */
     public function exists()
@@ -86,6 +106,8 @@ class FileObject extends SplFileObject implements FileInfoInterface
 
     /**
      * Will return a stream resource for this file
+     *
+     * NOTE: The $mode parameter is ignored. The implementation will use the originally provided open mode!
      *
      * @see \rampage\io\FileInfoInterface::resource()
      * @return resource

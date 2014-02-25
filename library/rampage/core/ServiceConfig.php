@@ -54,7 +54,6 @@ class ServiceConfig extends ServiceManagerConfig
      */
     public function __construct(array $config = array())
     {
-        $this->invokables['SharedEventManager'] = 'rampage\core\events\SharedEventManager';
         $this->factories['AggregatedServiceLocator'] = 'rampage\core\services\AggregatedServicesFactory';
         $this->pathManagerConfig = isset($config['path_manager'])? $config['path_manager'] : null;
 

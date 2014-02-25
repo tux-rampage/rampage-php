@@ -56,12 +56,23 @@ class LocalFilesystem implements FilesystemInterface
     /**
      * @param string $path
      */
-    protected function __construct($baseDir)
+    public function __construct($baseDir)
     {
         $this->baseDir = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->innerIterator = new FilesystemIterator($this->baseDir);
 
         $this->rewind();
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getLastPhpError()
+    {
+        $last = error_get_last();
+        $message = (isset($last['message']))? $last['message'] : null;
+
+        return $message;
     }
 
     /**
@@ -138,6 +149,21 @@ class LocalFilesystem implements FilesystemInterface
     }
 
     /**
+     * @param string $path
+     * @return \rampage\io\LocalFilesystem
+     */
+    protected function createChildIterator($path)
+    {
+        $children = clone $this;
+
+        $children->path = $path;
+        $children->innerIterator = new FilesystemIterator($this->preparePath($children->path));
+        $children->rewind();
+
+        return $children;
+    }
+
+    /**
      * @see RecursiveIterator::getChildren()
      */
     public function getChildren()
@@ -146,13 +172,7 @@ class LocalFilesystem implements FilesystemInterface
             return null;
         }
 
-        $children = clone $this;
-
-        $children->path = $this->current()->getRelativePath();
-        $children->innerIterator = new FilesystemIterator($this->preparePath($children->path));
-        $children->rewind();
-
-        return $children;
+        return $this->createChildIterator($this->current()->getRelativePath());
     }
 
     /**
