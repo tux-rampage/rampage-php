@@ -34,11 +34,6 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 class DIAbstractServiceFactory extends DIServiceFactory implements AbstractFactoryInterface
 {
     /**
-     * Service name regex
-     */
-    const SERVICE_NAME_REGEX = '~^[a-z_][a-z0-9_]*([\\\\.][a-z_][a-z0-9_]*)*$~i';
-
-    /**
      * @see \rampage\core\services\DIServiceFactory::__construct()
      */
     public function __construct()
@@ -57,12 +52,8 @@ class DIAbstractServiceFactory extends DIServiceFactory implements AbstractFacto
             return false;
         }
 
-        if (!preg_match(self::SERVICE_NAME_REGEX, $requestedName)) {
-            return false;
-        }
-
         $class = str_replace('.', '\\', $requestedName);
-        if (class_exists($class) || $di->instanceManager()->hasAlias($class)) {
+        if (class_exists($class) || $di->instanceManager()->hasAlias($requestedName)) {
             return true;
         }
 
@@ -79,7 +70,7 @@ class DIAbstractServiceFactory extends DIServiceFactory implements AbstractFacto
             return false;
         }
 
-        $instance = $this->getDiContainer($serviceLocator)->newInstance($requestedName, array(), false);
+        $instance = $this->getDiContainer($serviceLocator)->newInstance($requestedName);
         return $instance;
     }
 }
