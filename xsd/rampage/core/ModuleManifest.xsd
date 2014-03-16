@@ -22,7 +22,7 @@
                 </complexType>
             </element>
         </all>
-        
+
     </complexType>
 
 
@@ -428,8 +428,8 @@
                 </complexType>
             </element>
         </sequence>
-        
-        
+
+
     </complexType>
 
     <complexType name="DiPreferencesDefinition">
@@ -489,24 +489,12 @@
     </complexType>
 
     <complexType name="PluginManagerConfig">
-        <complexContent></complexContent>
-        <all>
-            <element name="plugins" maxOccurs="1" minOccurs="0">
-                <complexType>
-                    <sequence>
-                        <element name="plugin" type="rampage:ServiceConfig" maxOccurs="unbounded" minOccurs="1"></element>
-                    </sequence>
-                </complexType>
-            </element>
-            <element name="factories" maxOccurs="1" minOccurs="0">
-                <complexType>
-                    <sequence>
-                        <element name="factory" type="rampage:ServiceFactory" maxOccurs="unbounded" minOccurs="1"></element>
-                    </sequence>
-                </complexType>
-            </element>
-        </all>
-        <attribute name="type" type="string" use="required"></attribute>
+        <complexContent>
+            <extension base="rampage:ServiceManagerConfig">
+                <complexContent></complexContent>
+                <attribute name="type" type="string" use="required"></attribute>
+            </extension>
+        </complexContent>
     </complexType>
 
     <complexType name="BaseRouteConfig">
