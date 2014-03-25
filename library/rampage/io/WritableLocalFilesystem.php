@@ -92,13 +92,18 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
         return $this;
     }
 
-	/**
+    /**
      * {@inheritdoc}
      * @see \rampage\io\WritableFilesystemInterface::mkdir()
      */
     public function mkdir($path)
     {
-        if (!mkdir($this->preparePath($path), $this->dirMode, true)) {
+        $info = $this->info($path);
+        if ($info->isDir()) {
+            return $this;
+        }
+
+        if (!mkdir($info->getPathname(), $this->dirMode, true)) {
             throw new RuntimeException(sprintf(
                 'Failed to create directory "%s": %s',
                 $path, $this->getLastPhpError()
