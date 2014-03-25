@@ -30,7 +30,10 @@ namespace rampage\core;
  */
 abstract class AbstractModule
 {
-    private $manifest = null;
+    /**
+     * @var ModuleManifest
+     */
+    protected $manifest = null;
 
     /**
      * @param ModuleManifest $manifest
@@ -45,7 +48,7 @@ abstract class AbstractModule
      * @return mixed
      * @throws exception\DependencyException
      */
-    private function fetchManifestConfig($key, $ensureArray = false)
+    protected function fetchManifestConfig($key, $ensureArray = false)
     {
         if (!$this->manifest) {
             throw new exception\DependencyException('Failed to load module manifest data without ModuleManifest instance');
