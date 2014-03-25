@@ -560,6 +560,7 @@
         <attribute use="required" name="route" type="string"></attribute>
         <attribute use="required" name="controller" type="string"></attribute>
         <attribute use="optional" name="action" type="string"></attribute>
+        <attribute name="type" type="string" use="optional"></attribute>
     </complexType>
     <complexType name="ThemeResourceConfig">
         <attribute use="required" name="name" type="string"></attribute>

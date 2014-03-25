@@ -589,6 +589,7 @@ class ModuleManifest extends XmlConfig
 
         foreach ($xml->xpath('./console/commands/command[@name != "" and @route != "" and @controller != ""]') as $node) {
             $name = (string)$node['name'];
+            $type = (string)$node['type'];
             $config = array(
                 'route' => (string)$node['route'],
                 'defaults' => (isset($node->defaults))? $node->defaults->toPhpValue('array') : array(),
@@ -597,6 +598,10 @@ class ModuleManifest extends XmlConfig
             $config['defaults']['controller'] = (string)$node['controller'];
             if (isset($node['action'])) {
                 $config['defaults']['action'] = (string)$node['action'];
+            }
+
+            if ($type) {
+                $this->manifest['application_config']['console']['router']['routes'][$name]['type'] = $type;
             }
 
             $this->manifest['application_config']['console']['router']['routes'][$name]['options'] = $config;
