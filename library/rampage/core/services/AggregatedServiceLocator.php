@@ -80,6 +80,10 @@ class AggregatedServiceLocator extends ServiceManager
      */
     public function has($name, $checkAbstractFactories = true, $usePeeringServiceManagers = true)
     {
+        if (is_array($name)) {
+            $name = $name[1];
+        }
+
         if (strpos($name, '://') === false) {
             return false;
         }
