@@ -10,7 +10,6 @@ return array(
         'Application' => 'rampage\core\services\ApplicationFactory',
         'DependencyInjector' => 'rampage\core\services\DIFactory',
         'ControllerLoader' => 'rampage\core\services\ControllerLoaderFactory',
-        'Logger' => 'rampage\core\services\LogServiceFactory',
 
         // View/Layout
         'rampage.UserConfig' => 'rampage\core\services\UserConfigFactory',
