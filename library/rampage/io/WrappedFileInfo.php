@@ -47,7 +47,7 @@ class WrappedFileInfo implements FileInfoInterface
      * @param FilesystemInterface $filesystem
      * @param SplFileInfo $wrapped
      */
-    protected function __construct($path, FilesystemInterface $filesystem, SplFileInfo $wrapped)
+    public function __construct($path, FilesystemInterface $filesystem, SplFileInfo $wrapped)
     {
         $this->path = $path;
         $this->filesystem = $filesystem;
@@ -138,7 +138,7 @@ class WrappedFileInfo implements FileInfoInterface
     /**
      * @return boolean
      */
-    protected function isReadonly()
+    public function isReadonly()
     {
         return !($this->filesystem instanceof WritableFilesystemInterface);
     }

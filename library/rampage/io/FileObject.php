@@ -56,7 +56,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
     /**
      * @return boolean
      */
-    protected function isReadonly()
+    public function isReadonly()
     {
         return !($this->filesystem instanceof WritableFilesystemInterface);
     }
