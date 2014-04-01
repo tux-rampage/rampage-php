@@ -43,6 +43,7 @@ return array(
 
         // I18n
         'Zend\I18n\Translator\Translator' => 'Translator',
+        'Zend\I18n\Translator\TranslatorInterface' => 'Translator',
         'rampage\core\i18n\Locale' => 'Locale',
 
         // DI
