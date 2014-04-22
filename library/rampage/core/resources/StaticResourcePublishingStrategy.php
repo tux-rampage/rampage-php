@@ -83,7 +83,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
         return $this;
     }
 
-	/**
+    /**
      * @param UrlModelLocator $urlManager
      * @return self
      */
@@ -277,14 +277,17 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
     /**
      * @param string $file
      * @param string $scope
-     * @param array $themes
+     * @param ThemeInterface $theme
      */
-    public function find($file, $scope, array $themes)
+    public function find($file, $scope, ThemeInterface $theme)
     {
         $result = false;
+        $themes = $theme->getFallbackThemes();
 
-        foreach ($themes as $theme) {
-            $result = $this->findStaticFile(array(self::SCOPE_THEME, $theme, $scope, $file));
+        array_unshift($themes, $theme->getCurrentTheme());
+
+        foreach ($themes as $themeName) {
+            $result = $this->findStaticFile(array(self::SCOPE_THEME, $themeName, $scope, $file));
 
             if ($result) {
                 break;

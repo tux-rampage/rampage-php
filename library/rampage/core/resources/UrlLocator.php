@@ -127,9 +127,7 @@ class UrlLocator implements UrlLocatorInterface
         }
 
         if (!$this->publishingStrategy) {
-            $themes = $this->getTheme()->getFallbackThemes();
-            array_unshift($themes, $theme);
-            $url = $this->publishingStrategy->find($filename, $scope, $themes);
+            $url = $this->publishingStrategy->find($filename, $scope, $this->getTheme());
         }
 
         if ($url == false) {

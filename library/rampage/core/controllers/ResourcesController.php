@@ -213,6 +213,10 @@ class ResourcesController extends AbstractActionController
             return $this->notFoundAction();
         }
 
+        if ($scope == '__theme__') {
+            $scope = false;
+        }
+
         // Resolve the file from theme
         $theme->setCurrentTheme($themeName);
         $info = $theme->resolve('public', $file, $scope, true);

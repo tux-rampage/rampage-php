@@ -33,10 +33,10 @@ interface PublishingStrategyInterface
     /**
      * @param string $file
      * @param string|false $scope
-     * @param string $theme
+     * @param ThemeInterface $theme
      * @return string|HttpUri
      */
-    public function find($file, $scope, array $themes);
+    public function find($file, $scope, ThemeInterface $theme);
 
     /**
      * @param string $dir
