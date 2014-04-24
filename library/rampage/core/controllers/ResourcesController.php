@@ -89,6 +89,7 @@ class ResourcesController extends AbstractActionController
         'pdf' => 'application/pdf',
         'png' => 'image/png',
         'swf' => 'application/shockwave-flash',
+        'svg' => 'image/svg+xml',
         'tif' => 'image/tiff',
         'tiff' => 'image/tiff',
         'wav' => 'audio/wav',
