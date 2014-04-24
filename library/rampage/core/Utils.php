@@ -159,6 +159,15 @@ class Utils
 
     /**
      * @param mixed $var
+     * @return boolean
+     */
+    public static function isTraversable($var)
+    {
+        return (is_array($var) || ($var instanceof \Traversable));
+    }
+
+    /**
+     * @param mixed $var
      * @return string
      */
     public static function varExport($var)
