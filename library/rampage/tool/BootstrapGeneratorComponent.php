@@ -126,6 +126,8 @@ __EOF__;
 {$this->getFileHeader()}
 
 define('APPLICATION_DIR', __DIR__ . '/');
+define('APPLICATION_DEVELOPMENT', (isset(\$_SERVER['APPLICATION_DEVELOPMENT']) && \$_SERVER['APPLICATION_DEVELOPMENT']));
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // Register the final exception handler
@@ -151,7 +153,7 @@ __EOF__;
 // Refer to http://framework.zend.com/ for further information
 return array(
     // Fetch modules defintion
-    'modules' => require (isset(\$_SERVER['RAMPAGE_DEBUG']) && \$_SERVER['RAMPAGE_DEBUG'])? __DIR__ . '/modules.conf.php' : __DIR__ . '/modules-dev.conf.php',
+    'modules' => require (APPLICATION_DEVELOPMENT)? __DIR__ . '/modules.conf.php' : __DIR__ . '/modules-dev.conf.php',
 
     // Define additional pathmanager locations
     //'path_manager' => array(
