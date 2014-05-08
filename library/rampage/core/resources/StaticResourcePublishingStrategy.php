@@ -299,7 +299,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
             $result = $this->findStaticFile(array(self::SCOPE_RESOURCE, $scope, $file));
         }
 
-        if ($urlModel = $this->getUrlModel()) {
+        if (($result !== false) && ($urlModel = $this->getUrlModel())) {
             $result = $urlModel->getUrl($result);
         }
 
