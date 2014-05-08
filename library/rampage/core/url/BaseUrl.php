@@ -57,6 +57,14 @@ class BaseUrl implements UrlModelInterface
     private $baseUrl = array();
 
     /**
+     * @param string $type
+     */
+    public function __construct($type = null)
+    {
+        $this->type = $type;
+    }
+
+    /**
      * Returns the base url type
      *
      * @return string|null

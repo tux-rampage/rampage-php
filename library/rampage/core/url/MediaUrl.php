@@ -30,12 +30,8 @@ namespace rampage\core\url;
  */
 class MediaUrl extends BaseUrl
 {
-	/**
-     * (non-PHPdoc)
-     * @see \rampage\core\model\Url::getType()
-     */
-    public function getType()
+    public function __construct()
     {
-        return 'media';
+        parent::__construct('media');
     }
 }

@@ -47,7 +47,8 @@ class UrlModelLocator extends AbstractPluginManager implements DIContainerAware
      */
     protected $invokableClasses = array(
         'base' => 'rampage\core\url\BaseUrl',
-        'media' => 'rampage\core\url\MediaUrl'
+        'media' => 'rampage\core\url\MediaUrl',
+        'static' => 'rampage\core\url\StaticUrl',
     );
 
     /**
@@ -59,7 +60,7 @@ class UrlModelLocator extends AbstractPluginManager implements DIContainerAware
         parent::__construct($configuration);
     }
 
-	/**
+    /**
      * @see \rampage\core\di\DIContainerAware::setDIContainer()
      */
     public function setDIContainer(Di $container)
@@ -93,7 +94,7 @@ class UrlModelLocator extends AbstractPluginManager implements DIContainerAware
         }
     }
 
-	/**
+    /**
      * Returns the requested URL model
      *
      * @param string $type

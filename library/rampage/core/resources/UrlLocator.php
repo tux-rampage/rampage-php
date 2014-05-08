@@ -126,7 +126,7 @@ class UrlLocator implements UrlLocatorInterface
             return $this->locations[$theme][$scopeIndex][$filename];
         }
 
-        if (!$this->publishingStrategy) {
+        if ($this->publishingStrategy) {
             $url = $this->publishingStrategy->find($filename, $scope, $this->getTheme());
         }
 
