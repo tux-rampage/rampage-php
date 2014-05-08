@@ -245,7 +245,8 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
 
         foreach ($this->config['rampage']['themes'] as $name => $themeConfig) {
             $this->log('Publishing theme files for "' . $name . '" ...');
-            if (!isset($themeConfig['paths']) || !($sourceDir = $this->getPublicPath($themeConfig['paths']))) {
+            if (!isset($themeConfig['path']) || !($sourceDir = $this->getPublicPath($themeConfig['path']))) {
+                $this->log(sprintf('No usable path config for theme "%s"!', $themeConfig));
                 continue;
             }
 
