@@ -48,7 +48,7 @@ class ConsoleLogWriter extends AbstractLogWriter
         $this->adapter = $adapter;
         return $this;
     }
-	/**
+    /**
      * @see \Zend\Log\Writer\AbstractWriter::doWrite()
      */
     protected function doWrite(array $event)
@@ -58,14 +58,14 @@ class ConsoleLogWriter extends AbstractLogWriter
         }
 
         $adapter = $this->adapter;
-        $prefix = ($event['priority'] > Logger::INFO)? strtolower($event['priorityName']) : '';
+        $prefix = ($event['priority'] != Logger::INFO)? strtolower($event['priorityName']) : '';
         $color = ConsoleColorInterface::NORMAL;
         $prefixColor = ConsoleColorInterface::GRAY;
 
-        if ($event['priority'] > Logger::WARN) {
+        if ($event['priority'] < Logger::WARN) {
             $color = ConsoleColorInterface::RED;
             $prefixColor = ConsoleColorInterface::LIGHT_RED;
-        } else if ($event['priority'] > Logger::INFO) {
+        } else if ($event['priority'] < Logger::INFO) {
             $color = ConsoleColorInterface::YELLOW;
             $prefixColor = ConsoleColorInterface::LIGHT_YELLOW;
         }
@@ -76,6 +76,6 @@ class ConsoleLogWriter extends AbstractLogWriter
             $adapter->write('] ', ConsoleColorInterface::NORMAL);
         }
 
-        $adapter->write($event['message'], $color);
+        $adapter->write($event['message'] . "\n", $color);
     }
 }
