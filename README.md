@@ -9,7 +9,6 @@ Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 * XML based module configurations (XSD provided)
 * Powerful resource locators for module resource files (i.e. js and css)
 * Advanced url locators/helpers
-* Auth framework (wip)
 * Cascading themes support
 
 ## License
