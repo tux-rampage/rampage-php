@@ -33,6 +33,7 @@ use Zend\ModuleManager\ModuleManager;
 use Zend\ServiceManager\ServiceManager;
 use Zend\ServiceManager\ServiceManagerAwareInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Zend\EventManager\SharedEventAggregateAwareInterface;
 
 /**
  * Events Module listener
@@ -126,6 +127,24 @@ class EventConfigModuleListener
     }
 
     /**
+     * @param SharedEventManagerInterface $eventManager
+     * @param array|Traversable $config
+     * @return self
+     */
+    public function attachSharedAggregates(SharedEventManagerInterface $eventManager, $config)
+    {
+        if (!$eventManager instanceof SharedEventAggregateAwareInterface) {
+            return $this;
+        }
+
+        foreach ($config as $aggregate) {
+            $eventManager->attachAggregate($aggregate);
+        }
+
+        return $this;
+    }
+
+    /**
      * @param EventInterface $event
      */
     public function __invoke(ModuleEvent $event)
@@ -143,6 +162,10 @@ class EventConfigModuleListener
             }
 
             foreach ($module->getEventListeners() as $id => $config) {
+                if ($id == 'shared_aggregates') {
+                    $this->attachSharedAggregates($eventManager, $config);
+                }
+
                 $this->attachListeners($eventManager, $id, $config)
                     ->attachAggregates($eventManager, $id, $config);
             }
