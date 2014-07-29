@@ -26,6 +26,8 @@ namespace rampage\core\modules;
 
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\EventManager\SharedEventManagerInterface;
+use Zend\EventManager\SharedEventAggregateAwareInterface;
+use Zend\EventManager\SharedListenerAggregateInterface;
 
 use Zend\ModuleManager\ModuleEvent;
 use Zend\ModuleManager\ModuleManager;
@@ -33,7 +35,6 @@ use Zend\ModuleManager\ModuleManager;
 use Zend\ServiceManager\ServiceManager;
 use Zend\ServiceManager\ServiceManagerAwareInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
-use Zend\EventManager\SharedEventAggregateAwareInterface;
 
 /**
  * Events Module listener
@@ -131,13 +132,18 @@ class EventConfigModuleListener
      * @param array|Traversable $config
      * @return self
      */
-    public function attachSharedAggregates(SharedEventManagerInterface $eventManager, $config)
+    protected function attachSharedAggregates(SharedEventManagerInterface $eventManager, $config)
     {
         if (!$eventManager instanceof SharedEventAggregateAwareInterface) {
             return $this;
         }
 
         foreach ($config as $aggregate) {
+            if (!$aggregate instanceof SharedListenerAggregateInterface) {
+                continue;
+            }
+
+            $this->injectServiceManager($aggregate);
             $eventManager->attachAggregate($aggregate);
         }
 
@@ -164,6 +170,7 @@ class EventConfigModuleListener
             foreach ($module->getEventListeners() as $id => $config) {
                 if ($id == 'shared_aggregates') {
                     $this->attachSharedAggregates($eventManager, $config);
+                    continue;
                 }
 
                 $this->attachListeners($eventManager, $id, $config)
