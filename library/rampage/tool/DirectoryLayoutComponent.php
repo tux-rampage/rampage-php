@@ -26,6 +26,7 @@
 namespace rampage\tool;
 
 use RuntimeException;
+use rampage\io\IOInterface;
 
 /**
  * Creates the project directory layout
@@ -45,13 +46,17 @@ class DirectoryLayoutComponent implements SkeletonComponentInterface
      */
     public function create(ProjectSkeleton $skeleton)
     {
-
+        $io = $skeleton->getIO();
         $public = $skeleton->getOptions()->getPublicDirectory();
 
         $this->directories[] = $public;
         $this->directories[] = $public . '/media';
 
+        $io->writeLine('Creating application directories ...');
+
         foreach ($this->directories as $dir) {
+            $io->writeLine("<debug>Creating directory: $dir</debug>", IOInterface::VERBOSITY_VERY);
+
             if (!$skeleton->createDirectory($dir)) {
                 throw new RuntimeException('Failed to create directory: ' . $dir);
             }

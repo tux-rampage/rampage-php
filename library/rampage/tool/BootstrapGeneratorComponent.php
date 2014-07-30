@@ -26,6 +26,7 @@
 namespace rampage\tool;
 
 use RuntimeException;
+use rampage\io\IOInterface;
 
 /**
  * Bootstrap generator
@@ -38,11 +39,9 @@ class BootstrapGeneratorComponent implements SkeletonComponentInterface
     protected $skeleton = null;
 
     /**
-     * @var array
+     * @var IOInterface
      */
-    protected $devModules = array(
-        'ZendDeveloperTools',
-    );
+    protected $io = null;
 
     /**
      * @return string
@@ -153,14 +152,11 @@ __EOF__;
 // Refer to http://framework.zend.com/ for further information
 return array(
     // Fetch modules defintion
-    'modules' => require (APPLICATION_DEVELOPMENT)? __DIR__ . '/modules.conf.php' : __DIR__ . '/modules-dev.conf.php',
+    'modules' => require __DIR__ . '/modules.conf.php',
 
     // Define additional pathmanager locations
     //'path_manager' => array(
     //    'app' => dirname(__DIR__),
-    //    'modules' => array(
-    //        '{{app_dir}}/modules',
-    //    ),
     //),
 
     // These are various options for the listeners attached to the ModuleManager
@@ -176,18 +172,16 @@ return array(
 
 __EOF__;
 
-        $modules = array($this->skeleton->getOptions()->get('module-name', 'application'));
-        $devModules = var_export($this->devModules, true);
-        $modulesFormat = "<?php return %s;\n";
+        $export = function($value) {
+            return var_export($value, true);
+        };
 
-        $devModules = <<<__EOF__
-<?php return array_merge(require __DIR__ . '/modules.conf.php', $devModules);
-
-__EOF__;
+        $modules = array($this->skeleton->getOptions()->get('main-module-name', 'application'));
+        $modulesFormat = "<?php return array(%s);\n";
+        $modules = implode(', ', array_map($export, $modules));
 
         $this->writeContent('application/config/application.conf.php', $content)
-            ->writeContent('application/config/modules.conf.php', sprintf($modulesFormat, var_export($modules, true)))
-            ->writeContent('application/config/modules-dev.conf.php', $devModules);
+            ->writeContent('application/config/modules.conf.php', sprintf($modulesFormat, $modules));
 
         return $this;
     }
@@ -197,11 +191,19 @@ __EOF__;
      */
     public function create(ProjectSkeleton $skeleton)
     {
+        $this->io = $skeleton->getIO();
         $this->skeleton = $skeleton;
+
+        $this->io->writeLine('Creating application bootstrap files ...');
 
         $this->createAppConfig()
             ->createBootstrapPhp()
             ->createIndexPhp();
+
+        $this->io->writeLine('Creating main application module ...');
+
+        $module = new ModuleSkeletonComponent($skeleton->getOptions()->get('main-module-name', 'application'));
+        $module->create($skeleton);
 
         return $this;
     }

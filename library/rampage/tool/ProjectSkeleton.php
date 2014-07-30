@@ -24,6 +24,10 @@
 
 namespace rampage\tool;
 
+use rampage\io\IOInterface;
+use rampage\io\NullIO;
+
+
 class ProjectSkeleton
 {
     /**
@@ -42,16 +46,27 @@ class ProjectSkeleton
     protected $options = null;
 
     /**
+     * @var IOInterface
+     */
+    protected $io = null;
+
+    /**
      * @param string $directory
      */
-    public function __construct($directory = null)
+    public function __construct(IOInterface $io = null, $directory = null)
     {
+        $this->io = $io? : new NullIO();
         $this->options = new OptionsContainer();
 
         $this->setDirectory($directory? : getcwd());
-        $this->addComponent(new DirectoryLayoutComponent())
-            ->addComponent(new BootstrapGeneratorComponent())
-            ->addComponent(new ModuleSkeletonComponent());
+    }
+
+    /**
+     * @return \rampage\io\IOInterface
+     */
+    public function getIO()
+    {
+        return $this->io;
     }
 
     /**
@@ -135,12 +150,16 @@ class ProjectSkeleton
      */
     public function create($options = null)
     {
-        if ($options !== null) {
-            $this->setOptions($options);
-        }
+        try {
+            if ($options !== null) {
+                $this->setOptions($options);
+            }
 
-        foreach ($this->components as $component) {
-            $component->create($this);
+            foreach ($this->components as $component) {
+                $component->create($this);
+            }
+        } catch (\Exception $e) {
+            $this->io->writeException($e);
         }
 
         return $this;

@@ -41,7 +41,8 @@ class ConsoleMessageFilter
     protected $colors = array(
         'warning' => ColorInterface::YELLOW,
         'error' => ColorInterface::LIGHT_RED,
-        'notice' => ColorInterface::GRAY
+        'notice' => ColorInterface::GRAY,
+        'debug' => ColorInterface::GRAY,
     );
 
     /**

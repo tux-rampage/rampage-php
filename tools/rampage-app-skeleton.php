@@ -24,13 +24,9 @@
 
 namespace rampage\tool;
 
+use rampage\core\Application;
 require_once 'vendor/autoload.php';
 
-$options = array();
-$skeleton = new ProjectSkeleton();
-
-if (isset($_SERVER['argv'][1])) {
-    $options['module-name'] = $_SERVER['argv'][1];
-}
-
-$skeleton->create($options);
+Application::init(array(
+    'modules' => 'rampage.tool'
+))->run();

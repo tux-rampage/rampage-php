@@ -24,29 +24,30 @@ namespace rampage\io;
 
 use Exception;
 
-interface IOInterface
+
+class NullIO extends AbstractIO
 {
-    const VERBOSITY_SILENT = -1;
-    const VERBOSITY_NORMAL = 0;
-    const VERBOSITY_VERBOSE = 1;
-    const VERBOSITY_VERY = 2;
-    const VERBOSITY_DEBUG = 3;
+    /**
+     * {@inheritdoc}
+     * @see \rampage\io\IOInterface::write()
+     */
+    public function write($message, $level = null)
+    {
+    }
 
-    public function setVerbosity($verbosity);
+    /**
+     * {@inheritdoc}
+     * @see \rampage\io\IOInterface::writeException()
+     */
+    public function writeException(Exception $e)
+    {
+    }
 
-    public function getVerbosity();
-
-    public function isVerbose();
-
-    public function isVeryVerbose();
-
-    public function isDebug();
-
-    public function isSilent();
-
-    public function write($message, $level = null);
-
-    public function writeException(Exception $e);
-
-    public function writeLine($line, $level = null);
+    /**
+     * {@inheritdoc}
+     * @see \rampage\io\IOInterface::writeLine()
+     */
+    public function writeLine($line, $level = null)
+    {
+    }
 }

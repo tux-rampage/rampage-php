@@ -48,9 +48,13 @@ class ConsoleIO extends AbstractIO
      * {@inheritdoc}
      * @see \rampage\io\IOInterface::write()
      */
-    public function write($message)
+    public function write($message, $level = null)
     {
         if ($this->isSilent()) {
+            return;
+        }
+
+        if ($level && ($this->verbosity < $level)) {
             return;
         }
 
@@ -62,9 +66,9 @@ class ConsoleIO extends AbstractIO
      * {@inheritdoc}
      * @see \rampage\io\IOInterface::writeLine()
      */
-    public function writeLine($line)
+    public function writeLine($line, $level = null)
     {
-        $this->write($line . PHP_EOL);
+        $this->write($line . PHP_EOL, $level);
     }
 
     /**

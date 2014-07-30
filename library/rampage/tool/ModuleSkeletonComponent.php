@@ -25,10 +25,15 @@
 
 namespace rampage\tool;
 
-use RuntimeException;
+use rampage\io\IOInterface;
+use rampage\io\NullIO;
+
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\DocBlockGenerator;
+
+use RuntimeException;
+
 
 class ModuleSkeletonComponent implements SkeletonComponentInterface
 {
@@ -36,6 +41,16 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
      * @var ProjectSkeleton
      */
     protected $skeleton = null;
+
+    /**
+     * @var IOInterface
+     */
+    protected $io = null;
+
+    /**
+     * @var string
+     */
+    protected $name = null;
 
     /**
      * @var array
@@ -47,11 +62,20 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
     );
 
     /**
+     * @param string $name
+     */
+    public function __construct($name)
+    {
+        $this->name = $name;
+        $this->io = new NullIO();
+    }
+
+    /**
      * @return string
      */
     public function getModuleName()
     {
-        return $this->skeleton->getOptions()->get('module-name', 'application');
+        return $this->name;
     }
 
     /**
@@ -99,7 +123,7 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
     {
         $path = $this->getFilepath($file);
         if (file_exists($path)) {
-            trigger_error('File already exists: ' . $file, E_USER_WARNING);
+            $this->io->writeLine('<warning>Skip: ' . $file . ' - File already exists</warning>');
             return $this;
         }
 
@@ -151,14 +175,14 @@ class ModuleSkeletonComponent implements SkeletonComponentInterface
             ->addMethodFromGenerator($getConfig)
             ->addMethodFromGenerator($getAutoloaderConfig);
 
-        $this->writeContent('Module.php', "<?php\n" . $generator->generate());
+        $this->writeContent('src/Module.php', "<?php\n" . $generator->generate());
         return $this;
     }
 
     /**
      * @return self
      */
-    public function createManifestXml()
+    public function createModuleConfig()
     {
         $xml = <<<__XML__
 <?xml version="1.0" encoding="UTF-8"?>
@@ -224,14 +248,21 @@ __XML__;
     public function create(ProjectSkeleton $skeleton)
     {
         $this->skeleton = $skeleton;
+        $this->io = $skeleton->getIO();
+
+        $this->io->writeLine(sprintf('Creating module "<info>%s</info>" ...', $this->getModuleName()));
 
         foreach ($this->directories as $dir) {
-            if (!$skeleton->createDirectory($this->getRelativePath($dir))) {
+            $path = $this->getRelativePath($dir);
+
+            $this->io->writeLine("<debug>Creating directory: $dir</debug>", IOInterface::VERBOSITY_VERY);
+
+            if (!$skeleton->createDirectory($path)) {
                 throw new RuntimeException('Could not create module directory: ' . $dir);
             }
         }
 
-        $this->createManifestXml()
+        $this->createModuleConfig()
             ->createModulePhp();
 
         return $this;

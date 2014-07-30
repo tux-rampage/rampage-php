@@ -85,7 +85,7 @@ class OptionsContainer extends ArrayObject
         return parent::offsetSet($this->canonicalizeKey($index), $newval);
     }
 
-	/**
+    /**
      * @see ArrayObject::offsetUnset()
      */
     public function offsetUnset($index)
@@ -106,6 +106,10 @@ class OptionsContainer extends ArrayObject
      */
     public function offsetGet($index)
     {
+        if (!$this->offsetExists($index)) {
+            return null;
+        }
+
         return parent::offsetGet($this->canonicalizeKey($index));
     }
 
