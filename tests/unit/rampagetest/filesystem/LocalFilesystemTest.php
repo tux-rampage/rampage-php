@@ -21,14 +21,14 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampagetest\io;
+namespace rampagetest\filesystem;
 
 use rampage\test\AbstractTestCase;
-use rampage\io\LocalFilesystem;
+use rampage\filesystem\LocalFilesystem;
 use RecursiveIteratorIterator;
 
 /**
- * @coversDefaultClass \rampage\io\LocalFilesystem
+ * @coversDefaultClass \rampage\filesystem\LocalFilesystem
  */
 class LocalFilesystemTest extends AbstractTestCase
 {
@@ -120,7 +120,7 @@ class LocalFilesystemTest extends AbstractTestCase
     {
         $info = $this->instance->info('textfile.txt');
 
-        $this->assertInstanceOf('rampage\io\FileInfoInterface', $info);
+        $this->assertInstanceOf('rampage\filesystem\FileInfoInterface', $info);
         $this->assertTrue($info->exists());
     }
 
@@ -131,7 +131,7 @@ class LocalFilesystemTest extends AbstractTestCase
     {
         $info = $this->instance->info('nosuchfile.txt');
 
-        $this->assertInstanceOf('rampage\io\FileInfoInterface', $info);
+        $this->assertInstanceOf('rampage\filesystem\FileInfoInterface', $info);
         $this->assertFalse($info->exists());
     }
 

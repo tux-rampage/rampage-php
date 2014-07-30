@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\io;
+namespace rampage\filesystem;
 
 use SplFileObject;
 
@@ -71,7 +71,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
     }
 
 	/**
-     * @see \rampage\io\FileInfoInterface::exists()
+     * @see \rampage\filesystem\FileInfoInterface::exists()
      */
     public function exists()
     {
@@ -79,7 +79,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getFilesystem()
+     * @see \rampage\filesystem\FileInfoInterface::getFilesystem()
      */
     public function getFilesystem()
     {
@@ -87,7 +87,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getRelativePath()
+     * @see \rampage\filesystem\FileInfoInterface::getRelativePath()
      */
     public function getRelativePath()
     {
@@ -109,7 +109,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
      *
      * NOTE: The $mode parameter is ignored. The implementation will use the originally provided open mode!
      *
-     * @see \rampage\io\FileInfoInterface::resource()
+     * @see \rampage\filesystem\FileInfoInterface::resource()
      * @return resource
      */
     public function resource($mode = null)

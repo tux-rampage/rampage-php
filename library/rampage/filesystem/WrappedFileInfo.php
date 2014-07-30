@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\io;
+namespace rampage\filesystem;
 
 use SplFileInfo;
 
@@ -55,7 +55,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::exists()
+     * @see \rampage\filesystem\FileInfoInterface::exists()
      */
     public function exists()
     {
@@ -63,7 +63,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getCTime()
+     * @see \rampage\filesystem\FileInfoInterface::getCTime()
      */
     public function getCTime()
     {
@@ -71,7 +71,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getFilename()
+     * @see \rampage\filesystem\FileInfoInterface::getFilename()
      */
     public function getFilename()
     {
@@ -79,7 +79,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getFilesystem()
+     * @see \rampage\filesystem\FileInfoInterface::getFilesystem()
      */
     public function getFilesystem()
     {
@@ -87,7 +87,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getMTime()
+     * @see \rampage\filesystem\FileInfoInterface::getMTime()
      */
     public function getMTime()
     {
@@ -95,7 +95,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getPathname()
+     * @see \rampage\filesystem\FileInfoInterface::getPathname()
      */
     public function getPathname()
     {
@@ -104,7 +104,7 @@ class WrappedFileInfo implements FileInfoInterface
 
 
     /**
-     * @see \rampage\io\FileInfoInterface::getRelativePath()
+     * @see \rampage\filesystem\FileInfoInterface::getRelativePath()
      */
     public function getRelativePath()
     {
@@ -112,7 +112,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::getSize()
+     * @see \rampage\filesystem\FileInfoInterface::getSize()
      */
     public function getSize()
     {
@@ -120,7 +120,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::isDir()
+     * @see \rampage\filesystem\FileInfoInterface::isDir()
      */
     public function isDir()
     {
@@ -128,7 +128,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::isFile()
+     * @see \rampage\filesystem\FileInfoInterface::isFile()
      */
     public function isFile()
     {
@@ -144,7 +144,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::isReadable()
+     * @see \rampage\filesystem\FileInfoInterface::isReadable()
      */
     public function isReadable()
     {
@@ -152,7 +152,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::isWritable()
+     * @see \rampage\filesystem\FileInfoInterface::isWritable()
      */
     public function isWritable()
     {
@@ -161,7 +161,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::open()
+     * @see \rampage\filesystem\FileInfoInterface::open()
      */
     public function open($mode = null)
     {
@@ -175,7 +175,7 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\io\FileInfoInterface::resource()
+     * @see \rampage\filesystem\FileInfoInterface::resource()
      */
     public function resource($mode = null)
     {

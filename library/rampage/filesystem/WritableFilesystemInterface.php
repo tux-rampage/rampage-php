@@ -1,5 +1,6 @@
 <?php
 /**
+ * This is part of rampage-php
  * Copyright (c) 2014 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,16 +21,24 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\io;
+namespace rampage\filesystem;
 
-/**
- * CDN Provider
- */
-interface CdnProviderInterface
+interface WritableFilesystemInterface extends FilesystemInterface
 {
     /**
-     * @param string $file
-     * @return string
+     * Create a new directory
+     *
+     * @param string $path The directory path
+     * @return self
      */
-    public function getFileUrl($file);
+    public function mkdir($path);
+
+    /**
+     * Delete the given file or directory
+     *
+     * @param string $path
+     * @param string $recursive
+     * @return self
+     */
+    public function delete($path, $recursive = false);
 }

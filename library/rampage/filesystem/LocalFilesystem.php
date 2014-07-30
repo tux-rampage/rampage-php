@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\io;
+namespace rampage\filesystem;
 
 use SplFileInfo;
 use FilesystemIterator;
@@ -114,7 +114,7 @@ class LocalFilesystem implements FilesystemInterface
     }
 
     /**
-     * @see \rampage\io\FilesystemInterface::info()
+     * @see \rampage\filesystem\FilesystemInterface::info()
      */
     public function info($path)
     {
@@ -150,7 +150,7 @@ class LocalFilesystem implements FilesystemInterface
 
     /**
      * @param string $path
-     * @return \rampage\io\LocalFilesystem
+     * @return \rampage\filesystem\LocalFilesystem
      */
     protected function createChildIterator($path)
     {

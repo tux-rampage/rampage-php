@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\io;
+namespace rampage\filesystem;
 
 use SplFileObject;
 use SplFileInfo;
@@ -39,7 +39,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
 
     /**
      * {@inheritdoc}
-     * @see \rampage\io\LocalFilesystem::__construct()
+     * @see \rampage\filesystem\LocalFilesystem::__construct()
      */
     public function __construct($baseDir, $dirMode = null)
     {
@@ -52,7 +52,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
 
 	/**
      * {@inheritdoc}
-     * @see \rampage\io\WritableFilesystemInterface::delete()
+     * @see \rampage\filesystem\WritableFilesystemInterface::delete()
      */
     public function delete($path, $recursive = false)
     {
@@ -94,7 +94,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
 
     /**
      * {@inheritdoc}
-     * @see \rampage\io\WritableFilesystemInterface::mkdir()
+     * @see \rampage\filesystem\WritableFilesystemInterface::mkdir()
      */
     public function mkdir($path)
     {
@@ -114,7 +114,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
     }
 
 	/**
-     * @see \rampage\io\LocalFilesystem::offsetSet()
+     * @see \rampage\filesystem\LocalFilesystem::offsetSet()
      */
     public function offsetSet($offset, $value)
     {
@@ -156,7 +156,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
     }
 
     /**
-     * @see \rampage\io\LocalFilesystem::offsetUnset()
+     * @see \rampage\filesystem\LocalFilesystem::offsetUnset()
      */
     public function offsetUnset($offset)
     {
