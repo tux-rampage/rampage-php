@@ -187,6 +187,19 @@ __EOF__;
     }
 
     /**
+     * @return self
+     */
+    protected function createMainModule()
+    {
+        $this->io->writeLine('Creating main application module ...');
+
+        $module = new ModuleSkeletonComponent($this->skeleton->getOptions()->get('main-module-name', 'application'));
+        $module->create($this->skeleton);
+
+        return $this;
+    }
+
+    /**
      * @see \rampage\tool\SkeletonComponentInterface::create()
      */
     public function create(ProjectSkeleton $skeleton)
@@ -198,12 +211,8 @@ __EOF__;
 
         $this->createAppConfig()
             ->createBootstrapPhp()
-            ->createIndexPhp();
-
-        $this->io->writeLine('Creating main application module ...');
-
-        $module = new ModuleSkeletonComponent($skeleton->getOptions()->get('main-module-name', 'application'));
-        $module->create($skeleton);
+            ->createIndexPhp()
+            ->createMainModule();
 
         return $this;
     }
