@@ -82,7 +82,7 @@ class BootstrapGeneratorComponent implements SkeletonComponentInterface
     {
         $path = ($public)? $this->getPublicFilepath($file) : $this->getFilepath($file);
         if (file_exists($path)) {
-            trigger_error('File already exists: ' . $file, E_USER_WARNING);
+            $this->io->writeLine('<warning>File already exists: ' . $file . '</warning>');
             return $this;
         }
 
