@@ -10,6 +10,9 @@ Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 * Powerful resource locators for module resource files (i.e. js and css)
 * Advanced url locators/helpers
 * Cascading themes support
+* Classes for easily handling Console I/O
+* Skeleton generator
+
 
 ## License
 
