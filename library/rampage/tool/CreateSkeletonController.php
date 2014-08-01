@@ -27,19 +27,19 @@ use rampage\io\ConsoleIO;
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\Console\ColorInterface;
 
-use Zend\Mvc\Controller\AbstractController;
-use Zend\Mvc\MvcEvent;
+use Zend\Mvc\Controller\AbstractActionController;
 
 use UnexpectedValueException;
+use Zend\View\Model\ConsoleModel;
 
 
-class CreateSkeletonController extends AbstractController
+class CreateSkeletonController extends AbstractActionController
 {
     /**
      * {@inheritdoc}
      * @see \Zend\Mvc\Controller\AbstractController::onDispatch()
      */
-    public function onDispatch(MvcEvent $event)
+    public function createAction()
     {
         $console = $this->getServiceLocator()->get('console');
 
@@ -53,10 +53,42 @@ class CreateSkeletonController extends AbstractController
             ->addComponent(new BootstrapGeneratorComponent());
 
         $console->writeLine('Application Skeleton Generator' . PHP_EOL, ColorInterface::LIGHT_CYAN);
-        $console->writeLine('Creating Application Skeleton ...');
+        $console->writeLine('Creating application skeleton:' . PHP_EOL, ColorInterface::GREEN);
 
-        $skeleton->create($this->params());
+        $skeleton->create($this->params()->fromRoute());
 
-        $console->writeLine('Done' . PHP_EOL);
+        $console->writeLine(PHP_EOL . 'Done!' . PHP_EOL, ColorInterface::LIGHT_GREEN);
+    }
+
+    /**
+     * @return \Zend\View\Model\ConsoleModel
+     */
+    public function usageAction()
+    {
+        $renderer = new ConsoleHelpRenderer();
+        $console = $this->getServiceLocator()->get('console');
+        $moduleManager = $this->getServiceLocator()->get('ModuleManager');
+        $model = new ConsoleModel();
+
+        $model->setResult($renderer->renderHelp($console, $moduleManager));
+        return $model;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see \Zend\Mvc\Controller\AbstractActionController::indexAction()
+     */
+    public function indexAction()
+    {
+        return $this->usageAction();
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see \Zend\Mvc\Controller\AbstractActionController::notFoundAction()
+     */
+    public function notFoundAction()
+    {
+        return $this->usageAction();
     }
 }

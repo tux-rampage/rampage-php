@@ -4,3 +4,4 @@
 /.hg
 /vendor
 /composer.lock
+/tmp

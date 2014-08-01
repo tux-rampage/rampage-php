@@ -27,11 +27,13 @@ use Zend\Console\ColorInterface;
 
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
+use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 
 
 class Module implements
     ConfigProviderInterface,
-    ConsoleBannerProviderInterface
+    ConsoleBannerProviderInterface,
+    ConsoleUsageProviderInterface
 {
     /**
      * {@inheritdoc}
@@ -43,13 +45,24 @@ class Module implements
             'console' => array(
                 'router' => array(
                     'routes' => array(
+                        'usage' => array(
+                            'type' => 'catchall',
+                            'options' => array(
+                                'route' => '',
+                                'defaults' => array(
+                                    'controller' => __NAMESPACE__ . '\CreateSkeletonController',
+                                    'action' => 'usage',
+                                )
+                            )
+                        ),
                         'skeleton-generator' => array(
                             'type' => 'simple',
                             'options' => array(
-                                'route' => '[--mainModuleName=] [-v]',
+                                'route' => 'create [-v] <mainModuleName>',
                                 'defaults' => array(
                                     'controller' => __NAMESPACE__ . '\CreateSkeletonController',
                                     'mainModuleName' => 'application',
+                                    'action' => 'create',
                                 )
                             )
                         )
@@ -60,15 +73,36 @@ class Module implements
     }
 
     /**
+     * @return boolean
+     */
+    public function getConsoleLabel()
+    {
+        return false;
+    }
+
+    /**
      * {@inheritdoc}
      * @see \Zend\ModuleManager\Feature\ConsoleBannerProviderInterface::getConsoleBanner()
      */
     public function getConsoleBanner(ConsoleAdapterInterface $console)
     {
-        $banner = $console->colorize('Application Skeleton Generator', ColorInterface::LIGHT_CYAN) . "\n\n"
-                . 'This tool will create a application skeleton in the current directory.'
-                . "\n\n";
+        $banner = $console->colorize("\n" . 'Application Skeleton Generator', ColorInterface::LIGHT_CYAN) . "\n\n"
+                . 'This tool will create a application skeleton in the current directory.';
 
         return $banner;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see \Zend\ModuleManager\Feature\ConsoleUsageProviderInterface::getConsoleUsage()
+     */
+    public function getConsoleUsage(ConsoleAdapterInterface $console)
+    {
+        return array(
+            $console->colorize('Usage:', ColorInterface::YELLOW),
+            'create <applicationModuleName>' => 'Create a project skeleton',
+            $console->colorize('Options:', ColorInterface::YELLOW),
+            array('applicationModuleName', "The name of the application module.\nUse a dot for namespaces (e.g.: acme.app).\n"),
+        );
     }
 }

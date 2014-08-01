@@ -25,8 +25,25 @@
 namespace rampage\tool;
 
 use rampage\core\Application;
-require_once 'vendor/autoload.php';
+
+$tryFiles = array(
+    'vendor/autoload.php', // standalone
+    // '../autoload.php', // bin dir
+    '../../autoload.php', // composer dependency
+);
+
+foreach ($tryFiles as $file) {
+    $file = __DIR__ . '/../' . $file;
+
+    if (is_readable($file)) {
+        require_once $file;
+        break;
+    }
+}
+
+unset($tryFiles, $file);
 
 Application::init(array(
-    'modules' => 'rampage.tool'
+    'modules' => array('rampage.tool'),
+    'module_listener_options' => array(),
 ))->run();

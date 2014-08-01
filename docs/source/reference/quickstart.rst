@@ -50,18 +50,18 @@ In vanilla ZF2, you can only use the first namespace segment as module name whic
 Usually the first segment is the vendor name. But rampage-php enhances this behavior and adds
 the ability to use subnamespaces as well and map them to a dot-separated directory name.
 
-Let's assume your application module should be namespaced "acme\myapp".
+Let's assume your application module should be namespaced `acme\\myapp`.
 Now let's create the application layout with this modulename::
 
-    php vendor/bin/rampage-app-skeleton.php acme.myapp
+    php vendor/bin/rampage-app-skeleton.php create acme.myapp
 
 For windows this command should be::
 
-    .\vendor\bin\rampage-app-skeleton.php acme.myapp
+    .\vendor\bin\rampage-app-skeleton.php create acme.myapp
 
 This will create:
 
 * a ``public`` directory which will contain the webserver root.
 * an ``application`` directory containing the application components
-* the module skeleton fur you application located in ``application/modules/acme.myapp``
+* the module skeleton for your application located in ``application/modules/acme.myapp``
 
