@@ -136,7 +136,6 @@ class UrlPlugin extends ZendUrlPlugin
         }
 
         if ($match) {
-            $routeMatchParams = $match->getParams();
             $urlOptions = array_merge($match->getParams(), $urlOptions);
         }
 
