@@ -25,8 +25,15 @@
 namespace rampage\core\services;
 
 use rampage\core\resources\StaticResourcePublishingStrategy;
+
+use rampage\io\ConsoleIO;
+use rampage\io\NullIO;
+
+use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
+
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
+
 
 /**
  * Factory for resource publishing strategy
@@ -41,7 +48,9 @@ class ResourcePublishingStrategyFactory implements FactoryInterface
         $config = $serviceLocator->get('config');
         $pathManager = $serviceLocator->get('rampage.PathManager');
         $urlManager = $serviceLocator->get('UrlManager');
-        $strategy = new StaticResourcePublishingStrategy($pathManager->get('public', 'static'), $config);
+        $console = $serviceLocator->get('console');
+        $io = ($console instanceof ConsoleAdapterInterface)? new ConsoleIO($console) : new NullIO();
+        $strategy = new StaticResourcePublishingStrategy($pathManager->get('public', 'static'), $config, $io);
 
         $strategy->setUrlManager($urlManager);
 

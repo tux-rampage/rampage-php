@@ -28,11 +28,8 @@ namespace rampage\core\controllers;
 use rampage\core\resources\PublishingStrategyInterface;
 use rampage\core\resources\ThemeInterface;
 use rampage\core\exception\RuntimeException;
-use rampage\core\Logger;
-use rampage\core\ConsoleLogWriter;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\Log\LoggerAwareInterface;
 use Zend\Console\Console;
 
 use Zend\Http\Request as HttpRequest;
@@ -266,16 +263,6 @@ class ResourcesController extends AbstractActionController
 
         if (!Console::isConsole()) {
             throw new \BadMethodCallException('This action is available for console, only.');
-        }
-
-        if ($strategy instanceof LoggerAwareInterface) {
-            $logger = new Logger();
-            $writer = new ConsoleLogWriter();
-
-            $writer->setConsoleAdapter($this->getServiceLocator()->get('console'));
-            $logger->addWriter($writer);
-
-            $strategy->setLogger($logger);
         }
 
         $strategy->publish();

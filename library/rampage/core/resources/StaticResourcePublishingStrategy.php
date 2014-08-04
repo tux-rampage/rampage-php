@@ -34,6 +34,8 @@ use SplFileInfo;
 
 use Zend\Log\LoggerAwareInterface;
 use Zend\Log\LoggerInterface;
+use rampage\io\IOInterface;
+use rampage\io\NullIO;
 
 /**
  * Static resource publishing strategy
@@ -64,13 +66,19 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
     protected $logger = null;
 
     /**
+     * @var IOInterface
+     */
+    protected $io = null;
+
+    /**
      * @param ModuleRegistry $moduleRegistry
      * @param PathManager $pathManager
      */
-    public function __construct($targetDir, array $config = array())
+    public function __construct($targetDir, array $config = array(), IOInterface $io = null)
     {
         $this->targetDir = $targetDir;
         $this->config = $config;
+        $this->io = $io? : new NullIO();
     }
 
     /**
@@ -153,7 +161,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
                 continue;
             }
 
-            $this->log('Publishing file: ' . $target . '/' . $file->getFilename() . ' ...');
+            $this->log('Publishing file: <info>' . $target . '/' . $file->getFilename() . '</info> ...');
             copy($file->getPathname(), $target . '/' . $file->getFilename());
         }
 
@@ -196,6 +204,8 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
      */
     protected function log($message)
     {
+        $this->io->write($message);
+
         if ($this->logger) {
             $this->logger->info($message);
         }
@@ -215,7 +225,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
 
         $filter = $this->getExtensionFilter($extensions);
         foreach ($this->config['rampage']['resources'] as $scope => $paths) {
-            $this->log('Publishing resource files for "' . $scope . '" ...');
+            $this->log('Publishing resource files for <info>' . $scope . '</info> ...');
 
             $sourceDir = $this->getPublicPath($paths);
             if (!$sourceDir) {
@@ -244,9 +254,9 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
         $filter = $this->getExtensionFilter($extensions);
 
         foreach ($this->config['rampage']['themes'] as $name => $themeConfig) {
-            $this->log('Publishing theme files for "' . $name . '" ...');
+            $this->log('Publishing theme files for <info>' . $name . '</info> ...');
             if (!isset($themeConfig['path']) || !($sourceDir = $this->getPublicPath($themeConfig['path']))) {
-                $this->log(sprintf('No usable path config for theme "%s"!', $themeConfig));
+                $this->log(sprintf('<warning>No usable path config for theme "%s"!</warning>', $themeConfig));
                 continue;
             }
 
