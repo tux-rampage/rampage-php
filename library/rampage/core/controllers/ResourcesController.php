@@ -280,4 +280,27 @@ class ResourcesController extends AbstractActionController
 
         $strategy->publish();
     }
+
+    /**
+     * Returns the default route config for resource publishing
+     *
+     * @param string $route The route to use. By default this will be "publish resources".
+     * @return array
+     */
+    public static function getConsoleRouteConfig($route = null)
+    {
+        if ($route == '') {
+            $route = 'publish resources';
+        }
+
+        return array(
+            'options' => array(
+                'route' => $route,
+                'defaults' => array(
+                    'controller' => __CLASS__,
+                    'action' => 'publish'
+                ),
+            ),
+        );
+    }
 }

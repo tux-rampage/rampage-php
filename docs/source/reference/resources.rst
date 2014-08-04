@@ -14,6 +14,8 @@ Defining module resources is pretty easy. You just need to add them to your zf2 
 
 .. code-block:: php
 
+    <?php
+
     class Module
     {
         public function getConfig()
@@ -65,12 +67,66 @@ file path prefixed with the scope like this: `scope::file/path.css`.
 Addressing templates
 --------------------
 
-Templates will also populated by the resource locator. You can address them by prepending them with the scope 
+Templates will also be populated by the resource locator. You can address them by prepending them with the scope
 like this: `scope/templatepath`.
 
 .. code-block:: php
 
+    <?php
+
     $viewModel = new ViewModel();
     $viewModel->setTemplate('my.module/some/template');
 
+
+Static resource publishing
+--------------------------
+
+There is also a way to publish resources to the `public` directory for static delivery.
+This is useful for production environments, where performance is important.
+
+Use the publishing controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest way to do this, is to register the resources controller for publishing.
+
+.. code-block:: php
+
+    <?php
+
+    // module.config.php
+    return array(
+        'console' => array(
+            'router' => array(
+                'routes' => array(
+                    'publish-resources' => \rampage\core\controllers\ResourcesController::getConsoleRouteConfig(),
+                )
+            )
+        ),
+    );
+
+You may also pass the route to `getConsoleRouteConfig()` if you don't like `publish resources` as route or create an own route yourself
+pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesController`.
+
+> __NOTE:__ The `getConsoleRouteConfig()` method is available since 1.1.1, prior that version you have to register the route config on your own.
+
+
+Implement or modify the publishing strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The controller uses the service `rampage.ResourcePublishingStrategy` which must implement `rampage\\core\\resources\\PublishingStrategyInterface`.
+By default this interface is implemented by `rampage\\core\\resources\\StaticResourcePublishingStrategy`.
+
+The default strategy will publish all resources to `static/` in the `public` directory.
+
+
+Controllers and routes to be aware of
+-------------------------------------
+
+When implementing an authentication strategy which protects all of your routes from unauthorized access, you should be aware that
+the resource publishing strategy uses a ZF2 route/controller to publish non-static resources from your vendor or module directories.
+
+The controller class is `rampage\\core\\controllers\\ResourcesController` and it is registerd as `rampage.cli.resources` in the controller manager.
+The route for this controller is called `rampage.core.resources`.
+
+If you do not allow this route/controller, public resources from your modules may not be served.
 
