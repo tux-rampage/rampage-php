@@ -58,15 +58,13 @@ class PathManager
             $this->set('root', getcwd());
         }
 
-        if (isset($_SERVER['APP_LOCATION'])) {
+        if (defined('APPLICATION_DIR')) {
+            $this->set('app', APPLICATION_DIR);
+        } else if (isset($_SERVER['APP_LOCATION'])) {
             $this->set('app', $_SERVER['APP_LOCATION']);
         }
 
-        $file = $this->prepare('{{root_dir}}/environment.conf');
-        if (!$skipLocalFile && is_readable($file)) {
-            $local = parse_ini_file($file, false);
-        }
-
+        $localFile = '{{root_dir}}/environment.conf';
         $defaults = array(
             'app' => '{{root_dir}}/application',
             'public' => '{{root_dir}}/public',
@@ -79,11 +77,22 @@ class PathManager
             'public_resources' => '{{media_dir}}/media',
         );
 
+        if (isset($config['__file__'])) {
+            $localFile = $config['__file__'];
+            unset($config['__file__']);
+        }
+
         if (is_array($config) || ($config instanceof \Traversable)) {
             foreach ($config as $type => $path) {
                 $this->set($type, $path);
                 unset($defaults[$type]);
             }
+        }
+
+
+        $file = $this->prepare($localFile);
+        if (!$skipLocalFile && is_readable($file)) {
+            $local = parse_ini_file($file, false);
         }
 
         if (is_array($local) || ($local instanceof \Traversable)) {
