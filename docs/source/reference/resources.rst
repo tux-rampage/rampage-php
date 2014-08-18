@@ -3,6 +3,8 @@
 Module/Component Resources
 ==========================
 
+.. versionadded:: 1.0
+
 Some of your modules may need to provide public resources like images, css or js files.
 To allow bundeling them within your module, rampage offers a resource locator system that will automatically
 publish them. You don't need to copy resources manually or make your vendor directory available to the webserver.
@@ -87,6 +89,8 @@ This is useful for production environments, where performance is important.
 Use the publishing controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. versionadded:: 1.1.1
+
 The easiest way to do this, is to register the resources controller for publishing.
 
 .. code-block:: php
@@ -107,7 +111,31 @@ The easiest way to do this, is to register the resources controller for publishi
 You may also pass the route to `getConsoleRouteConfig()` if you don't like `publish resources` as route or create an own route yourself
 pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesController`.
 
-> __NOTE:__ The `getConsoleRouteConfig()` method is available since 1.1.1, prior that version you have to register the route config on your own.
+.. note::
+
+    The `getConsoleRouteConfig()` method is available since 1.1.1, prior that version you have to register the route config on your own.
+
+.. code-block:: php
+
+    <?php
+
+    returnarray(
+        'console' => array(
+            'router' => array(
+                'routes' => array(
+                    'publish-resources' => array(
+                        'options' => array(
+                            'route' => 'publish resources',
+                            'defaults' => array(
+                                'controller' => 'rampage\\core\\controllers\\ResourcesController',
+                                'action' => 'publish'
+                            ),
+                        ),
+                    )
+                )
+            )
+        )
+    );
 
 
 Implement or modify the publishing strategy
@@ -119,14 +147,13 @@ By default this interface is implemented by `rampage\\core\\resources\\StaticRes
 The default strategy will publish all resources to `static/` in the `public` directory.
 
 
-Controllers and routes to be aware of
--------------------------------------
+Special Controllers/Routes
+--------------------------
 
 When implementing an authentication strategy which protects all of your routes from unauthorized access, you should be aware that
-the resource publishing strategy uses a ZF2 route/controller to publish non-static resources from your vendor or module directories.
+the resource publishing strategy uses a ZF2 route/controller to publish static resources from your vendor or module directories.
 
-The controller class is `rampage\\core\\controllers\\ResourcesController` and it is registerd as `rampage.cli.resources` in the controller manager.
-The route for this controller is called `rampage.core.resources`.
+The controller class is `rampage\\core\\controllers\\ResourcesController` and it is registerd as `rampage.cli.resources` in the
+controller manager. The route for this controller is called `rampage.core.resources`.
 
 If you do not allow this route/controller, public resources from your modules may not be served.
-
