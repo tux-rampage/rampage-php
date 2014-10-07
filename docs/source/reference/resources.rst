@@ -71,6 +71,8 @@ file path prefixed with the scope like this: `scope::file/path.css`.
     <img src="<?php echo $this->resourceUrl('my.module::images/foo.gif') ?>" />
 
 
+.. _resources.templatelocator:
+
 Addressing templates
 --------------------
 
@@ -85,11 +87,21 @@ like this: `scope/templatepath`.
     $viewModel->setTemplate('my.module/some/template');
 
 
+.. _resources.publishing:
+
 Static resource publishing
 --------------------------
 
 There is also a way to publish resources to the `public` directory for static delivery.
 This is useful for production environments, where performance is important.
+
+There are two ways to do this:
+
+1. :ref:`resources.publishing.default`
+2. :ref:`resources.publishing.custom`
+
+
+.. _resources.publishing.default:
 
 Use the publishing controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,6 +155,8 @@ pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesContro
     );
 
 
+.. _resources.publishing.custom:
+
 Implement or modify the publishing strategy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -151,6 +165,8 @@ By default this interface is implemented by `rampage\\core\\resources\\StaticRes
 
 The default strategy will publish all resources to `static/` in the `public` directory.
 
+
+.. _resources.special_notes:
 
 Special Controllers/Routes
 --------------------------
