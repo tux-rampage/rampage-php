@@ -58,7 +58,7 @@ class ServiceCallbackDelegator implements ServiceLocatorAwareInterface
         $this->serviceName = $serviceName;
         $this->method = $method;
     }
-	/**
+    /**
      * {@inheritdoc}
      * @see \Zend\ServiceManager\ServiceLocatorAwareInterface::getServiceLocator()
      */
@@ -67,13 +67,15 @@ class ServiceCallbackDelegator implements ServiceLocatorAwareInterface
         return $this->serviceLocator;
     }
 
-	/**
+    /**
      * {@inheritdoc}
      * @see \Zend\ServiceManager\ServiceLocatorAwareInterface::setServiceLocator()
      */
     public function setServiceLocator(ServiceLocatorInterface $serviceLocator)
     {
         $this->serviceLocator = $serviceLocator;
+        $this->callback = null;
+
         return $this;
     }
 
