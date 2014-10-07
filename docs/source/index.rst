@@ -10,9 +10,13 @@ Welcome to the reference guide to rampage-php - an addon library to `ZendFramewo
 
 .. toctree::
     :hidden:
-    :maxdepth: 3
+    :maxdepth: 4
 
-    toctree
+    reference/quickstart
+    reference/resources
+    reference/theming
+    reference/convenience-classes
+    components
 
 
 .. _reference.overview:
