@@ -34,6 +34,8 @@ use InvalidArgumentException;
  */
 class Theme extends FileLocator implements ThemeInterface
 {
+    const DEFAULT_THEME = '__default__';
+
     /**
      * Fallback
      *
@@ -46,7 +48,7 @@ class Theme extends FileLocator implements ThemeInterface
      *
      * @var string
      */
-    protected $current = '__default__';
+    protected $current = self::DEFAULT_THEME;
 
     /**
      * @var DesignConfig
