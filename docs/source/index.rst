@@ -18,6 +18,7 @@ Overview
    reference/quickstart
    reference/resources
    reference/theming
+   reference/convenience-classes
 
 Indices and tables
 ==================
