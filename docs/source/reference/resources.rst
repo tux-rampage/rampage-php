@@ -19,8 +19,6 @@ Defining module resources is pretty easy. You just need to add them to your zf2 
 
 .. code-block:: php
 
-    <?php
-
     class Module
     {
         public function getConfig()
@@ -66,6 +64,8 @@ Accessing resources in views
 To access resources in views, you can use the `resourceurl` helper. The argument passed to this helper is the relative
 file path prefixed with the scope like this: `scope::file/path.css`.
 
+**Example:**
+
 .. code-block:: html+php
 
     <img src="<?php echo $this->resourceUrl('my.module::images/foo.gif') ?>" />
@@ -76,12 +76,12 @@ file path prefixed with the scope like this: `scope::file/path.css`.
 Addressing templates
 --------------------
 
-Templates will also be populated by the resource locator. You can address them by prepending them with the scope
-like this: `scope/templatepath`.
+Templates will also be populated by the resource locator. You can address them by
+prepending the template path with the scope like this: `scope/templatepath`.
+
+**Example:**
 
 .. code-block:: php
-
-    <?php
 
     $viewModel = new ViewModel();
     $viewModel->setTemplate('my.module/some/template');
@@ -112,18 +112,16 @@ The easiest way to do this, is to register the resources controller for publishi
 
 .. code-block:: php
 
-    <?php
-
     // module.config.php
-    return array(
-        'console' => array(
-            'router' => array(
-                'routes' => array(
+    return [
+        'console' => [
+            'router' => [
+                'routes' => [
                     'publish-resources' => \rampage\core\controllers\ResourcesController::getConsoleRouteConfig(),
-                )
-            )
-        ),
-    );
+                ]
+            ]
+        ],
+    ];
 
 You may also pass the route to `getConsoleRouteConfig()` if you don't like `publish resources` as route or create an own route yourself
 pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesController`.
@@ -134,25 +132,23 @@ pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesContro
 
 .. code-block:: php
 
-    <?php
-
-    returnarray(
-        'console' => array(
-            'router' => array(
-                'routes' => array(
-                    'publish-resources' => array(
-                        'options' => array(
+    return [
+        'console' => [
+            'router' => [
+                'routes' => [
+                    'publish-resources' => [
+                        'options' => [
                             'route' => 'publish resources',
-                            'defaults' => array(
+                            'defaults' => [
                                 'controller' => 'rampage\\core\\controllers\\ResourcesController',
                                 'action' => 'publish'
-                            ),
-                        ),
-                    )
-                )
-            )
-        )
-    );
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ];
 
 
 .. _resources.publishing.custom:

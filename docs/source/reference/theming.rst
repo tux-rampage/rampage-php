@@ -20,8 +20,6 @@ Themes can be defined in your ZF2 module (or application) configuration as follo
 
 .. code-block:: php
 
-    <?php
-
     namespace my\component;
 
     class Module

@@ -33,10 +33,7 @@ the service object will be treated as invokable (i.e. for classes that implement
 
 .. code-block:: php
 
-    <?php
-
     // ...
-
     $callback = new rampage\core\ServiceCallbackDelegator('MyServiceName', 'someMethod');
     $callback->setServiceLocator($serviceManager); // assuming $serviceManager is a ServiceLocator
 
