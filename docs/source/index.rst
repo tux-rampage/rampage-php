@@ -17,6 +17,7 @@ Overview
    reference/overview
    reference/quickstart
    reference/resources
+   reference/theming
 
 Indices and tables
 ==================

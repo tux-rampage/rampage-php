@@ -1,4 +1,4 @@
-.. resources
+.. _resources:
 
 Module/Component Resources
 ==========================
@@ -8,6 +8,9 @@ Module/Component Resources
 Some of your modules may need to provide public resources like images, css or js files.
 To allow bundeling them within your module, rampage offers a resource locator system that will automatically
 publish them. You don't need to copy resources manually or make your vendor directory available to the webserver.
+
+
+.. _resources.defining:
 
 Defining Module Resources
 -------------------------
@@ -54,6 +57,8 @@ If you're using the manifest.xml for your modules, you can define them in the re
             </resources>
     </manifest>
 
+
+.. _resources.helper:
 
 Accessing resources in views
 ----------------------------
