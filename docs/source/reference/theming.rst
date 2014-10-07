@@ -81,7 +81,7 @@ Overwriting Module Resources
 Of course it is possible to overwrite module resources, like templates or public assets, in a theme.
 To do so simply place the file ine a directory named like the module's resource name (See :ref:`resources.defining` for details).
 
-Example::
+**Example:**
 
 * theme directory
     - public
