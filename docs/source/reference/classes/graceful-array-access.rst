@@ -3,7 +3,7 @@
 GracefulArrayAccess
 ===================
 
-This class provides grceful access to arrays or objects that implement ``ArrayAccess``.
+This class provides graceful access to arrays or objects that implement ``ArrayAccess``.
 This means requesting a key that does not exist will not trigger a warning, but return a default instead.
 
 
