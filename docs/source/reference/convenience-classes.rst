@@ -9,3 +9,4 @@ There are some convenience classes to make development of common tasks more easy
     :maxdepth: 1
 
     classes/service-callback
+    classes/graceful-array-access

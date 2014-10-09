@@ -26,6 +26,9 @@ use ArrayAccess;
 use UnexpectedValueException;
 
 
+/**
+ * Allows accessing values of an array (or an instance that implements ArrayAccess) gracefully.
+ */
 class GracefulArrayAccess
 {
     /**
@@ -34,7 +37,7 @@ class GracefulArrayAccess
     protected $container;
 
     /**
-     * @param array|\ArrayAccess $container
+     * @param array|\ArrayAccess $container The container object/array
      * @throws UnexpectedValueException
      */
     public function __construct($container)
@@ -47,6 +50,8 @@ class GracefulArrayAccess
     }
 
     /**
+     * Check if the given key exists
+     *
      * @param string|int $key
      * @return bool
      */
@@ -56,6 +61,8 @@ class GracefulArrayAccess
     }
 
     /**
+     * Returns the value for the given key or the provided default if the key does not exist.
+     *
      * @param string|key $key
      * @param mixed $default
      */
