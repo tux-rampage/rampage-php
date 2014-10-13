@@ -71,7 +71,7 @@ class UrlHelper extends DefaultUrlHelper
      * (non-PHPdoc)
      * @see \Zend\View\Helper\Url::__invoke()
      */
-    public function __invoke($name = null, array $params = array(), $options = array(), $reuseMatchedParams = false)
+    public function __invoke($name = null, $params = array(), $options = array(), $reuseMatchedParams = false)
     {
         if ($name === null) {
             return $this->getUrlModel()->getUrl();
