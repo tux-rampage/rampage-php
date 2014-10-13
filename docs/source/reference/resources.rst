@@ -58,7 +58,7 @@ If you're using the manifest.xml for your modules, you can define them in the re
 
 .. _resources.helper:
 
-Accessing resources in views
+Accessing Resources In Views
 ----------------------------
 
 To access resources in views, you can use the `resourceurl` helper. The argument passed to this helper is the relative
@@ -73,7 +73,7 @@ file path prefixed with the scope like this: `scope::file/path.css`.
 
 .. _resources.templatelocator:
 
-Addressing templates
+Addressing Templates
 --------------------
 
 Templates will also be populated by the resource locator. You can address them by
@@ -89,7 +89,7 @@ prepending the template path with the scope like this: `scope/templatepath`.
 
 .. _resources.publishing:
 
-Static resource publishing
+Static Resource Publishing
 --------------------------
 
 There is also a way to publish resources to the `public` directory for static delivery.
@@ -103,7 +103,7 @@ There are two ways to do this:
 
 .. _resources.publishing.default:
 
-Use the publishing controller
+Use The Publishing Controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. versionadded:: 1.1.1
@@ -153,8 +153,8 @@ pointing to the `publish` action of `rampage\\core\\controllers\\ResourcesContro
 
 .. _resources.publishing.custom:
 
-Implement or modify the publishing strategy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Implement/Modify The Publishing Strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The controller uses the service `rampage.ResourcePublishingStrategy` which must implement `rampage\\core\\resources\\PublishingStrategyInterface`.
 By default this interface is implemented by `rampage\\core\\resources\\StaticResourcePublishingStrategy`.

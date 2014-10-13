@@ -8,7 +8,7 @@ application in a flexible way.
 
 Themes can depend on another theme to which it will fall back when a resource is not found.
 
-Of course you can overwrite module resources like templates, css, js, images, etc.
+Of course you can :ref:`overwrite module resources <theming.overwrite_resources>` like templates, css, js, images, etc.
 In this case the resource will be loaded from your (or the parent) theme if present.
 
 .. _theming.define:

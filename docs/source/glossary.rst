@@ -17,3 +17,7 @@ Glossary
     RecursiveIterator
         Additionally to the :term:`Iterator` pattern, this pattern allows a multilevel or tree iteration over a container object.
         See the `RecursiveIterator <http://de2.php.net/manual/en/class.recursiveiterator.php>`_ php documentation for details.
+
+    fqcn
+        Short for "full qualified class name". The full qualified class name is the class name including its full namespace
+        like ``foo\\bar\\baz\\ClassName`` for ``ClassName`` in ``namespace foo\\bar\\baz``.
