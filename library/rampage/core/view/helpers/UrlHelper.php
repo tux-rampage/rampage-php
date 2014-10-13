@@ -102,7 +102,7 @@ class UrlHelper extends DefaultUrlHelper
 
         if ($match) {
             $routeMatchParams = $match->getParams();
-            $urlOptions = array_merge($match->getParams(), $urlOptions);
+            $urlOptions = array_merge($routeMatchParams, $urlOptions);
         }
 
         $uri = $this->getUrlModel()->getUrl($url, $urlOptions);

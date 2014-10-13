@@ -25,28 +25,40 @@
 
 namespace rampage\core\view\helpers;
 
-use Zend\I18n\View\Helper\Translate as TranslateHelper;
+use Zend\I18n\View\Helper\AbstractTranslatorHelper;
+use Zend\I18n\Exception\RuntimeException;
 
 /**
  * Translation helper
  */
-class TranslatorHelper extends TranslateHelper
+class TranslatorHelper extends AbstractTranslatorHelper
 {
     /**
      * (non-PHPdoc)
      * @see \Zend\I18n\View\Helper\Translate::__invoke()
      */
-    public function __invoke($message, $arg1 = null, $arg2 = null)
+    public function __invoke($message)
     {
         $args = array_slice(func_get_args(), 1);
         $domain = null;
+        $m = array();
 
         if (preg_match('~^([a-z0-9_.-]+)::(.+)$~i', $message, $m)) {
             $domain = $m[1];
             $message = $m[2];
         }
 
-        $message = parent::__invoke($message, $domain);
+        $translator = $this->getTranslator();
+
+        if (null === $translator) {
+            throw new RuntimeException('Translator has not been set');
+        }
+
+        if (null === $domain) {
+            $domain = $this->getTranslatorTextDomain();
+        }
+
+        $message = $translator->translate($message, $domain);
 
         if (is_array($args) && (count($args) > 0)) {
             $message = vsprintf($message, $args);
