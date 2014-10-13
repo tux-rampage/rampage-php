@@ -32,11 +32,11 @@ use Zend\I18n\View\Helper\Translate as TranslateHelper;
  */
 class TranslatorHelper extends TranslateHelper
 {
-	/**
+    /**
      * (non-PHPdoc)
      * @see \Zend\I18n\View\Helper\Translate::__invoke()
      */
-    public function __invoke($message)
+    public function __invoke($message, $arg1 = null, $arg2 = null)
     {
         $args = array_slice(func_get_args(), 1);
         $domain = null;
