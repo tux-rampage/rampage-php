@@ -15,7 +15,7 @@ Welcome to the reference guide to rampage-php - an addon library to `ZendFramewo
     reference/quickstart
     reference/resources
     reference/theming
-    refernece/di.rst
+    refernece/di
     reference/convenience-classes
     components
     glossary
@@ -40,12 +40,12 @@ Read the :doc:`Quickstart Guide <reference/quickstart>` to get started.
 Key Features
 ------------
 
-* :doc:`Tight integration between Di and ServiceManager <refernece/di>`
+* :ref:`Tight integration between Di and ServiceManager <di>`
 * XML based module configurations (XSD provided)
 * :ref:`Powerful resource locators for module resource files (i.e. js and css) <resources>`
 * :ref:`Advanced url locators/helpers <resources.helper>`
 * :ref:`Cascading themes support <theming>`
 * Base implementation to create mergable XML config models
 * :ref:`Service callback wrappers <classes.service_callback>`
-* :doc:`Filesystem Containers <filesystem>`
+* :ref:`Filesystem Containers <filesystem>`
 
