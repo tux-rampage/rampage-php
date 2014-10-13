@@ -41,11 +41,11 @@ interface FileInfoInterface
     public function getRelativePath();
 
     /**
-     * Returns the full qualified path to the file
+     * Returns the url used for stream access function like fopen()
      *
      * @return string
      */
-    public function getPathname();
+    public function getStreamUrl();
 
     /**
      * Returns the filesystem instance

@@ -25,17 +25,29 @@ namespace rampage\filesystem;
 
 use SplFileObject;
 
+/**
+ * FileObject
+ */
 class FileObject extends SplFileObject implements FileInfoInterface
 {
+    /**
+     * PHP < 5.5 compatibility
+     */
     const CLASSNAME = __CLASS__;
 
     /**
-     * @var unknown
+     * @var string
      */
     protected $relativePath = null;
 
+    /**
+     * @var FilesystemInterface
+     */
     protected $filesystem = null;
 
+    /**
+     * @var string
+     */
     protected $openMode = null;
 
     /**
@@ -70,7 +82,7 @@ class FileObject extends SplFileObject implements FileInfoInterface
         return !$this->isReadonly() && parent::isWritable();
     }
 
-	/**
+    /**
      * @see \rampage\filesystem\FileInfoInterface::exists()
      */
     public function exists()
@@ -92,6 +104,15 @@ class FileObject extends SplFileObject implements FileInfoInterface
     public function getRelativePath()
     {
         return $this->relativePath;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @see \rampage\filesystem\FileInfoInterface::getStreamUrl()
+     */
+    public function getStreamUrl()
+    {
+        return $this->getPathname();
     }
 
     /**

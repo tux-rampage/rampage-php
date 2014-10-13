@@ -23,10 +23,13 @@
 
 namespace rampage\filesystem;
 
+use rampage\core\LastPhpError;
+
 use SplFileInfo;
 use FilesystemIterator;
 use RuntimeException;
 use LogicException;
+
 
 /**
  * Local filesystem implementation
@@ -69,10 +72,8 @@ class LocalFilesystem implements FilesystemInterface
      */
     protected function getLastPhpError()
     {
-        $last = error_get_last();
-        $message = (isset($last['message']))? $last['message'] : null;
-
-        return $message;
+        $last = new LastPhpError();
+        return $last->getMessage();
     }
 
     /**
@@ -129,7 +130,7 @@ class LocalFilesystem implements FilesystemInterface
      */
     protected function accept()
     {
-        return in_array($this->innerIterator->current()->getFilename(), array('.', '..'));
+        return !in_array($this->innerIterator->current()->getFilename(), array('.', '..'));
     }
 
     /**
@@ -201,6 +202,10 @@ class LocalFilesystem implements FilesystemInterface
      */
     public function next()
     {
+        if (!$this->valid()) {
+            return $this;
+        }
+
         do {
             $this->current = null;
             $this->innerIterator->next();
@@ -237,8 +242,7 @@ class LocalFilesystem implements FilesystemInterface
      */
     public function offsetExists($offset)
     {
-        $info = $this->info($offset);
-        return $info->exists();
+        return $this->info($offset)->exists();
     }
 
     /**

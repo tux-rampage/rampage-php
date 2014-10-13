@@ -95,9 +95,9 @@ class WrappedFileInfo implements FileInfoInterface
     }
 
     /**
-     * @see \rampage\filesystem\FileInfoInterface::getPathname()
+     * @see \rampage\filesystem\FileInfoInterface::getStreamUrl()
      */
-    public function getPathname()
+    public function getStreamUrl()
     {
         return $this->wrapped->getPathname();
     }
@@ -171,7 +171,7 @@ class WrappedFileInfo implements FileInfoInterface
             throw new \InvalidArgumentException('Bad open mode for read-only filesystem: "%s"');
         }
 
-        return new FileObject($this->filesystem, $this->getRelativePath(), $this->getPathname(), $mode);
+        return new FileObject($this->filesystem, $this->getRelativePath(), $this->getStreamUrl(), $mode);
     }
 
     /**

@@ -23,9 +23,12 @@
 
 namespace rampage\filesystem;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 use SplFileObject;
 use SplFileInfo;
-use RuntimeException;
+
 
 /**
  * Writable local filesystem
@@ -50,7 +53,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
         parent::__construct($baseDir);
     }
 
-	/**
+    /**
      * {@inheritdoc}
      * @see \rampage\filesystem\WritableFilesystemInterface::delete()
      */
@@ -66,23 +69,37 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
         }
 
         if (!$info->isDir()) {
-            if (!unlink($info->getPathname())) {
+            if (!unlink($info->getStreamUrl())) {
                 throw new RuntimeException(sprintf(
                     'Failed to delete file "%s": %s',
                     $path, $this->getLastPhpError()
                 ));
             }
+
+            return $this;
         }
 
-        if (!$recursive) {
-            $iterator = $this->createChildIterator($info->getRelativePath());
+        if ($recursive) {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($info->getStreamUrl()), RecursiveIteratorIterator::CHILD_FIRST);
 
+            /* @var $child FileInfoInterface */
             foreach ($iterator as $child) {
-                $this->delete($child->getRelativePath(), $recursive);
+                if ($child->isDir()) {
+                    $result = @rmdir($child->getStreamUrl());
+                } else {
+                    $result = @unlink($child->getStreamUrl());
+                }
+
+                if (!$result) {
+                    throw new RuntimeException(sprintf(
+                        'Failed to remove entry "%s": %s',
+                        $child->getRelativePath(), $this->getLastPhpError()
+                    ));
+                }
             }
         }
 
-        if (!rmdir($info->getPathname())) {
+        if (!rmdir($info->getStreamUrl())) {
             throw new RuntimeException(sprintf(
                 'Failed to remove directory "%s": %s',
                 $path, $this->getLastPhpError()
@@ -103,7 +120,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
             return $this;
         }
 
-        if (!mkdir($info->getPathname(), $this->dirMode, true)) {
+        if (!mkdir($info->getStreamUrl(), $this->dirMode, true)) {
             throw new RuntimeException(sprintf(
                 'Failed to create directory "%s": %s',
                 $path, $this->getLastPhpError()
@@ -113,7 +130,17 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
         return $this;
     }
 
-	/**
+    /**
+     * {@inheritdoc}
+     * @see \rampage\filesystem\WritableFilesystemInterface::touch()
+     */
+    public function touch($path, $time = null, $atime = null)
+    {
+        $info = $this->info($path);
+        return @touch($info->getStreamUrl(), $time, $atime);
+    }
+
+    /**
      * @see \rampage\filesystem\LocalFilesystem::offsetSet()
      */
     public function offsetSet($offset, $value)
@@ -148,9 +175,7 @@ class WritableLocalFilesystem extends LocalFilesystem implements WritableFilesys
         }
 
         $file->fflush();
-
         $file = null;
-        unset($file);
 
         return $this;
     }

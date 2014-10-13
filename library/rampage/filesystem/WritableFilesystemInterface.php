@@ -41,4 +41,10 @@ interface WritableFilesystemInterface extends FilesystemInterface
      * @return self
      */
     public function delete($path, $recursive = false);
+
+    /**
+     * @param string $path
+     * @return bool
+     */
+    public function touch($path);
 }
