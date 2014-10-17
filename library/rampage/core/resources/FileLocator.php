@@ -128,15 +128,13 @@ class FileLocator implements FileLocatorInterface
     }
 
     /**
-     * Resolve a file
-     *
-     * @param string $file
+     * {@inheritdoc}
      */
     public function resolve($type, $file, $scope = null, $asFileInfo = false)
     {
-        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
-            list($scope, $file) = explode('::', $file, 2);
-        }
+        $assetPath = ($file instanceof AssetPath)? $file : new AssetPath($file, $scope);
+        $file = $assetPath->getPath();
+        $scope = $assetPath->getScope();
 
         if (!$scope || !isset($this->locations[$scope][$type])) {
             return false;

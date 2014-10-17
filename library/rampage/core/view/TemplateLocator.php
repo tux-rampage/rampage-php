@@ -50,12 +50,13 @@ class TemplateLocator implements ViewResolverInterface
     public function resolve($name, RendererInterface $renderer = null)
     {
         $name .= '.phtml';
-        $file = $this->theme->resolve('template', $name, false, true);
+        $file = $this->theme->resolve('template', $name, null, true);
 
         if ($file !== false) {
             return $file->getPathname();
         }
 
+        // TODO: Fallback - about to be removed
         @list($scope, $path) = explode('/', $name, 2);
         $file = $this->theme->resolve('template', $path, $scope, true);
 
@@ -63,6 +64,7 @@ class TemplateLocator implements ViewResolverInterface
             return false;
         }
 
+        trigger_error(sprintf('Found resource template "@%s". You should prefix them with "@" since this fallback will be removed in the next release!', $name), E_USER_WARNING);
         return $file->getPathname();
     }
 }

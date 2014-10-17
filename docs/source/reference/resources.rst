@@ -61,14 +61,17 @@ If you're using the manifest.xml for your modules, you can define them in the re
 Accessing Resources In Views
 ----------------------------
 
-To access resources in views, you can use the `resourceurl` helper. The argument passed to this helper is the relative
-file path prefixed with the scope like this: `scope::file/path.css`.
+To access resources in views, you can use the ``resourceurl`` helper.
+The argument passed to this helper is the relative file path prefixed with ``@`` and the scope like this: ``@scope/file/path.css``.
+
+Paths without the ``@`` prefix will be searched in the current :doc:`theme <theming>` hierarchy directly. No attempt will be made to find them
+in a resource location.
 
 **Example:**
 
 .. code-block:: html+php
 
-    <img src="<?php echo $this->resourceUrl('my.module::images/foo.gif') ?>" />
+    <img src="<?php echo $this->resourceUrl('@my.module/images/foo.gif') ?>" />
 
 
 .. _resources.templatelocator:
@@ -76,8 +79,14 @@ file path prefixed with the scope like this: `scope::file/path.css`.
 Addressing Templates
 --------------------
 
-Templates will also be populated by the resource locator. You can address them by
-prepending the template path with the scope like this: `scope/templatepath`.
+Templates will also be populated by the resource locator. You can address them the same
+way as :ref:`resources in view scripts <resources.helper>` like this: ``@scope/templatepath``.
+
+.. note::
+
+    Paths without the ``@`` prefix will be searched in the :doc:`theme <theming>` directly or treated as
+    default zf2 templates if they're not found in the theme hierarchy.
+
 
 **Example:**
 

@@ -39,7 +39,7 @@ class Theme extends FileLocator implements ThemeInterface
     /**
      * Fallback
      *
-     * @var \rampage\core\resource\FileLocator
+     * @var FileLocatorInterface
      */
     private $fallback = null;
 
@@ -203,14 +203,11 @@ class Theme extends FileLocator implements ThemeInterface
      */
     public function resolve($type, $file, $scope = null, $asFileInfo = false)
     {
-        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
-            list($scope, $file) = explode('::', $file, 2);
-        }
-
-        $result = $this->resolveThemeFile($type, $file, $scope, $asFileInfo);
+        $assetPath = new AssetPath($file, $scope);
+        $result = $this->resolveThemeFile($type, $assetPath->getPath(), $assetPath->getScope(), $asFileInfo);
 
         if (($result === false) && $this->fallback) {
-            $result = $this->fallback->resolve($type, $file, $scope, $asFileInfo);
+            $result = $this->fallback->resolve($type, $assetPath, null, $asFileInfo);
         }
 
         return $result;

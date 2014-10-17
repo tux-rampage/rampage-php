@@ -85,27 +85,29 @@ class UrlHelper extends DefaultUrlHelper
 
         $options['only_return_path'] = true;
 
-        // set base url to '' since the url model will take care of it
-        if ($this->router instanceof TreeRouteStack) {
-            $oldBaseUrl = $this->router->getBaseUrl();
-            $this->router->setBaseUrl('');
-        }
+//         // set base url to '' since the url model will take care of it
+//         if ($this->router instanceof TreeRouteStack) {
+//             $oldBaseUrl = $this->router->getBaseUrl();
+//             $this->router->setBaseUrl('');
+//         }
 
         $url = parent::__invoke($name, $params, $options, $reuseMatchedParams);
         $urlOptions = (is_array($options))? $options : array();
         $match = $this->routeMatch;
 
-        // Restore original base url
-        if ($this->router instanceof TreeRouteStack) {
-            $this->router->setBaseUrl($oldBaseUrl);
-        }
+//         // Restore original base url
+//         if ($this->router instanceof TreeRouteStack) {
+//             $this->router->setBaseUrl($oldBaseUrl);
+//         }
 
         if ($match) {
             $routeMatchParams = $match->getParams();
             $urlOptions = array_merge($routeMatchParams, $urlOptions);
         }
 
+        $urlOptions['extractBasePath'] = true;
         $uri = $this->getUrlModel()->getUrl($url, $urlOptions);
+
         return $uri;
     }
 }

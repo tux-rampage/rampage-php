@@ -29,6 +29,7 @@ use rampage\core\UserConfig;
 use Zend\Http\Request as HttpRequest;
 use Zend\Http\PhpEnvironment\Request as PhpHttpRequest;
 use Zend\Uri\Http as HttpUri;
+use rampage\core\GracefulArrayAccess;
 
 /**
  * URL Model
@@ -185,11 +186,15 @@ class BaseUrl implements UrlModelInterface
     /**
      * Returns the URL
      *
+     * @param string $path
+     * @param array|ArrayAccess $options
      * @return \Zend\Uri\Http
      */
     public function getUrl($path = null, $params = null)
     {
-        $secure = (isset($params['secure']))? (bool)$params['secure'] : ($this->getRequest()->getUri()->getScheme() == 'https');
+        $params = new GracefulArrayAccess($params?: array());
+        $secure = (bool)$params->get('secure', ($this->getRequest()->getUri()->getScheme() == 'https'));
+        $extractBasePath = (bool)$params->get('extractBasePath', true);
         $uri = clone $this->getBaseUrl($secure);
 
         if ($path === null) {
@@ -197,9 +202,21 @@ class BaseUrl implements UrlModelInterface
         }
 
         $base = $uri->getPath();
-        $url = $base . '/' . ltrim($path, '/');
 
+        if ($extractBasePath && !in_array($base, array('', '/'))) {
+            if (substr($path, 0, 1) != '/') {
+                $path = '/' . $path;
+            }
+
+            if (strpos($path, $base) === 0) {
+                // Remove base path
+                $path = substr($params, strlen($base));
+            }
+        }
+
+        $url = rtrim($base, '/') . '/' . ltrim($path, '/');
         $uri->setPath($url);
+
         return $uri;
     }
 }

@@ -32,6 +32,7 @@ return array(
             'resourceurl' => new DIPluginServiceFactory('rampage\core\view\helpers\ResourceUrlHelper'),
             'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
             'url' => 'rampage\core\view\helpers\UrlHelperFactory',
+            'baseUrl' => new DIPluginServiceFactory('rampage\core\view\helpers\BaseUrlHelper'),
         ),
         'aliases' => array(
             '__' => 'translateargs'

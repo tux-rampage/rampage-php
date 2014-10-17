@@ -34,7 +34,7 @@ interface FileLocatorInterface
      * Resolve a file path
      *
      * @param string $type
-     * @param string $file
+     * @param string|AssetPath $file
      * @param string $scope
      * @param bool $asFileInfo
      * @return string|\SplFileInfo|false
