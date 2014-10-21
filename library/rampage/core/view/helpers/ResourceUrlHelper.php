@@ -54,7 +54,7 @@ class ResourceUrlHelper extends AbstractHelper
     /**
      * URL locator
      *
-     * @return \rampage\core\resource\UrlLocatorInterface
+     * @return UrlLocatorInterface
      */
     protected function getUrlLocator()
     {

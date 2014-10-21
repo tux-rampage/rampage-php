@@ -149,10 +149,7 @@ class UrlLocator implements UrlLocatorInterface
      */
     public function getUrl($file, $scope = null)
     {
-        if (!$scope && ($scope !== false) && (strpos($file, '::') !== false)) {
-            @list($scope, $file) = explode('::', $file, 2);
-        }
-
-        return $this->resolve($file, $scope);
+        $asset = new AssetPath($file, $scope);
+        return $this->resolve($asset->getPath(), $asset->getScope());
     }
 }
