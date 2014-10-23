@@ -52,7 +52,7 @@ class TemplateLocator implements ViewResolverInterface
         $name .= '.phtml';
         $file = $this->theme->resolve('template', $name, null, true);
 
-        if ($file !== false) {
+        if (($file !== false) && $file->isFile() && $file->isReadable()) {
             return $file->getPathname();
         }
 
