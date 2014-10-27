@@ -23,6 +23,9 @@ return array(
         'rampage.Theme' => 'rampage\core\services\ThemeFactory',
         'rampage.ResourcePublishingStrategy' => 'rampage\core\services\ResourcePublishingStrategyFactory',
         'UrlManager' => new DIServiceFactory('rampage\core\url\UrlModelLocator'),
+        'rampage.UrlConfig' => 'rampage\core\services\UrlConfigFactory',
+
+        'rampage\core\resources\UrlLocator' => 'rampage\core\services\ResourceUrlLocatorFactory',
 
         // Doctrine
         'doctrine.cache.filesystem' => 'rampage\core\services\DoctrineFilesystemCacheFactory',
@@ -36,6 +39,7 @@ return array(
         'rampage\core\resources\Theme' => 'rampage.Theme',
         'rampage\core\resources\FileLocator' => 'rampage.ResourceLocator',
         'rampage\core\url\UrlModelLocator' => 'UrlManager',
+        'rampage\core\url\UrlConfig' => 'rampage.UrlConfig',
 
         // Core
         'UserConfig' => 'rampage.UserConfig',

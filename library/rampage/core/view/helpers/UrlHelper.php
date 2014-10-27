@@ -27,7 +27,7 @@ namespace rampage\core\view\helpers;
 
 use rampage\core\url\UrlModelLocator;
 use Zend\View\Helper\Url as DefaultUrlHelper;
-use Zend\Mvc\Router\Http\TreeRouteStack;
+use rampage\core\GracefulArrayAccess;
 
 /**
  * Advanced URL helper to build FQ URLs
@@ -83,22 +83,17 @@ class UrlHelper extends DefaultUrlHelper
             $options = array();
         }
 
+        $optionsContainer = new GracefulArrayAccess($options);
+        $pathOnly = (bool)$optionsContainer->get('only_return_path', false);
         $options['only_return_path'] = true;
-
-//         // set base url to '' since the url model will take care of it
-//         if ($this->router instanceof TreeRouteStack) {
-//             $oldBaseUrl = $this->router->getBaseUrl();
-//             $this->router->setBaseUrl('');
-//         }
 
         $url = parent::__invoke($name, $params, $options, $reuseMatchedParams);
         $urlOptions = (is_array($options))? $options : array();
         $match = $this->routeMatch;
 
-//         // Restore original base url
-//         if ($this->router instanceof TreeRouteStack) {
-//             $this->router->setBaseUrl($oldBaseUrl);
-//         }
+        if ($pathOnly) {
+            return $url;
+        }
 
         if ($match) {
             $routeMatchParams = $match->getParams();

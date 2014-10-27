@@ -30,6 +30,13 @@ namespace rampage\core\url;
 interface UrlModelInterface
 {
     /**
+     * Returns the url typename for this url builder
+     *
+     * @return string
+     */
+    public function getType();
+
+    /**
      * This method should build the full qualified URL for the given path and parameters
      *
      * @param string $path

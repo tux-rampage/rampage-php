@@ -94,10 +94,18 @@ class BaseUrl implements UrlModelInterface
     public function setBaseUrl($baseUrl, $secure = false)
     {
         $type = ($secure)? 'secure' : 'unsecure';
+
         if (preg_match('~^https?://~', $baseUrl)) {
-            $this->baseUrl[$type] = new HttpUri($baseUrl);
-            return $this;
-        } else if ($baseUrl instanceof HttpUri) {
+            $baseUrl = new HttpUri($baseUrl);
+        }
+
+        if ($baseUrl instanceof HttpUri) {
+            if ($secure && ($baseUrl->getScheme() == 'http') && ($baseUrl->getPort() == 80)) {
+                $baseUrl = clone $baseUrl;
+                $baseUrl->setScheme('https')
+                    ->setPort(null);
+            }
+
             $this->baseUrl[$type] = $baseUrl;
             return $this;
         }

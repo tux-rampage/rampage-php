@@ -17,7 +17,7 @@ return array(
             'rampage\core\resources\ThemeInterface' => 'rampage\core\resources\Theme',
             'rampage\core\resources\UrlLocatorInterface' => 'rampage\core\resources\UrlLocator',
 
-            'rampage\core\url\UrlConfigInterface' => 'rampage\core\UserConfig',
+            'rampage\core\url\UrlConfigInterface' => 'rampage\core\url\UrlConfig',
             'rampage\core\UserConfigInterface' => 'rampage\core\UserConfig',
             'rampage\core\resources\PublishingStrategyInterface' => 'rampage.ResourcePublishingStrategy'
         ),

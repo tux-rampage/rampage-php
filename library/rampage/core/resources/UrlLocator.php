@@ -25,7 +25,12 @@
 
 namespace rampage\core\resources;
 
+use rampage\core\exception;
+use rampage\core\url\UrlModelInterface;
+
 use Zend\View\HelperPluginManager;
+use Zend\Mvc\Router\RouteInterface;
+
 
 /**
  * Theme auto publishing
@@ -52,9 +57,14 @@ class UrlLocator implements UrlLocatorInterface
     protected $publishingStrategy = null;
 
     /**
-     * @var HelperPluginManager
+     * @var RouteInterface
      */
-    protected $helpers = null;
+    protected $router = null;
+
+    /**
+     * @var UrlModelInterface
+     */
+    protected $urlModel = null;
 
     /**
      * Construct
@@ -62,11 +72,28 @@ class UrlLocator implements UrlLocatorInterface
      * @param FileLocatorInterface $fileLocator
      * @param UrlRepository $urlRepository
      */
-    public function __construct(ThemeInterface $theme, PublishingStrategyInterface $strategy, HelperPluginManager $helpers)
+    public function __construct(ThemeInterface $theme, PublishingStrategyInterface $strategy)
     {
         $this->theme = $theme;
-        $this->helpers = $helpers;
         $this->publishingStrategy = $strategy;
+    }
+
+    /**
+     * @param RouteInterface $router
+     * @return self
+     */
+    public function setRouter(RouteInterface $router)
+    {
+        $this->router = $router;
+        return $this;
+    }
+
+    /**
+     * @param UrlModelInterface $urlModel
+     */
+    public function setUrlModel(UrlModelInterface $urlModel)
+    {
+        $this->urlModel = $urlModel;
     }
 
     /**
@@ -130,13 +157,26 @@ class UrlLocator implements UrlLocatorInterface
             $url = $this->publishingStrategy->find($filename, $scope, $this->getTheme());
         }
 
-        if ($url == false) {
-            $urlHelper = $this->helpers->get('url');
-            $url = $urlHelper('rampage.core.resources', array(
+        if ($url === false) {
+            if (!$this->router) {
+                throw new exception\DependencyException('Missing router instance to build dynamic resource url');
+            }
+
+            $routeOptions = array(
+                'name' => 'rampage.core.resources',
+            );
+
+            $routeParams = array(
                 'theme' => $theme,
                 'scope' => ($scope? : '__theme__'),
                 'file' => $filename
-            ));
+            );
+
+            $url = $this->router->assemble($routeParams, $routeOptions);
+
+            if ($this->urlModel) {
+                $url = $this->urlModel->getUrl($url);
+            }
         }
 
         $this->locations[$theme][$scopeIndex][$filename] = $url;
