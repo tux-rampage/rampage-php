@@ -204,7 +204,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
      */
     protected function log($message)
     {
-        $this->io->write($message);
+        $this->io->writeLine($message);
 
         if ($this->logger) {
             $this->logger->info($message);
