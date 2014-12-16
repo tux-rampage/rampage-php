@@ -32,8 +32,7 @@ class UrlConfig extends ArrayConfig implements UrlConfigInterface
      */
     public function configureUrlModel(UrlModelInterface $url)
     {
-        $type = $url->getType();
-
+        $type = $url->getType()? : 'base';
         $unsecureUrl = $this->getSection($type)->get('unsecure');
         $secureUrl = $this->getSection($type)->get('secure');
 
