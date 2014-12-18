@@ -218,7 +218,7 @@ class BaseUrl implements UrlModelInterface
 
             if (strpos($path, $base) === 0) {
                 // Remove base path
-                $path = substr($params, strlen($base));
+                $path = substr($path, strlen($base));
             }
         }
 
