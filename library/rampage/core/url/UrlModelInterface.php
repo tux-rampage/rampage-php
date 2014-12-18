@@ -53,4 +53,12 @@ interface UrlModelInterface
      * @return self Must return $this for a fluent interface
      */
     public function setBaseUrl($baseUrl, $secure = false);
+
+    /**
+     * Set the base path that should be rewritten (i.e. for proxies)
+     *
+     * @param string $path
+     * @return self
+     */
+    public function setRewriteBasePath($path);
 }

@@ -33,8 +33,10 @@ class UrlConfig extends ArrayConfig implements UrlConfigInterface
     public function configureUrlModel(UrlModelInterface $url)
     {
         $type = $url->getType()? : 'base';
-        $unsecureUrl = $this->getSection($type)->get('unsecure');
-        $secureUrl = $this->getSection($type)->get('secure');
+        $section = $this->getSection($type);
+        $unsecureUrl = $section->get('unsecure');
+        $secureUrl = $section->get('secure');
+        $rewriteBasePath = $section->get('rewriteBasePath');
 
         if ($unsecureUrl) {
             $url->setBaseUrl($unsecureUrl, false);
@@ -45,6 +47,8 @@ class UrlConfig extends ArrayConfig implements UrlConfigInterface
         } else if ($unsecureUrl) {
             $url->setBaseUrl($unsecureUrl, true);
         }
+
+        $url->setRewriteBasePath($rewriteBasePath);
 
         return $this;
     }

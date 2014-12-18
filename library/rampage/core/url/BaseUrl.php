@@ -51,9 +51,14 @@ class BaseUrl implements UrlModelInterface
     protected $type = null;
 
     /**
+     * @var string
+     */
+    protected $rewriteBasePath = null;
+
+    /**
      * Base Url
      *
-     * @var array[\Zend\Http\Uri]
+     * @var \Zend\Http\Uri[]
      */
     private $baseUrl = array();
 
@@ -63,6 +68,42 @@ class BaseUrl implements UrlModelInterface
     public function __construct($type = null)
     {
         $this->type = $type;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    protected function rewriteBasePath($path)
+    {
+        if (!$this->rewriteBasePath) {
+            return $path;
+        }
+
+        if (substr($this->rewriteBasePath, 0, 6) == 'regex:') {
+            $pattern = substr($this->rewriteBasePath, 6);
+            return @preg_replace($pattern, '', $path);
+        }
+
+        if (strpos($path, $this->rewriteBasePath) === 0) {
+            $path = substr($path, strlen($this->rewriteBasePath));
+        }
+
+        return $path;
+    }
+
+    /**
+     * @param string $path
+     * @return self
+     */
+    public function setRewriteBasePath($path)
+    {
+        if ($path && (substr($path, 0, 1) != '/') && (substr($path, 0, 6) != 'regex:')) {
+            $path = '/' . $path;
+        }
+
+        $this->rewriteBasePath = $path;
+        return $this;
     }
 
     /**
@@ -211,7 +252,9 @@ class BaseUrl implements UrlModelInterface
 
         $base = $uri->getPath();
 
-        if ($extractBasePath && !in_array($base, array('', '/'))) {
+        if ($extractBasePath && $this->rewriteBasePath) {
+            $path = $this->rewriteBasePath($path);
+        } else if ($extractBasePath && !in_array($base, array('', '/'))) {
             if (substr($path, 0, 1) != '/') {
                 $path = '/' . $path;
             }
