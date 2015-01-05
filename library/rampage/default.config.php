@@ -12,6 +12,12 @@ return array(
         )
     ),
 
+    'rampage' => [
+        'resources' => [
+            'rampage.core' => __DIR__ . '/../../resources',
+        ]
+    ],
+
     'router' => array(
         'routes' => array(
             'rampage.core.resources' => new resources\ResourceRoute('_res',array(
@@ -33,6 +39,7 @@ return array(
             'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
             'url' => 'rampage\core\view\helpers\UrlHelperFactory',
             'baseUrl' => new DIPluginServiceFactory('rampage\core\view\helpers\BaseUrlHelper'),
+            'requireJs' => 'rampage\core\view\helpers\RequireJsHelperFactory',
         ),
         'aliases' => array(
             '__' => 'translateargs'

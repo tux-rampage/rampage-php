@@ -278,7 +278,7 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
         $path = implode('/', array_filter($segments));
         $info = new SplFileInfo($this->targetDir . '/' . $path);
 
-        if ($info->isFile()) {
+        if ($info->isFile() || $info->isDir()) {
             return $path;
         }
 
