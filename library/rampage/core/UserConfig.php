@@ -26,7 +26,7 @@
 namespace rampage\core;
 
 /**
- * Application config
+ * @deprecated UserConfig will be removed soon or later
  */
 class UserConfig extends xml\AggregatedXmlConfig implements UserConfigInterface, url\UrlConfigInterface
 {

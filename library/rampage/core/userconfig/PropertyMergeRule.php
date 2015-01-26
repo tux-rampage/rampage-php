@@ -30,7 +30,7 @@ use rampage\core\xml\SimpleXmlElement;
 use rampage\core\xml\exception\RuntimeException;
 
 /**
- * Config property merge rule
+ * @deprecated UserConfig will be removed soon or later
  */
 class PropertyMergeRule extends AbstractPathRule
 {

@@ -25,7 +25,7 @@
 namespace rampage\core;
 
 /**
- * Interface for user config
+ * @deprecated UserConfig will be removed soon or later
  */
 interface UserConfigInterface
 {
