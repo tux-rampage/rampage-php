@@ -55,7 +55,7 @@ class ServiceManager extends ZendServiceManager
         return $cName;
     }
 
-	/**
+    /**
      * Custom setShared implementation.
      *
      * This does not check if a service can be instanciated by this service manager.
@@ -83,35 +83,4 @@ class ServiceManager extends ZendServiceManager
         $invokableClass = strtr($invokableClass, '.', '\\');
         return parent::setInvokableClass($name, $invokableClass, $shared);
     }
-
-//     /**
-//      * {@inheritdoc}
-//      *
-//      * Instead of the Zend service manager this will not fail when there is a factory or invokable definition
-//      * This will ALWAYS allow to supersed configurations by an alias.
-//      *
-//      * @see \Zend\ServiceManager\ServiceManager::setAlias()
-//      */
-//     public function setAlias($alias, $class)
-//     {
-//         $canonical = $this->canonicalizeName($alias);
-//         $class = $this->canonicalizeName($class);
-
-//         if ($canonical == $class) {
-//             unset($this->aliases[$canonical]);
-//             return $this;
-//         }
-
-//         if (isset($this->aliases[$canonical]) && !$this->allowOverride) {
-//             throw new Exception\InvalidServiceNameException(sprintf(
-//                 'An alias by the name "%s" or "%s" already exists',
-//                 $canonical,
-//                 $alias
-//             ));
-//         }
-
-//         $this->aliases[$canonical] = $class;
-
-//         return $this;
-//     }
 }
