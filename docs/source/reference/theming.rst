@@ -62,6 +62,34 @@ One module may define multiple themes if needed.
 
 .. _theming.dirlayout:
 
+
+Using The Theme
+---------------
+
+The current theme can be set either via calling the ``setCurrentTheme()`` method on the theme instance or
+by defining the default theme in the config.
+
+If no theme is set explicitly and no default theme is defined, the current theme will be set to ``Theme::DEFAULT_THEME``.
+
+
+**Defining the theme programmatically:**
+
+.. code-block:: php
+
+    $serviceManager->get('rampage.theme')->setCurrentTheme('my.theme.name');
+
+
+**Defining the theme via config:**
+
+.. code-block:: php
+
+    return [
+        'rampage' => [
+            'default_theme' => 'my.theme.name',
+        ]
+    ];
+
+
 Theme Directory Layout
 ----------------------
 
