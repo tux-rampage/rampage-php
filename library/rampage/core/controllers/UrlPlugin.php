@@ -24,76 +24,27 @@
 
 namespace rampage\core\controllers;
 
-use rampage\core\url\UrlModelLocator;
+use rampage\core\BaseUrl;
+use rampage\core\GracefulArrayAccess;
+
 use Zend\Mvc\Controller\Plugin\Url as ZendUrlPlugin;
-use Zend\Mvc\Exception;
-use Zend\Mvc\Router\Http\TreeRouteStack;
-use Zend\Mvc\InjectApplicationEventInterface;
-use Zend\Mvc\MvcEvent;
-use Zend\EventManager\EventInterface;
 
 /**
- * Url plugin that'll make use of the URL model
+ * Url plugin that'll make use of the base url
  */
 class UrlPlugin extends ZendUrlPlugin
 {
     /**
-     * @var \Zend\Mvc\Router\RouteMatch
+     * @var BaseUrl
      */
-    private $routeMatch;
+    private $baseUrl = null;
 
     /**
-     * @var \Zend\Mvc\Router\RouteStackInterface
+     * @param BaseUrl|\Zend\Uri\Http|string $baseUrl
      */
-    private $router;
-
-    /**
-     * @var UrlModelLocator
-     */
-    private $urlModelLocator = null;
-
-    /**
-     * @param UrlModelLocator $locator
-     */
-    public function __construct(UrlModelLocator $locator)
+    public function __construct($baseUrl = null)
     {
-        $this->urlModelLocator = $locator;
-    }
-
-    /**
-     * @throws Exception\DomainException
-     * @return \Zend\Mvc\Router\RouteStackInterface
-     */
-    protected function getRouter()
-    {
-        if ($this->router) {
-            return $this->router;
-        }
-
-        $controller = $this->getController();
-        if (!$controller instanceof InjectApplicationEventInterface) {
-            throw new Exception\DomainException('Url plugin requires a controller that implements InjectApplicationEventInterface');
-        }
-
-        $event = $controller->getEvent();
-        if ($event instanceof MvcEvent) {
-            $this->router = $event->getRouter();
-            $this->routeMatch = $event->getRouteMatch();
-        } else if ($event instanceof EventInterface) {
-            $this->router = $event->getParam('router', false);
-            $this->routeMatch = $event->getParam('route-match');
-        }
-
-        return $this->router;
-    }
-
-    /**
-     * @return \Zend\Mvc\Router\RouteMatch
-     */
-    protected function getRouteMatch()
-    {
-        $this->getRouter();
-        return $this->routeMatch;
+        $this->baseUrl = ($baseUrl instanceof BaseUrl)? $baseUrl : new BaseUrl($baseUrl);
     }
 
     /**
@@ -102,44 +53,27 @@ class UrlPlugin extends ZendUrlPlugin
      */
     public function fromRoute($name = null, array $params = array(), $options = array(), $reuseMatchedParams = false)
     {
-        if (!$this->urlModelLocator || !$this->urlModelLocator->has('base')) {
-            return parent::fromRoute($name, $params, $options, $reuseMatchedParams);
-        }
-
-        $urlModel = $this->urlModelLocator->get('base');
-        if ($name === null) {
-            return $urlModel->getUrl();
-        }
-
         if ((func_num_args() == 3) && is_bool($options)) {
             // to meet this check for num args in parent method imeplementation
             $reuseMatchedParams = $options;
             $options = array();
         }
 
-        $options['only_return_path'] = true;
-        $router = $this->getRouter();
-
-        // set base url to '' since the url model will take care of it
-        if ($router instanceof TreeRouteStack) {
-            $oldBaseUrl = $router->getBaseUrl();
-            $router->setBaseUrl('');
+        if (!is_array($options) && !($options instanceof \ArrayAccess)) {
+            $options = array();
         }
+
+        $baseUrl = clone $this->baseUrl;
+        $pathOnly = (new GracefulArrayAccess($options))->get('only_return_path');
+        $options['uri'] = $baseUrl->getUrl(null, $options);
+        $options['only_return_path'] = true;
 
         $url = parent::fromRoute($name, $params, $options, $reuseMatchedParams);
-        $urlOptions = (is_array($options))? $options : array();
-        $match = $this->getRouteMatch();
 
-        // Restore original base url
-        if ($router instanceof TreeRouteStack) {
-            $router->setBaseUrl($oldBaseUrl);
+        if ($pathOnly) {
+            return $url;
         }
 
-        if ($match) {
-            $urlOptions = array_merge($match->getParams(), $urlOptions);
-        }
-
-        $uri = $urlModel->getUrl($url, $urlOptions);
-        return $uri;
+        return $baseUrl->getUrl($url, $options);
     }
 }

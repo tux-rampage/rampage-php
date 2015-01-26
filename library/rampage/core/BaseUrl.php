@@ -23,32 +23,22 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\url;
+namespace rampage\core;
 
-use rampage\core\UserConfig;
 use Zend\Http\Request as HttpRequest;
 use Zend\Http\PhpEnvironment\Request as PhpHttpRequest;
 use Zend\Uri\Http as HttpUri;
-use rampage\core\GracefulArrayAccess;
+
 
 /**
- * URL Model
+ * Base URL wrapper
  */
-class BaseUrl implements UrlModelInterface
+class BaseUrl
 {
     /**
-     * HTTP request
-     *
      * @var HttpRequest
      */
     private $request = null;
-
-    /**
-     * Type
-     *
-     * @var string
-     */
-    protected $type = null;
 
     /**
      * @var string
@@ -56,18 +46,40 @@ class BaseUrl implements UrlModelInterface
     protected $rewriteBasePath = null;
 
     /**
-     * Base Url
-     *
-     * @var \Zend\Http\Uri[]
+     * @var bool
      */
-    private $baseUrl = array();
+    protected $secureByDefault = null;
+
+    /**
+     * @var HttpUri
+     */
+    protected $baseUrl = null;
+
+    /**
+     * @var HttpUri
+     */
+    protected $secureBaseUrl;
 
     /**
      * @param string $type
      */
-    public function __construct($type = null)
+    public function __construct($baseUrl = null, $secureBaseUrl = null)
     {
-        $this->type = $type;
+        if ($baseUrl !== null) {
+            $this->setBaseUrl($baseUrl, false);
+        }
+
+        if ($secureBaseUrl !== null) {
+            $this->setBaseUrl($secureBaseUrl, true);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string)$this->getUrl();
     }
 
     /**
@@ -93,6 +105,32 @@ class BaseUrl implements UrlModelInterface
     }
 
     /**
+     * @return HttpUri
+     */
+    protected function buildFromRequestUri($path = null, $secure = false)
+    {
+        $uri = new HttpUri();
+        $requestUri = $this->getRequest()->getUri();
+        $scheme = ($secure)? 'https' : 'http';
+        $defaultPort = ($secure)? 443 : 80;
+
+        if ($path === null) {
+            $path = $this->getRequest()->getBaseUrl();
+        }
+
+        $uri->setHost($requestUri->getHost())
+            ->setScheme($scheme);
+
+        if (($requestUri->getScheme() == $scheme) && ($requestUri->getPort() != $defaultPort)) {
+            $uri->setPort($requestUri->getPort());
+        }
+
+        $uri->setPath((string)$path);
+
+        return $uri;
+    }
+
+    /**
      * @param string $path
      * @return self
      */
@@ -107,74 +145,55 @@ class BaseUrl implements UrlModelInterface
     }
 
     /**
-     * Returns the base url type
-     *
-     * @return string|null
+     * @return boolean
      */
-    public function getType()
+    public function isSecureByDefault()
     {
-        return $this->type;
+        if ($this->secureByDefault === null) {
+            $this->secureByDefault = ($this->getRequest()->getUri()->getScheme() == 'https');
+        }
+
+        return $this->secureByDefault;
     }
 
     /**
-     * Set application config
-     *
-     * @param Config $config
+     * @param boolean $flag
+     * @return self
      */
-    public function setConfig(UserConfig $config)
+    public function setSecureByDefault($flag = null)
     {
-        $config->configureUrlModel($this);
+        $this->secureByDefault = ($flag === null)? null : (bool)$flag;
+        return $this;
     }
 
     /**
-     * Set the base url
-     *
      * @param string $baseUrl
-     * @return \rampage\core\model\Url
+     * @param bool $secure
+     * @return self
      */
-    public function setBaseUrl($baseUrl, $secure = false)
+    public function setBaseUrl($baseUrl = null, $secure = false)
     {
-        $type = ($secure)? 'secure' : 'unsecure';
-
-        if (preg_match('~^https?://~', $baseUrl)) {
-            $baseUrl = new HttpUri($baseUrl);
-        }
-
-        if ($baseUrl instanceof HttpUri) {
-            if ($secure && ($baseUrl->getScheme() == 'http') && ($baseUrl->getPort() == 80)) {
-                $baseUrl = clone $baseUrl;
-                $baseUrl->setScheme('https')
-                    ->setPort(null);
+        if (!$baseUrl instanceof HttpUri) {
+            if (($baseUrl !== null) && preg_match('~^https?://', $baseUrl)) {
+                $baseUrl = new HttpUri((string)$baseUrl);
+            } else {
+                $baseUrl = $this->buildFromRequestUri($baseUrl, $secure);
             }
-
-            $this->baseUrl[$type] = $baseUrl;
-            return $this;
         }
 
-        $uri = new HttpUri();
-        $requestUri = $this->getRequest()->getUri();
-        $scheme = ($secure)? 'https' : 'http';
-        $defaultPort = ($secure)? 443 : 80;
-
-        $uri->setHost($requestUri->getHost())
-            ->setScheme($scheme);
-
-        if (($requestUri->getScheme() == $scheme) && ($requestUri->getPort() != $defaultPort)) {
-            $uri->setPort($requestUri->getPort());
+        if ($secure) {
+            $this->secureBaseUrl = $baseUrl;
+        } else {
+            $this->baseUrl = $baseUrl;
         }
-
-        $uri->setPath((string)$baseUrl);
-        $this->baseUrl[$type] = $uri;
 
         return $this;
     }
 
     /**
-     * HTTP request
-     *
-     * @return \Zend\Http\PhpEnvironment\Request
+     * @return HttpRequest
      */
-    protected function getRequest()
+    public function getRequest()
     {
         if (!$this->request) {
             $this->setRequest(new PhpHttpRequest());
@@ -194,62 +213,66 @@ class BaseUrl implements UrlModelInterface
     }
 
     /**
-     * Default base url
-     *
-     * @return string
+     * @return HttpUri
      */
-    protected function getDefaultBaseUrl()
+    public function getSecureBaseUrl()
     {
-        $baseUrl = $this->getRequest()->getBaseUrl();
+        if (!$this->secureBaseUrl) {
+            $uri = null;
 
-        if ($type = $this->getType()) {
-            $baseUrl = rtrim($baseUrl, '/') . '/' . trim($type, '/');
+            if ($this->baseUrl) {
+                $uri = clone $this->baseUrl;
+                $uri->setScheme('https');
+            }
+
+            $this->setBaseUrl($uri, true);
         }
 
-        return $baseUrl;
+        return $this->secureBaseUrl;
     }
 
     /**
-     * Base url
-     *
+     * @return HttpUri
+     */
+    public function getUnsecureBaseUrl()
+    {
+        if (!$this->baseUrl) {
+            $this->setBaseUrl();
+        }
+
+        return $this->baseUrl;
+    }
+
+    /**
      * @param bool $secure
-     * @return \Zend\Uri\Http
+     * @return HttpUri
      */
-    protected function getBaseUrl($secure = false)
+    public function getBaseUrl($secure = null)
     {
-        $type = ($secure)? 'secure' : 'unsecure';
-        if (isset($this->baseUrl[$type])) {
-            return $this->baseUrl[$type];
+        if ($secure || (($secure === null) && $this->isSecureByDefault())) {
+            return $this->getSecureBaseUrl();
         }
 
-        if ($secure && isset($this->baseUrl['unsecure'])) {
-            $default = clone $this->baseUrl['unsecure'];
-        } else {
-            $default = $this->getDefaultBaseUrl();
-        }
-
-        $this->setBaseUrl($default, $secure);
-        return $this->baseUrl[$type];
+        return $this->getUnsecureBaseUrl();
     }
 
     /**
-     * Returns the URL
-     *
      * @param string $path
      * @param array|ArrayAccess $options
-     * @return \Zend\Uri\Http
+     * @return HttpUri
      */
     public function getUrl($path = null, $params = null)
     {
         $params = new GracefulArrayAccess($params?: array());
-        $secure = (bool)$params->get('secure', ($this->getRequest()->getUri()->getScheme() == 'https'));
+        $secure = (bool)$params->get('secure', $this->isSecureByDefault());
         $extractBasePath = (bool)$params->get('extractBasePath', true);
-        $uri = clone $this->getBaseUrl($secure);
+        $uri = $this->getBaseUrl($secure);
 
         if ($path === null) {
             return $uri;
         }
 
+        $uri = clone $uri;
         $base = $uri->getPath();
 
         if ($extractBasePath && $this->rewriteBasePath) {

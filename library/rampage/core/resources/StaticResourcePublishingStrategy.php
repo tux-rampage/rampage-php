@@ -27,15 +27,16 @@ namespace rampage\core\resources;
 
 use rampage\core\exception;
 use rampage\core\PathManager;
-use rampage\core\url\UrlModelLocator;
+use rampage\core\BaseUrl;
+
+use rampage\io\IOInterface;
+use rampage\io\NullIO;
 
 use DirectoryIterator;
 use SplFileInfo;
 
 use Zend\Log\LoggerAwareInterface;
 use Zend\Log\LoggerInterface;
-use rampage\io\IOInterface;
-use rampage\io\NullIO;
 
 /**
  * Static resource publishing strategy
@@ -56,9 +57,9 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
     protected $config = array();
 
     /**
-     * @var UrlModelLocator
+     * @var BaseUrl
      */
-    protected $urlManager = null;
+    protected $baseUrl = null;
 
     /**
      * @var LoggerInterface
@@ -92,25 +93,29 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
     }
 
     /**
-     * @param UrlModelLocator $urlManager
+     * @param BaseUrl|string $baseUrl
      * @return self
      */
-    public function setUrlManager(UrlModelLocator $urlManager)
+    public function setBaseUrl($baseUrl = null)
     {
-        $this->urlManager = $urlManager;
+        if (!$baseUrl instanceof BaseUrl) {
+            $baseUrl = new BaseUrl($baseUrl);
+        }
+
+        $this->baseUrl = $baseUrl;
         return $this;
     }
 
     /**
-     * @return \rampage\core\url\UrlModelInterface
+     * @return BaseUrl
      */
-    protected function getUrlModel()
+    protected function getBaseUrl()
     {
-        if ($this->urlManager && $this->urlManager->has('static')) {
-            return $this->urlManager->get('static');
+        if (!$this->baseUrl) {
+            $this->setBaseUrl();
         }
 
-        return false;
+        return $this->baseUrl;
     }
 
     /**
@@ -309,8 +314,8 @@ class StaticResourcePublishingStrategy implements PublishingStrategyInterface, L
             $result = $this->findStaticFile(array(self::SCOPE_RESOURCE, $scope, $file));
         }
 
-        if (($result !== false) && ($urlModel = $this->getUrlModel())) {
-            $result = $urlModel->getUrl($result);
+        if ($result !== false) {
+            $result = $this->baseUrl->getUrl($result);
         }
 
         return $result;

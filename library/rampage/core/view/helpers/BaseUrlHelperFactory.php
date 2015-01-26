@@ -1,7 +1,6 @@
 <?php
 /**
- * This is part of rampage.php
- * Copyright (c) 2012 Axel Helmert
+ * Copyright (c) 2015 Axel Helmert
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @category  library
- * @package   rampage.core
  * @author    Axel Helmert
- * @copyright Copyright (c) 2013 Axel Helmert
+ * @copyright Copyright (c) 2015 Axel Helmert
  * @license   http://www.gnu.org/licenses/gpl-3.0.txt GNU General Public License
  */
 
-namespace rampage\core\url;
+namespace rampage\core\view\helpers;
 
-/**
- * Media URL model
- */
-class MediaUrl extends BaseUrl
+use Zend\ServiceManager\AbstractPluginManager;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+
+class BaseUrlHelperFactory implements FactoryInterface
 {
-    public function __construct()
+    /**
+     * {@inheritdoc}
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        parent::__construct('media');
+        $serviceManager = ($serviceLocator instanceof AbstractPluginManager)? $serviceLocator->getServiceLocator() : $serviceLocator;
+        $baseUrl = $serviceManager->get('baseurl');
+
+        return new BaseUrlHelper($baseUrl);
     }
 }

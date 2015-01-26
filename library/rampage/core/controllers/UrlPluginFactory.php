@@ -24,18 +24,24 @@
 
 namespace rampage\core\controllers;
 
-use rampage\core\services\DIPluginServiceFactory;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ServiceManager\AbstractPluginManager;
 
 /**
  * Url plugin factory
  */
-class UrlPluginFactory extends DIPluginServiceFactory
+class UrlPluginFactory implements FactoryInterface
 {
     /**
-     * Construct
+     * {@inheritdoc}
      */
-    public function __construct()
+    public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        parent::__construct('rampage\core\controllers\UrlPlugin');
+        $serviceManager = ($serviceLocator instanceof AbstractPluginManager)? $serviceLocator->getServiceLocator() : $serviceLocator;
+        $config = $serviceManager->get('config');
+        $baseUrl = isset($config['urls']['base_url'])? $config['urls']['base_url'] : null;
+
+        return new UrlPlugin($baseUrl);
     }
 }

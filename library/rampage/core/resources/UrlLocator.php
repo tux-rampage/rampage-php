@@ -26,7 +26,7 @@
 namespace rampage\core\resources;
 
 use rampage\core\exception;
-use rampage\core\url\UrlModelInterface;
+use rampage\core\BaseUrl;
 
 use Zend\View\HelperPluginManager;
 use Zend\Mvc\Router\RouteInterface;
@@ -38,11 +38,9 @@ use Zend\Mvc\Router\RouteInterface;
 class UrlLocator implements UrlLocatorInterface
 {
     /**
-     * The file locator instance
-     *
-     * @var \rampage\core\resources\ThemeInterface
+     * @var ThemeInterface
      */
-    private $theme = null;
+    protected $theme = null;
 
     /**
      * Cached url locations
@@ -62,9 +60,9 @@ class UrlLocator implements UrlLocatorInterface
     protected $router = null;
 
     /**
-     * @var UrlModelInterface
+     * @var BaseUrl
      */
-    protected $urlModel = null;
+    protected $baseUrl = null;
 
     /**
      * Construct
@@ -89,11 +87,15 @@ class UrlLocator implements UrlLocatorInterface
     }
 
     /**
-     * @param UrlModelInterface $urlModel
+     * @param UrlModelInterface $baseUrl
      */
-    public function setUrlModel(UrlModelInterface $urlModel)
+    public function setBaseUrl($baseUrl = null)
     {
-        $this->urlModel = $urlModel;
+        if (!$baseUrl instanceof BaseUrl) {
+            $baseUrl = new BaseUrl($baseUrl);
+        }
+
+        $this->baseUrl = $baseUrl;
     }
 
     /**
@@ -174,8 +176,8 @@ class UrlLocator implements UrlLocatorInterface
 
             $url = $this->router->assemble($routeParams, $routeOptions);
 
-            if ($this->urlModel) {
-                $url = $this->urlModel->getUrl($url);
+            if ($this->baseUrl) {
+                $url = $this->baseUrl->getUrl($url);
             }
         }
 

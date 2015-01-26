@@ -74,22 +74,17 @@ class ThemeFactory implements FactoryInterface
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $config = $serviceLocator->get('Config');
-        $userConfig = $serviceLocator->get('UserConfig');
         $pathManager = $serviceLocator->get('rampage.PathManager');
         $fallback = $serviceLocator->get('rampage.ResourceLocator');
 
         $theme = new Theme($pathManager, $fallback);
-        $name = $userConfig->getConfigValue('design.theme.name');
 
         if (isset($config['rampage']['themes'])) {
             $this->addThemes($theme, $config['rampage']['themes']);
         }
 
-        if ($name || isset($config['rampage']['default_theme'])) {
-            if (!$name) {
-                $name = $config['rampage']['default_theme'];
-            }
-
+        if (isset($config['rampage']['default_theme'])) {
+            $name = $config['rampage']['default_theme'];
             $theme->setCurrentTheme($name);
         }
 

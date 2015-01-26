@@ -55,7 +55,7 @@ class PathManager
         }
 
         if (!$this->has('root')) {
-            $this->set('root', getcwd());
+            $this->set('root', defined('APPLICATION_ROOT')? APPLICATION_ROOT : getcwd());
         }
 
         if (defined('APPLICATION_DIR')) {
@@ -72,9 +72,9 @@ class PathManager
             'cache' => '{{var_dir}}/cache',
             'maps' => '{{var_dir}}/maps',
             'etc' => '{{app_dir}}/etc',
-            'modules' => array('{{root_dir}}/modules'),
+            'modules' => [ '{{app_dir}}/modules' ],
             'media' => '{{public_dir}}/media',
-            'public_resources' => '{{media_dir}}/media',
+            'static' => '{{public_dir}}/static',
         );
 
         if (isset($config['__file__'])) {

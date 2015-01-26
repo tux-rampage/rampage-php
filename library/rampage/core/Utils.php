@@ -172,12 +172,10 @@ class Utils
      */
     public static function varExport($var)
     {
-        $php = '';
-
         if (is_array($var)) {
             $items = array();
             foreach ($var as $k => $v) {
-                $items[] = var_export($k, true) . ' => ' . static::varExport($var);
+                $items[] = var_export($k, true) . ' => ' . static::varExport($v);
             }
 
             return 'array(' . implode($items, ', ') . ')';
@@ -185,6 +183,7 @@ class Utils
 
         if (is_object($var) && ($var instanceof ExportableClassInterface)) {
             $code = $var->exportAsPhpCode();
+
             if (!is_string($code)) {
                 $code = get_class($var) . '::__set_state(' . var_export($code) . ')';
             }

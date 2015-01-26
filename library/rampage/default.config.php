@@ -4,13 +4,13 @@ namespace rampage\core;
 
 use rampage\core\services\DIPluginServiceFactory;
 
-return array(
+return [
     'service_manager' => require __DIR__ . '/service.config.php',
-    'controllers' => array(
-        'invokables' => array(
+    'controllers' => [
+        'invokables' => [
             'rampage.cli.resources' => 'rampage\core\controllers\ResourcesController'
-        )
-    ),
+        ]
+    ],
 
     'rampage' => [
         'resources' => [
@@ -18,33 +18,33 @@ return array(
         ]
     ],
 
-    'router' => array(
-        'routes' => array(
-            'rampage.core.resources' => new resources\ResourceRoute('_res',array(
+    'router' => [
+        'routes' => [
+            'rampage.core.resources' => new resources\ResourceRoute('_res', [
                 'controller' => 'rampage.cli.resources',
                 'action' => 'index'
-            ))
-        ),
-    ),
+            ])
+        ],
+    ],
 
-    'controller_plugins' => array(
-        'factories' => array(
+    'controller_plugins' => [
+        'factories' => [
             'url' => 'rampage\core\controllers\UrlPluginFactory'
-        )
-    ),
+        ]
+    ],
 
-    'view_helpers' => array(
-        'factories' => array(
+    'view_helpers' => [
+        'factories' => [
             'resourceurl' => new DIPluginServiceFactory('rampage\core\view\helpers\ResourceUrlHelper'),
             'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
             'url' => 'rampage\core\view\helpers\UrlHelperFactory',
             'baseUrl' => new DIPluginServiceFactory('rampage\core\view\helpers\BaseUrlHelper'),
             'requireJs' => 'rampage\core\view\helpers\RequireJsHelperFactory',
-        ),
-        'aliases' => array(
+        ],
+        'aliases' => [
             '__' => 'translateargs'
-        )
-    ),
+        ]
+    ],
 
     'di' => include __DIR__ . '/di.config.php',
-);
+];

@@ -24,6 +24,7 @@ namespace rampage\core\services;
 
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
+use rampage\core\resources\UrlLocator;
 
 
 class ResourceUrlLocatorFactory implements FactoryInterface
@@ -33,15 +34,13 @@ class ResourceUrlLocatorFactory implements FactoryInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        /* @var $instance \rampage\core\resources\UrlLocator */
-        /* @var $urlManager \rampage\core\url\UrlModelLocator */
-        $instance = $serviceLocator->get('di')->newInstance('rampage\core\resources\UrlLocator');
+        /* @var $instance UrlLocator */
+        $instance = $serviceLocator->get('di')->newInstance(UrlLocator::class);
         $router = $serviceLocator->get('Router');
-        $urlManager = $serviceLocator->get('UrlManager');
-        $urlModel = ($urlManager->has('resources'))? $urlManager->get('resources') : $urlManager->get('base');
+        $baseUrl = $serviceLocator->get('baseurl.resources');
 
         $instance->setRouter($router);
-        $instance->setUrlModel($urlModel);
+        $instance->setBaseUrl($baseUrl);
 
         return $instance;
     }

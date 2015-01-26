@@ -47,12 +47,12 @@ class ResourcePublishingStrategyFactory implements FactoryInterface
     {
         $config = $serviceLocator->get('config');
         $pathManager = $serviceLocator->get('rampage.PathManager');
-        $urlManager = $serviceLocator->get('UrlManager');
+        $baseUrl = $serviceLocator->get('baseurl.static');
         $console = $serviceLocator->get('console');
         $io = ($console instanceof ConsoleAdapterInterface)? new ConsoleIO($console) : new NullIO();
-        $strategy = new StaticResourcePublishingStrategy($pathManager->get('public', 'static'), $config, $io);
+        $strategy = new StaticResourcePublishingStrategy($pathManager->get('static'), $config, $io);
 
-        $strategy->setUrlManager($urlManager);
+        $strategy->setBaseUrl($baseUrl);
 
         return $strategy;
     }

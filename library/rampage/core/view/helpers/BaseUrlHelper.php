@@ -22,8 +22,10 @@
 
 namespace rampage\core\view\helpers;
 
-use rampage\core\url\UrlModelLocator;
+use rampage\core\BaseUrl;
+
 use Zend\View\Helper\AbstractHelper as AbstractViewHelper;
+
 
 /**
  * Advanced URL helper to build FQ URLs
@@ -31,34 +33,32 @@ use Zend\View\Helper\AbstractHelper as AbstractViewHelper;
 class BaseUrlHelper extends AbstractViewHelper
 {
     /**
-     * URL model locator
-     *
-     * @var \rampage\core\url\UrlModelLocator
+     * @var BaseUrl
      */
-    protected $urlModelLocator = null;
+    protected $baseUrl = null;
 
     /**
      * @param UrlModelLocator $modelLocator
      */
-    public function __construct(UrlModelLocator $modelLocator)
+    public function __construct($baseUrl = null)
     {
-        $this->urlModelLocator = $modelLocator;
-    }
+        if (!$baseUrl instanceof BaseUrl) {
+            $baseUrl = new BaseUrl($baseUrl);
+        }
 
-    /**
-     * @return \rampage\core\url\UrlModelInterface
-     */
-    protected function getUrlModel()
-    {
-        return $this->urlModelLocator->get('base');
+        $this->baseUrl = $baseUrl;
     }
 
     /**
      * (non-PHPdoc)
      * @see \Zend\View\Helper\Url::__invoke()
      */
-    public function __invoke($path = null, array $options = array())
+    public function __invoke($path = null, $options = null)
     {
-        return $this->getUrlModel()->getUrl($path, $options);
+        if ($path === null) {
+            return $this->baseUrl;
+        }
+
+        return $this->baseUrl->getUrl($path, $options);
     }
 }

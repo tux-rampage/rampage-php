@@ -1,69 +1,60 @@
 <?php
 
-use rampage\core\services\DIServiceFactory;
-return array(
-    'invokables' => array(
-        'rampage\core\services\DIAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
-        'rampage\core\services\ViewResolverDelegator' => 'rampage\core\services\ViewResolverDelegator',
-    ),
-    'factories' => array(
-        'Application' => 'rampage\core\services\ApplicationFactory',
-        'DependencyInjector' => 'rampage\core\services\DIFactory',
-        'ControllerLoader' => 'rampage\core\services\ControllerLoaderFactory',
+namespace rampage\core;
 
-        // View/Layout
-        'rampage.UserConfig' => 'rampage\core\services\UserConfigFactory',
+return [
+    'invokables' => [
+        services\DIAbstractServiceFactory::class => services\DIAbstractServiceFactory::class,
+        services\ViewResolverDelegator::class => services\ViewResolverDelegator::class,
+    ],
+    'factories' => [
+        'Application' => services\ApplicationFactory::class,
+        'DependencyInjector' => services\DIFactory::class,
+        'ControllerLoader' => services\ControllerLoaderFactory::class,
 
         // i18n
-        'Locale' => 'rampage\core\services\LocaleFactory',
-        'Translator' => 'rampage\core\services\TranslatorServiceFactory',
+        'Locale' => services\LocaleFactory::class,
+        'Translator' => services\TranslatorServiceFactory::class,
 
         // Resources
-        'rampage.ResourceLocator' => 'rampage\core\services\ResourceLocatorFactory',
-        'rampage.Theme' => 'rampage\core\services\ThemeFactory',
-        'rampage.ResourcePublishingStrategy' => 'rampage\core\services\ResourcePublishingStrategyFactory',
-        'UrlManager' => new DIServiceFactory('rampage\core\url\UrlModelLocator'),
-        'rampage.UrlConfig' => 'rampage\core\services\UrlConfigFactory',
+        'rampage.ResourceLocator' => services\ResourceLocatorFactory::class,
+        'rampage.Theme' => services\ThemeFactory::class,
+        'rampage.ResourcePublishingStrategy' => services\ResourcePublishingStrategyFactory::class,
 
-        'rampage\core\resources\UrlLocator' => 'rampage\core\services\ResourceUrlLocatorFactory',
+        resources\UrlLocator::class => services\ResourceUrlLocatorFactory::class,
 
         // Doctrine
-        'doctrine.cache.filesystem' => 'rampage\core\services\DoctrineFilesystemCacheFactory',
-    ),
-    'aliases' => array(
+        'doctrine.cache.filesystem' => services\DoctrineFilesystemCacheFactory::class,
+    ],
+    'aliases' => [
         // Layout
         'Zend\View\HelperPluginManager' => 'ViewHelperManager',
 
         // Resources
-        'rampage\core\PathManager' => 'rampage.PathManager',
-        'rampage\core\resources\Theme' => 'rampage.Theme',
-        'rampage\core\resources\FileLocator' => 'rampage.ResourceLocator',
-        'rampage\core\url\UrlModelLocator' => 'UrlManager',
-        'rampage\core\url\UrlConfig' => 'rampage.UrlConfig',
-
-        // Core
-        'UserConfig' => 'rampage.UserConfig',
-        'rampage\core\UserConfig' => 'rampage.UserConfig',
+        PathManager::class => 'rampage.PathManager',
+        resources\Theme::class => 'rampage.Theme',
+        resources\FileLocator::class => 'rampage.ResourceLocator',
 
         // I18n
         'Zend\I18n\Translator\Translator' => 'Translator',
         'Zend\I18n\Translator\TranslatorInterface' => 'Translator',
-        'rampage\core\i18n\Locale' => 'Locale',
+        i18n\Locale::class => 'Locale',
 
         // DI
         'Di' => 'DependencyInjector',
         'Zend\Di\Di' => 'DependencyInjector',
-        'rampage\core\di\DIContainer' => 'DependencyInjector',
-        'DiAbstractServiceFactory' => 'rampage\core\services\DIAbstractServiceFactory',
-    ),
+        di\DIContainer::class => 'DependencyInjector',
+        'DiAbstractServiceFactory' => services\DIAbstractServiceFactory::class,
+    ],
 
-    'delegators' => array(
-        'ViewResolver' => array(
-            'rampage\core\services\ViewResolverDelegator'
-        ),
-    ),
+    'delegators' => [
+        'ViewResolver' => [
+            services\ViewResolverDelegator::class
+        ]
+    ],
 
-    'abstract_factories' => array(
-        'rampage\core\services\DIAbstractServiceFactory',
-    ),
-);
+    'abstract_factories' => [
+        services\DIAbstractServiceFactory::class,
+        services\BaseUrlAbstractFactory::class,
+    ],
+];

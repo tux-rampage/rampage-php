@@ -24,33 +24,26 @@
 
 namespace rampage\core\view\helpers;
 
-use rampage\core\services\DIPluginServiceFactory;
 use Zend\Console\Console;
+
 use Zend\Mvc\Router\RouteMatch;
+
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\AbstractPluginManager;
+use Zend\ServiceManager\FactoryInterface;
 
 /**
  * URL helper delegator
  */
-class UrlHelperFactory extends DIPluginServiceFactory
+class UrlHelperFactory implements FactoryInterface
 {
     /**
-     * {@inheritdoc}
-     * @see \rampage\core\services\DIServiceFactory::__construct()
-     */
-    public function __construct()
-    {
-        parent::__construct('rampage\core\view\helpers\UrlHelper');
-    }
-
-	/**
      * {@inheritdoc}
      * @see \Zend\ServiceManager\FactoryInterface::createService()
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $helper = parent::createService($serviceLocator);
+        $helper = new UrlHelper();
         $router = Console::isConsole() ? 'HttpRouter' : 'Router';
 
         if ($serviceLocator instanceof AbstractPluginManager) {

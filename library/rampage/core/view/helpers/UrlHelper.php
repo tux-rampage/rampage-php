@@ -25,9 +25,11 @@
 
 namespace rampage\core\view\helpers;
 
-use rampage\core\url\UrlModelLocator;
-use Zend\View\Helper\Url as DefaultUrlHelper;
+use rampage\core\BaseUrl;
 use rampage\core\GracefulArrayAccess;
+
+use Zend\View\Helper\Url as DefaultUrlHelper;
+
 
 /**
  * Advanced URL helper to build FQ URLs
@@ -35,11 +37,9 @@ use rampage\core\GracefulArrayAccess;
 class UrlHelper extends DefaultUrlHelper
 {
     /**
-     * URL model locator
-     *
-     * @var \rampage\core\url\UrlModelLocator
+     * @var BaseUrl
      */
-    protected $urlModelLocator = null;
+    protected $baseUrl;
 
     /**
      * Returns the URL model
@@ -47,24 +47,36 @@ class UrlHelper extends DefaultUrlHelper
      * @param UrlModelLocator $modelLocator
      * @param DefaultUrlHelper $parent The URL helper to proxy
      */
-    public function __construct(DefaultUrlHelper $wrappedHelper, UrlModelLocator $modelLocator)
+    public function __construct(DefaultUrlHelper $wrappedHelper = null)
     {
-        $this->urlModelLocator = $modelLocator;
-
-        // copy dependencies
-        $this->routeMatch = $wrappedHelper->routeMatch;
-        $this->router = $wrappedHelper->router;
-        $this->view = $wrappedHelper->view;
+        if ($wrappedHelper) {
+            // copy dependencies
+            $this->routeMatch = $wrappedHelper->routeMatch;
+            $this->router = $wrappedHelper->router;
+            $this->view = $wrappedHelper->view;
+        }
     }
 
     /**
-     * Url model
-     *
-     * @return \rampage\core\url\UrlModelInterface
+     * @return BaseUrl
      */
-    protected function getUrlModel()
+    public function getBaseUrl()
     {
-        return $this->urlModelLocator->get('base');
+        if ($this->baseUrl === null) {
+            $this->setBaseUrl($this->view->baseUrl());
+        }
+
+        return $this->baseUrl;
+    }
+
+    /**
+     * @param BaseUrl $baseUrl
+     * @return self
+     */
+    public function setBaseUrl($baseUrl = null)
+    {
+        $this->baseUrl = ($baseUrl instanceof BaseUrl)? $baseUrl : new BaseUrl($baseUrl);
+        return $this;
     }
 
     /**
@@ -74,7 +86,7 @@ class UrlHelper extends DefaultUrlHelper
     public function __invoke($name = null, $params = array(), $options = array(), $reuseMatchedParams = false)
     {
         if ($name === null) {
-            return $this->getUrlModel()->getUrl();
+            return $this->getBaseUrl()->getUrl();
         }
 
         if ((func_num_args() == 3) && is_bool($options)) {
@@ -83,26 +95,18 @@ class UrlHelper extends DefaultUrlHelper
             $options = array();
         }
 
+        $baseUrl = clone $this->getBaseUrl();
         $optionsContainer = new GracefulArrayAccess($options);
         $pathOnly = (bool)$optionsContainer->get('only_return_path', false);
         $options['only_return_path'] = true;
+        $options['uri'] = $baseUrl->getBaseUrl();
 
         $url = parent::__invoke($name, $params, $options, $reuseMatchedParams);
-        $urlOptions = (is_array($options))? $options : array();
-        $match = $this->routeMatch;
 
         if ($pathOnly) {
             return $url;
         }
 
-        if ($match) {
-            $routeMatchParams = $match->getParams();
-            $urlOptions = array_merge($routeMatchParams, $urlOptions);
-        }
-
-        $urlOptions['extractBasePath'] = true;
-        $uri = $this->getUrlModel()->getUrl($url, $urlOptions);
-
-        return $uri;
+        return $baseUrl->getUrl($url, $options);
     }
 }
