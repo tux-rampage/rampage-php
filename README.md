@@ -36,17 +36,18 @@ Feel free to contact them for:
 
 # Setup
 
-## Manual setup
-
-1. Grab a copy of this framework and ZF2
-2. Make sure Zend\Loader\AutoloaderFactory is loaded/included, if it is not in your include path
-3. Include rampage.php `require_once 'rampage.php'` (or rampage.phar if using the phar version)
-
 ## Composer
 
 1. Add a composer dependency to rampage-php/framework: `php composer.phar require rampage-php/framework`
 2. Run composer.phar install
 3. Include "vendor/autoload.php" as usual.
+
+
+## Manual setup
+
+1. Grab a copy of this framework and ZF2.
+2. Make sure Zend\Loader\AutoloaderFactory is loaded/included, if it is not in your include path.
+3. Include rampage.php: `require_once 'rampage.php'`.
 
 
 # Contributing
@@ -55,14 +56,6 @@ Please review the contribution guide in CONTRIBUTING.md before making any contri
 
 
 # Additional Information / FAQ
-
-## Known issues
-
-When using the Phar version, be aware that most php stacks of linux distributions
-have problems with that when using the distribution's apc extension.
-
-To avoid this problem install the latest apc version from pecl with `pecl install apc`.
-The problem seems to be fixed in this version.
 
 ## Why configs via XML?
 

@@ -44,7 +44,7 @@
     },
     "classmap" : [ "library/" ]
   },
-  "bin" : [ "tools/generate-di.php", "tools/rampage-app-skeleton.php" ],
+  "bin" : [ "tools/rampage-app-skeleton.php" ],
   "suggest" : {
     "zendframework/zend-console" : "ZF2 Console handling",
     "zendframework/zend-session" : "ZF2 Session Handling",

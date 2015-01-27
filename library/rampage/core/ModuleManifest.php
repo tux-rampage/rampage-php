@@ -132,7 +132,7 @@ class ModuleManifest extends XmlConfig
     public function validate($xsd = null)
     {
         if (!$xsd) {
-            $xsdPath = __DIR__ . '/../../../xsd/';
+            $xsdPath = __DIR__ . '/../../../resources/xsd/';
             $xsd = $xsdPath . 'rampage/core/ModuleManifest.xsd';
         }
 
@@ -209,7 +209,7 @@ class ModuleManifest extends XmlConfig
         return $path;
     }
 
-	/**
+    /**
      * Map manifest config
      *
      * @deprecated since 1.0.0
