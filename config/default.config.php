@@ -6,6 +6,8 @@ use rampage\core\services\DIPluginServiceFactory;
 
 return [
     'service_manager' => require __DIR__ . '/service.config.php',
+    'di' => include __DIR__ . '/di.config.php',
+
     'controllers' => [
         'invokables' => [
             'rampage.cli.resources' => 'rampage\core\controllers\ResourcesController'
@@ -14,7 +16,7 @@ return [
 
     'rampage' => [
         'resources' => [
-            'rampage.core' => __DIR__ . '/../../resources',
+            'rampage.core' => __DIR__ . '/../resources',
         ]
     ],
 
@@ -45,6 +47,4 @@ return [
             '__' => 'translateargs'
         ]
     ],
-
-    'di' => include __DIR__ . '/di.config.php',
 ];

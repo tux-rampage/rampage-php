@@ -53,6 +53,6 @@ class Module implements ConfigProviderInterface, InitProviderInterface
      */
     public function getConfig()
     {
-        return require __DIR__ . '/../default.config.php';
+        return require __DIR__ . '/../../../config/default.config.php';
     }
 }
