@@ -10,7 +10,7 @@ return [
 
     'controllers' => [
         'invokables' => [
-            'rampage.cli.resources' => 'rampage\core\controllers\ResourcesController'
+            'rampage.cli.resources' => controllers\ResourcesController::class
         ]
     ],
 
@@ -31,17 +31,17 @@ return [
 
     'controller_plugins' => [
         'factories' => [
-            'url' => 'rampage\core\controllers\UrlPluginFactory'
+            'url' => controllers\UrlPluginFactory::class,
         ]
     ],
 
     'view_helpers' => [
         'factories' => [
-            'resourceurl' => new DIPluginServiceFactory('rampage\core\view\helpers\ResourceUrlHelper'),
-            'translateargs' => new DIPluginServiceFactory('rampage\core\view\helpers\TranslatorHelper'),
-            'url' => 'rampage\core\view\helpers\UrlHelperFactory',
-            'baseUrl' => new DIPluginServiceFactory('rampage\core\view\helpers\BaseUrlHelper'),
-            'requireJs' => 'rampage\core\view\helpers\RequireJsHelperFactory',
+            'resourceurl' => new DIPluginServiceFactory(view\helpers\ResourceUrlHelper::class),
+            'translateargs' => new DIPluginServiceFactory(view\helpers\TranslatorHelper::class),
+            'url' => view\helpers\UrlHelperFactory::class,
+            'baseUrl' => new DIPluginServiceFactory(view\helpers\BaseUrlHelper::class),
+            'requireJs' => view\helpers\RequireJsHelperFactory::class,
         ],
         'aliases' => [
             '__' => 'translateargs'

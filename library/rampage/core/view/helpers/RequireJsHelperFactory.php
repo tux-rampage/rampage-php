@@ -8,6 +8,7 @@ namespace rampage\core\view\helpers;
 
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
+use rampage\core\ArrayConfig;
 
 
 class RequireJsHelperFactory implements FactoryInterface
@@ -20,14 +21,32 @@ class RequireJsHelperFactory implements FactoryInterface
         $config = $serviceLocator->get('Config');
         $helper = new RequireJsHelper();
 
-        if (isset($config['requirejs']['modules'])
-            && (is_array($config['requirejs']['modules'])
-                || ($config['requirejs']['modules'] instanceof \Traversable))) {
-
-            foreach ($config['requirejs']['modules'] as $module => $location) {
-                $helper->addModule($module, $location);
-            }
+        if (!isset($config['requirejs'])) {
+            return $helper;
         }
+
+        $config = new ArrayConfig($config['requirejs']);
+
+        foreach ($config->getSection('modules') as $module => $location) {
+            $helper->addModule($module, $location);
+        }
+
+        foreach ($config->getSection('bundles') as $bundle => $deps) {
+            $helper->addBundle($bundle, $deps);
+        }
+
+        foreach ($config->getSection('packages') as $name => $package) {
+            if (is_string($package)) {
+                $location = (string)$package;
+                $main = null;
+            } else {
+                $location = $package->get('location');
+                $main = $package->get('main');
+            }
+
+            $helper->addPackage($name, $location, $main);
+        }
+
 
         return $helper;
     }

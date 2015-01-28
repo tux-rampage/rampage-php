@@ -265,7 +265,7 @@ class RequireJsHelper extends AbstractHelper
             $this->requireJsUrl = $this->view->resourceUrl('@rampage.core/js/require.js');
         }
 
-        $html = '<script src="' . $this->view->escapeHtmlAttr((string)$this->requireJsUrl) . '"></script>';
+        $html = '<script src="' . $this->view->escapeHtmlAttr((string)$this->requireJsUrl) . '" type="text/javascript"></script>';
         $config = [];
         $modules = [];
         $packages = [];

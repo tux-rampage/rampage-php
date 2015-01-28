@@ -163,7 +163,7 @@ class Theme extends FileLocator implements ThemeInterface
     private function findThemeFile($type, $theme, $path)
     {
         $path = parent::resolve($type, $path, $theme, true);
-        if (($path !== false) && !$path->isFile()) {
+        if (($path !== false) && !$path->isFile() && !$path->isDir()) {
             return false;
         }
 
