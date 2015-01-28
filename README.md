@@ -3,6 +3,8 @@
 This framework is based on ZendFramework 2.
 Its goal is to simplyfy the usage of ZF2 and offer some enhancments.
 
+[![Documentation Status](https://readthedocs.org/projects/rampage-php/badge/?version=latest)](https://readthedocs.org/projects/rampage-php/?badge=latest)
+
 ## Key Features
 
 * Tight integration between Di and ServiceManager
