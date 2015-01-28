@@ -51,8 +51,6 @@ class AssetPath
             } else {
                 $this->path = substr($path, 1);
             }
-        } else if ($findScope && (strpos($path, '::') !== false)) {
-            list($this->scope, $this->path) = explode('::', $path, 2);
         }
 
         if ($this->scope == '') {
