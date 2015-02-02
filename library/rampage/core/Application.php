@@ -55,17 +55,11 @@ class Application extends MvcApplication
      */
     protected static function loadAppConfig()
     {
-        if (defined('APPLICATION_DIR')) {
-            $prefix = APPLICATION_DIR;
-        } else {
-            $prefix = (isset($_SERVER['APP_LOCATION']))? $_SERVER['APP_LOCATION']  : 'application';
+        if (!defined('APPLICATION_DIR')) {
+            return require 'application/config/application.conf.php';
         }
 
-        if (is_file("$prefix/config/application.config.php")) {
-            return include "$prefix/config/application.config.php";
-        }
-
-        return array();
+        return require APPLICATION_DIR . 'config/application.conf.php';
     }
 
     /**
