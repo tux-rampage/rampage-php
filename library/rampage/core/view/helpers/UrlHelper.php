@@ -44,7 +44,7 @@ class UrlHelper extends DefaultUrlHelper
     /**
      * Returns the URL model
      *
-     * @param UrlModelLocator $modelLocator
+     * @param string|BaseUrl|\Zend\Uri\Http $modelLocator
      * @param DefaultUrlHelper $parent The URL helper to proxy
      */
     public function __construct(DefaultUrlHelper $wrappedHelper = null)

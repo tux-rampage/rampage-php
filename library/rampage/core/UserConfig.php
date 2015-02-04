@@ -28,7 +28,7 @@ namespace rampage\core;
 /**
  * @deprecated UserConfig will be removed soon or later
  */
-class UserConfig extends xml\AggregatedXmlConfig implements UserConfigInterface, url\UrlConfigInterface
+class UserConfig extends xml\AggregatedXmlConfig implements UserConfigInterface
 {
     /**
      * Config values
@@ -183,29 +183,5 @@ class UserConfig extends xml\AggregatedXmlConfig implements UserConfigInterface,
         }, $value);
 
         return $value;
-    }
-
-    /**
-     * Configure the given url model
-     *
-     * @param Url $url
-     */
-    public function configureUrlModel(url\UrlModelInterface $url)
-    {
-        $property = ($url->getType()?: 'baseurl');
-
-        if ($unsecure = $this->getConfigValue('web.url.unsecure.' . $property)) {
-            $unsecure = $this->processConfigVariables($unsecure, 'web.url.');
-            $url->setBaseUrl($unsecure, false);
-        }
-
-        if ($secure = $this->getConfigValue('web.url.secure.' . $property)) {
-            $secure = $this->processConfigVariables($secure, 'web.url.');
-            $url->setBaseUrl($secure, true);
-        } else if ($unsecure) {
-            $url->setBaseUrl($unsecure, true);
-        }
-
-        return $this;
     }
 }

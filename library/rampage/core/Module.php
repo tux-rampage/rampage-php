@@ -24,29 +24,14 @@
 
 namespace rampage\core;
 
-use Zend\ModuleManager\ModuleManagerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\ModuleManager\Feature\InitProviderInterface;
+
 
 /**
  * Module entry
  */
-class Module implements ConfigProviderInterface, InitProviderInterface
+class Module implements ConfigProviderInterface
 {
-    public function init(ModuleManagerInterface $manager)
-    {
-        /* @var $serviceListener \Zend\ModuleManager\Listener\ServiceListener */
-        $serviceLocator = $manager->getEvent()->getParam('ServiceManager');
-        $serviceListener = $serviceLocator->get('ServiceListener');
-
-        $serviceListener->addServiceManager(
-            'UrlManager',
-            'rampage_url_manager',
-            'rampage\core\modules\UrlModelProviderInterface',
-            'getUrlManagerConfig'
-        );
-    }
-
     /**
      * {@inheritdoc}
      * @see \Zend\ModuleManager\Feature\ConfigProviderInterface::getConfig()

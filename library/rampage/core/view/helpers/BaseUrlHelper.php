@@ -38,7 +38,7 @@ class BaseUrlHelper extends AbstractViewHelper
     protected $baseUrl = null;
 
     /**
-     * @param UrlModelLocator $modelLocator
+     * @param string|BaseUrl|\Zend\Uri\Http $modelLocator
      */
     public function __construct($baseUrl = null)
     {

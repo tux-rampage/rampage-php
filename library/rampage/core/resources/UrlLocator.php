@@ -87,7 +87,7 @@ class UrlLocator implements UrlLocatorInterface
     }
 
     /**
-     * @param UrlModelInterface $baseUrl
+     * @param string|BaseUrl|\Zend\Uri\Http $baseUrl
      */
     public function setBaseUrl($baseUrl = null)
     {
