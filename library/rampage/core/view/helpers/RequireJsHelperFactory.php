@@ -18,7 +18,7 @@ class RequireJsHelperFactory implements FactoryInterface
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        $config = $serviceLocator->get('Config');
+        $config = $serviceLocator->getServiceLocator()->get('Config');
         $helper = new RequireJsHelper();
 
         if (!isset($config['requirejs'])) {

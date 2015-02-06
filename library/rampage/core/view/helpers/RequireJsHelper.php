@@ -245,12 +245,15 @@ class RequireJsHelper extends AbstractHelper
      * @param string $location
      * @return string
      */
-    protected function renderLocation($location)
+    protected function renderLocation($location, $sanitizeJsFiles = false)
     {
         if (substr($location, 0, 2) == './') {
             $location = substr($location, 2);
         } else if (!preg_match('~^https?://~i', $location)) {
             $location = $this->view->resourceUrl($location);
+            if ($sanitizeJsFiles && (substr($location, -3) == '.js')) {
+                $location = substr($location, 0, -3);
+            }
         }
 
         return (string)$location;
@@ -272,7 +275,7 @@ class RequireJsHelper extends AbstractHelper
         $bundles = [];
 
         foreach ($this->modules as $module => $location) {
-            $modules[$module] = $this->renderLocation($location);
+            $modules[$module] = $this->renderLocation($location, true);
         }
 
         foreach ($this->packages as $name => $package) {
