@@ -64,7 +64,11 @@ class TemplateLocator implements ViewResolverInterface
             return false;
         }
 
-        trigger_error(sprintf('Found resource template "@%s". You should prefix them with "@" since this fallback will be removed in the next release!', $name), E_USER_WARNING);
+        // Only trigger warnings in dev env
+        if (defined('APPLICATION_DEVELOPMENT') && APPLICATION_DEVELOPMENT) {
+            trigger_error(sprintf('Found resource template "@%s". You should prefix them with "@" since this fallback will be removed in the next release!', $name), E_USER_DEPRECATED);
+        }
+
         return $file->getPathname();
     }
 }
