@@ -55,6 +55,11 @@ class RequireJsHelper extends AbstractHelper
     protected $bundles = [];
 
     /**
+     * @var array
+     */
+    protected $shim = [];
+
+    /**
      * @param string $requireJsUrl
      * @return self
      */
@@ -222,6 +227,26 @@ class RequireJsHelper extends AbstractHelper
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param array $config
+     */
+    public function addShim($key, array $config = [])
+    {
+        if (is_array($key) || ($key instanceof \Traversable)) {
+            foreach ($key as $subKey => $config) {
+                $this->addShim($subKey, $config);
+            }
+
+            return $this;
+        }
+
+        if (is_string($key)) {
+            $this->shim[$key] = $config;
+        }
+
+        return $this;
+    }
 
     /**
      * @param string $name
@@ -303,6 +328,10 @@ class RequireJsHelper extends AbstractHelper
         $config['bundles'] = empty($bundles)? false : $bundles;
 
         $config = array_filter($config);
+
+        if (count($this->shim)) {
+            $config['shim'] = $this->shim;
+        }
 
         if (!empty($config)) {
             $html .= '<script type="text/javascript">//<![CDATA[' . "\n"

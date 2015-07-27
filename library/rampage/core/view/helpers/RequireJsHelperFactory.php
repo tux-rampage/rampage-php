@@ -47,6 +47,7 @@ class RequireJsHelperFactory implements FactoryInterface
             $helper->addPackage($name, $location, $main);
         }
 
+        $helper->addShim($config->getSection('shim')->toArray());
 
         return $helper;
     }
