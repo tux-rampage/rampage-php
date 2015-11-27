@@ -112,7 +112,7 @@ class ConsoleMessageFilter
     public function filter($message)
     {
         $callback = array($this, 'colorize');
-        $message = preg_replace_callback('~<(?P<type>[a-z]+)>(?P<text>.*)</\1>~s', $callback, $message);
+        $message = preg_replace_callback('~<(?P<type>[a-z]+)>(?P<text>.*?)</\1>~s', $callback, $message);
         return $message;
     }
 }
